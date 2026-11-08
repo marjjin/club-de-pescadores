@@ -1,6 +1,6 @@
 # 0003 — Sitio público con consultas reales y despliegue verificable
 
-Estado: implementado y probado localmente; migración y publicación remotas pendientes de acceso a las cuentas.
+Estado: publicado en Vercel. La migración remota fue aplicada por el usuario y se verificó la lectura pública de las tres tablas.
 
 ## Decisión
 
@@ -20,4 +20,4 @@ Vercel es el hosting confirmado por el usuario. `vercel.json` configura el proye
 
 Los estados vacíos son reales mientras no haya publicaciones. Las fallas de red se muestran como errores recuperables. No hay un fallback a fixtures ni funcionalidades representadas por botones de «próximamente».
 
-La verificación local cubre políticas y privilegios de los roles públicos, pero no las diferencias de configuración del Supabase alojado, su Security Advisor ni un despliegue que aún no se ha ejecutado. Esos estados se informan explícitamente.
+La verificación local cubre políticas y privilegios de los roles públicos. En el entorno remoto se verificaron las lecturas públicas y, tras publicar, las rutas, assets, cabeceras CSP y configuración de Supabase incluida en el navegador. La inspección privilegiada del Security Advisor sigue siendo un control separado que requiere acceso a la cuenta.
