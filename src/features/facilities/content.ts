@@ -1,7 +1,7 @@
-import grillImage from '../../assets/images/facility-grill.webp'
-import hallImage from '../../assets/images/facility-hall.webp'
-import pierImage from '../../assets/images/facility-pier.webp'
-import riverImage from '../../assets/images/facility-river.webp'
+import grillImage from '@/shared/assets/images/facility-grill.webp'
+import hallImage from '@/shared/assets/images/facility-hall.webp'
+import pierImage from '@/shared/assets/images/facility-pier.webp'
+import riverImage from '@/shared/assets/images/facility-river.webp'
 
 export const facilities = [
   {

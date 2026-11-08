@@ -1,11 +1,10 @@
 import { useRef, useState } from 'react'
-import logo192 from '../../assets/images/logo-192.webp'
-import { navLinks } from '../config/club'
-import { useActiveSection } from '../hooks/useActiveSection'
-import { ComingSoonLink } from '../ui/ComingSoonLink'
+import logo192 from '@/shared/assets/images/logo-192.webp'
+import { navLinks } from '../config/navigation'
+import { useActiveSection } from '@/shared/hooks/useActiveSection'
 import { MobileMenu } from './MobileMenu'
 
-const sectionIds = navLinks.map((link) => link.href.slice(1))
+const sectionIds = navLinks.map((link) => link.href.split('#')[1] ?? '')
 
 const bar =
   'absolute left-0 h-0.5 w-full rounded-full bg-current transition-all duration-300 ease-out motion-reduce:transition-none'
@@ -24,7 +23,7 @@ export function Header() {
   return (
     <header className="sticky top-0 z-20 border-b border-navy-900/10 bg-white">
       <div className="mx-auto flex h-20 max-w-7xl items-center gap-8 px-4 sm:px-6">
-        <a href="#inicio" className="flex items-center gap-3">
+        <a href="/#inicio" className="flex items-center gap-3">
           <img
             src={logo192}
             width="192"
@@ -42,7 +41,7 @@ export function Header() {
         <nav aria-label="Principal" className="ml-auto hidden lg:block">
           <ul className="flex gap-8 font-semibold">
             {navLinks.map((link) => {
-              const isActive = link.href === `#${activeId}`
+              const isActive = link.href === `/#${activeId}`
               return (
                 <li key={link.href}>
                   <a
@@ -65,9 +64,12 @@ export function Header() {
             })}
           </ul>
         </nav>
-        <ComingSoonLink className="hidden min-h-10 items-center rounded-md border border-navy-900/20 px-4 font-semibold transition-colors hover:bg-mist-50 lg:flex">
-          Ingresar
-        </ComingSoonLink>
+        <a
+          href="/#contacto"
+          className="hidden min-h-10 items-center rounded-md border border-navy-900/20 px-4 font-semibold transition-colors hover:bg-mist-50 lg:flex"
+        >
+          Contactanos
+        </a>
         <button
           ref={toggleRef}
           type="button"
@@ -95,6 +97,7 @@ export function Header() {
         isOpen={isOpen}
         onClose={close}
         onDismiss={dismiss}
+        triggerRef={toggleRef}
       />
     </header>
   )

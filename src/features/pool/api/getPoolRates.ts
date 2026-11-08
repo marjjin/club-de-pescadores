@@ -1,19 +1,42 @@
+import { z } from '@/shared/lib/validation'
+import { getSupabase } from '@/lib/supabase/connection'
+import { requestSignal } from '@/lib/supabase/request'
+import { getClubToday } from '@/shared/lib/dates'
+import { getPageSize } from '@/shared/lib/pagination'
+import type { ListRequest } from '@/shared/lib/pagination'
+import { poolRateRowSchema } from '../schemas/rate'
 import type { PoolRate } from '../types'
 
-// Valores del afiche de la temporada 2026/2027.
-export async function getPoolRates(): Promise<PoolRate[]> {
-  return [
-    {
-      id: 'oct-nov',
-      period: 'Octubre y noviembre 2026',
-      familyPrice: 300000,
-      individualPrice: 200000,
-    },
-    {
-      id: 'dic',
-      period: 'A partir de diciembre 2026',
-      familyPrice: 450000,
-      individualPrice: 300000,
-    },
-  ]
+export async function getPoolRates({
+  limit,
+  signal,
+}: ListRequest = {}): Promise<PoolRate[]> {
+  signal?.throwIfAborted()
+  const pageSize = getPageSize(limit)
+  const { data } = await getSupabase()
+    .from('pool_rates')
+    .select(
+      'id,season,period,family_price_cents,individual_price_cents,family_description,discount_note',
+    )
+    .eq('is_published', true)
+    .is('deleted_at', null)
+    .or(`valid_until.is.null,valid_until.gte.${getClubToday()}`)
+    .order('valid_from')
+    .order('id')
+    .limit(pageSize)
+    .abortSignal(requestSignal(signal))
+    .throwOnError()
+  return z
+    .array(poolRateRowSchema)
+    .max(pageSize)
+    .parse(data)
+    .map((row) => ({
+      id: row.id,
+      season: row.season,
+      period: row.period,
+      familyPrice: row.family_price_cents / 100,
+      individualPrice: row.individual_price_cents / 100,
+      familyDescription: row.family_description,
+      discountNote: row.discount_note,
+    }))
 }

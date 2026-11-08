@@ -1,14 +1,7 @@
-import { Mail, MapPin, Phone } from 'lucide-react'
-import logo192 from '../../assets/images/logo-192.webp'
-import { club, navLinks } from '../config/club'
-import { ComingSoonLink } from '../ui/ComingSoonLink'
-import { FacebookIcon, InstagramIcon, YoutubeIcon } from '../ui/SocialIcons'
-
-const socialLinks = [
-  { label: 'Facebook', Icon: FacebookIcon },
-  { label: 'Instagram', Icon: InstagramIcon },
-  { label: 'YouTube', Icon: YoutubeIcon },
-]
+import { MapPin, Phone } from 'lucide-react'
+import logo192 from '@/shared/assets/images/logo-192.webp'
+import { club } from '@/shared/config/club'
+import { navLinks } from '../config/navigation'
 
 export function Footer() {
   return (
@@ -24,15 +17,6 @@ export function Footer() {
             className="size-20"
           />
           <p className="mt-3 font-extrabold">{club.name}</p>
-          <ul className="mt-3 flex gap-4">
-            {socialLinks.map(({ label, Icon }) => (
-              <li key={label}>
-                <ComingSoonLink label={label} className="text-xs font-bold">
-                  <Icon className="size-6 text-navy-900" />
-                </ComingSoonLink>
-              </li>
-            ))}
-          </ul>
         </div>
         <nav aria-label="Pie de página">
           <h2 className="font-bold">Secciones</h2>
@@ -53,12 +37,6 @@ export function Footer() {
               <MapPin aria-hidden="true" className="size-4 shrink-0" />
               {club.location}
             </li>
-            <li className="flex items-center gap-2 break-all">
-              <Mail aria-hidden="true" className="size-4 shrink-0" />
-              <a href={`mailto:${club.email}`} className="hover:text-river-600">
-                {club.email}
-              </a>
-            </li>
             <li className="flex items-center gap-2">
               <Phone aria-hidden="true" className="size-4 shrink-0" />
               <a href={club.whatsappUrl} className="hover:text-river-600">
@@ -71,8 +49,9 @@ export function Footer() {
       <div className="border-t border-navy-900/10 py-4 text-sm text-ink-600">
         {/* El margen derecho evita que el botón flotante de WhatsApp tape el texto. */}
         <div className="mx-auto flex max-w-7xl flex-wrap justify-between gap-2 px-4 pr-20 sm:px-6 sm:pr-20 min-[1440px]:pr-6">
-          <p>© 2026 {club.name}</p>
-          <p>Boceto de propuesta: contenidos de ejemplo.</p>
+          <p>
+            © {new Date().getFullYear()} {club.name}
+          </p>
         </div>
       </div>
     </footer>

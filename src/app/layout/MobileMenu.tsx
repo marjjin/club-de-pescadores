@@ -1,14 +1,17 @@
 import { ChevronRight, Phone } from 'lucide-react'
 import { useEffect, useRef } from 'react'
-import { club, navLinks } from '../config/club'
-import { button } from '../ui/button'
-import { ComingSoonLink } from '../ui/ComingSoonLink'
+import type { RefObject } from 'react'
+import { useFocusTrap } from '@/shared/hooks/useFocusTrap'
+import { club } from '@/shared/config/club'
+import { navLinks } from '../config/navigation'
+import { button } from '@/shared/ui/button'
 
 type Props = {
   id: string
   isOpen: boolean
   onClose: () => void
   onDismiss: () => void
+  triggerRef: RefObject<HTMLButtonElement | null>
 }
 
 // `visibility` solo se anima al cerrar: al abrir debe cambiar ya para que entre el foco.
@@ -22,8 +25,16 @@ const itemMotion =
 const staggerStep = 45
 
 // Sigue montado al cerrarse para que la salida también se anime.
-export function MobileMenu({ id, isOpen, onClose, onDismiss }: Props) {
+export function MobileMenu({
+  id,
+  isOpen,
+  onClose,
+  onDismiss,
+  triggerRef,
+}: Props) {
   const firstLinkRef = useRef<HTMLAnchorElement>(null)
+  const panelRef = useRef<HTMLElement>(null)
+  useFocusTrap(panelRef, triggerRef, isOpen)
   const motion = isOpen ? panelMotion.open : panelMotion.closed
   const reveal = isOpen
     ? 'translate-x-0 opacity-100'
@@ -69,6 +80,7 @@ export function MobileMenu({ id, isOpen, onClose, onDismiss }: Props) {
         }`}
       />
       <nav
+        ref={panelRef}
         id={id}
         aria-label="Principal móvil"
         className={`absolute inset-x-0 top-full max-h-[calc(100dvh-5rem)] overflow-x-hidden overflow-y-auto border-t border-navy-900/10 bg-white shadow-xl lg:hidden ${motion} ${
@@ -103,12 +115,16 @@ export function MobileMenu({ id, isOpen, onClose, onDismiss }: Props) {
           style={delayFor(navLinks.length)}
           className={`grid gap-3 p-4 sm:grid-cols-2 sm:px-6 ${itemMotion} ${reveal}`}
         >
-          <a href="#sumate" onClick={onClose} className={button.primary}>
+          <a href="/#sumate" onClick={onClose} className={button.primary}>
             Hacete socio
           </a>
-          <ComingSoonLink className="flex min-h-12 items-center justify-center rounded-md border border-navy-900/20 px-6 font-bold">
-            Ingresar
-          </ComingSoonLink>
+          <a
+            href="/#contacto"
+            onClick={onClose}
+            className="flex min-h-12 items-center justify-center rounded-md border border-navy-900/20 px-6 font-bold"
+          >
+            Contactanos
+          </a>
         </div>
         <a
           href={club.whatsappUrl}

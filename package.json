@@ -3,27 +3,46 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
+  "engines": {
+    "node": "^24.11.0"
+  },
   "scripts": {
     "dev": "vite --host",
-    "build": "tsc --noEmit && vite build",
+    "build": "node scripts/production/check-env.mjs && tsc --noEmit && vite build && node scripts/production/prepare-public.mjs",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
+    "db:types": "node scripts/db/generate-types.mjs",
+    "db:types:check": "node scripts/db/generate-types.mjs --check",
+    "production:check": "node scripts/production/check-remote.mjs",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "images:optimize": "node scripts/optimize-images.mjs",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "check": "npm run format:check && npm run lint && npm run typecheck && npm run db:types:check && npm test && npm run build",
     "preview": "vite preview"
   },
   "dependencies": {
     "@fontsource-variable/nunito-sans": "^5.3.0",
     "@fontsource/allura": "^5.3.0",
     "@fontsource/anton": "^5.3.0",
+    "@supabase/supabase-js": "^2.119.0",
     "@tanstack/react-query": "^5.105.0",
     "lucide-react": "^1.65.0",
     "react": "^19.3.1",
-    "react-dom": "^19.3.1"
+    "react-dom": "^19.3.1",
+    "react-router": "^8.5.1",
+    "zod": "^4.6.7"
   },
   "devDependencies": {
     "@babel/core": "^7.29.7",
+    "@electric-sql/pglite": "^0.5.15",
     "@eslint/js": "^10.0.1",
     "@rolldown/plugin-babel": "^0.2.4",
     "@tailwindcss/vite": "^4.3.3",
+    "@testing-library/dom": "^10.4.2",
+    "@testing-library/react": "^16.3.3",
+    "@types/node": "^24.19.2",
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0",
     "@vitejs/plugin-react": "^6.1.2",
@@ -32,11 +51,13 @@
     "eslint-plugin-react-hooks": "^7.1.1",
     "eslint-plugin-react-refresh": "^0.5.7",
     "globals": "^17.13.0",
+    "jsdom": "^27.4.0",
     "prettier": "^3.9.10",
     "sharp": "^0.35.5",
     "tailwindcss": "^4.3.3",
     "typescript": "^6.0.3",
     "typescript-eslint": "^8.72.1",
-    "vite": "^8.3.5"
+    "vite": "^8.3.5",
+    "vitest": "^5.1.0"
   }
 }

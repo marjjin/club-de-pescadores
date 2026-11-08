@@ -1,5 +1,4 @@
 import { useQuery } from '@tanstack/react-query'
-import { getLatestNews } from '../api/getLatestNews'
+import { latestNewsOptions } from '../api/queries'
 
-export const useLatestNews = () =>
-  useQuery({ queryKey: ['news', 'latest'], queryFn: getLatestNews })
+export const useLatestNews = () => useQuery(latestNewsOptions())

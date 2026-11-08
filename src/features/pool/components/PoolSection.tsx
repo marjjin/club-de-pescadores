@@ -1,14 +1,14 @@
-import { BadgePercent, MessageCircle } from 'lucide-react'
-import { club } from '../../../shared/config/club'
-import { button } from '../../../shared/ui/button'
-import { QueryBoundary } from '../../../shared/ui/QueryBoundary'
-import { SectionHeading } from '../../../shared/ui/SectionHeading'
+import { MessageCircle } from 'lucide-react'
+import { club } from '@/shared/config/club'
+import { button } from '@/shared/ui/button'
+import { QueryBoundary } from '@/shared/ui/QueryBoundary'
+import { SectionHeading } from '@/shared/ui/SectionHeading'
 import { usePoolRates } from '../hooks/usePoolRates'
 
 const price = new Intl.NumberFormat('es-AR', {
   style: 'currency',
   currency: 'ARS',
-  maximumFractionDigits: 0,
+  maximumFractionDigits: 2,
 })
 
 export function PoolSection() {
@@ -17,7 +17,7 @@ export function PoolSection() {
   return (
     <section id="pileta" className="py-16 lg:py-24">
       <div className="mx-auto max-w-7xl px-4 sm:px-6">
-        <SectionHeading title="Temporada de pileta 2026/2027" />
+        <SectionHeading title="Temporada de pileta" />
         <div className="mt-8">
           <QueryBoundary
             query={rates}
@@ -31,7 +31,7 @@ export function PoolSection() {
                     className="overflow-hidden rounded-md shadow-card"
                   >
                     <h3 className="bg-navy-900 px-6 py-3 font-bold text-white">
-                      {rate.period}
+                      {rate.season} · {rate.period}
                     </h3>
                     <dl className="grid gap-5 p-6 sm:grid-cols-2">
                       <div>
@@ -40,7 +40,7 @@ export function PoolSection() {
                           {price.format(rate.familyPrice)}
                         </dd>
                         <dd className="text-sm text-ink-600">
-                          2 adultos + 3 niños
+                          {rate.familyDescription}
                         </dd>
                       </div>
                       <div>
@@ -50,6 +50,11 @@ export function PoolSection() {
                         </dd>
                       </div>
                     </dl>
+                    {rate.discountNote && (
+                      <p className="px-6 pb-6 text-sm text-ink-600">
+                        {rate.discountNote}
+                      </p>
+                    )}
                   </li>
                 ))}
               </ul>
@@ -58,12 +63,7 @@ export function PoolSection() {
         </div>
         <div className="mt-6 flex flex-col gap-4 rounded-md bg-mist-50 p-5 sm:flex-row sm:items-center sm:justify-between">
           <p className="flex items-start gap-2 font-semibold">
-            <BadgePercent
-              aria-hidden="true"
-              className="mt-0.5 size-5 shrink-0 text-river-600"
-            />
-            Jubilados: 10% de descuento para quienes cobran la jubilación
-            mínima.
+            Consultá disponibilidad y condiciones de ingreso.
           </p>
           <a href={club.whatsappUrl} className={`${button.primary} shrink-0`}>
             <MessageCircle aria-hidden="true" className="size-5" />

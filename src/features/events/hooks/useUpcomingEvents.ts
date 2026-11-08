@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query'
-import { getUpcomingEvents } from '../api/getUpcomingEvents'
+import { getClubToday } from '@/shared/lib/dates'
+import { upcomingEventsOptions } from '../api/queries'
 
 export const useUpcomingEvents = () =>
-  useQuery({ queryKey: ['events', 'upcoming'], queryFn: getUpcomingEvents })
+  useQuery(upcomingEventsOptions(getClubToday()))

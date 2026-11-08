@@ -1,6 +1,6 @@
-import hero960 from '../../../assets/images/hero-960.webp'
-import hero1920 from '../../../assets/images/hero-1920.webp'
-import { button } from '../../../shared/ui/button'
+import hero960 from '@/shared/assets/images/hero-960.webp'
+import hero1920 from '@/shared/assets/images/hero-1920.webp'
+import { button } from '@/shared/ui/button'
 
 export function HeroSection() {
   return (

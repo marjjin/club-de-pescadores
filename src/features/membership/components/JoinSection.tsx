@@ -1,6 +1,6 @@
 import { MessageCircle } from 'lucide-react'
-import { club } from '../../../shared/config/club'
-import { button } from '../../../shared/ui/button'
+import { club } from '@/shared/config/club'
+import { button } from '@/shared/ui/button'
 
 export function JoinSection() {
   return (

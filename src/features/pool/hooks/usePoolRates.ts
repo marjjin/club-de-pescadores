@@ -1,5 +1,4 @@
 import { useQuery } from '@tanstack/react-query'
-import { getPoolRates } from '../api/getPoolRates'
+import { poolRatesOptions } from '../api/queries'
 
-export const usePoolRates = () =>
-  useQuery({ queryKey: ['pool', 'rates'], queryFn: getPoolRates })
+export const usePoolRates = () => useQuery(poolRatesOptions())

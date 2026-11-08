@@ -1,5 +1,5 @@
 import { MessageCircle } from 'lucide-react'
-import { club } from '../config/club'
+import { club } from '@/shared/config/club'
 
 export function WhatsAppButton() {
   return (

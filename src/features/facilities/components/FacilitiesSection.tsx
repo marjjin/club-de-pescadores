@@ -1,5 +1,5 @@
-import { SectionHeading } from '../../../shared/ui/SectionHeading'
-import { facilities } from '../data'
+import { SectionHeading } from '@/shared/ui/SectionHeading'
+import { facilities } from '../content'
 
 export function FacilitiesSection() {
   return (
