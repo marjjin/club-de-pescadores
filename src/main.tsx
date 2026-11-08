@@ -5,6 +5,9 @@ import '@fontsource/allura/latin-400.css'
 import '@fontsource-variable/nunito-sans/index.css'
 import './app/styles/index.css'
 import { App } from './app/App'
+import { installPreloadRecovery } from './app/preloadRecovery'
+
+installPreloadRecovery()
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

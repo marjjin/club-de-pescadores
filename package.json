@@ -21,7 +21,8 @@
     "format:check": "prettier --check .",
     "check": "npm run format:check && npm run lint && npm run typecheck && npm run db:types:check && npm test && npm run build",
     "preview": "vite preview",
-    "admin:check": "node scripts/production/check-admin.mjs"
+    "admin:check": "node scripts/production/check-admin.mjs",
+    "site:check": "node scripts/production/check-site.mjs"
   },
   "dependencies": {
     "@fontsource-variable/nunito-sans": "^5.3.0",

@@ -35,6 +35,8 @@ La implementación administrativa está en `/admin` y tiene una matriz aprobada.
 
 ## Alcance de la verificación
 
+`npm run site:check` verifica el HTML y sus cabeceras, todos los módulos JS y CSS del manifiesto remoto y que los módulos inexistentes respondan 404. Ejecutarlo después de cada publicación. El HTML revalida; los recursos bajo `/assets` quedan fuera de la reescritura SPA para impedir respuestas HTML con caché inmutable en URLs de JavaScript. El arranque ofrece recuperación acotada ante errores de importación dinámica.
+
 `npm run check` prueba el código, las rutas, consultas HTTP simuladas y las migraciones y políticas en PostgreSQL aislado mediante PGlite. También comprueba que los tipos correspondan al esquema local.
 
 `npm run production:check` comprueba lectura real del esquema remoto con la clave pública; no inspecciona políticas internas, permisos elevados ni planes de consulta. Esos controles y el Security Advisor deben verificarse sobre el proyecto remoto con acceso autorizado antes de declarar la puesta en producción terminada.
