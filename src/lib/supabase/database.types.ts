@@ -70,33 +70,33 @@ export type Database = {
           title: string
           starts_at: string
           place: string
-          description: string | null
           is_published: boolean
           deleted_at: string | null
           created_at: string
           updated_at: string
+          description: string | null
         }
         Insert: {
           id?: string
           title: string
           starts_at: string
           place: string
-          description: string | null
           is_published?: boolean
           deleted_at?: string | null
           created_at?: string
           updated_at?: string
+          description?: string | null
         }
         Update: {
           id?: string
           title?: string
           starts_at?: string
           place?: string
-          description?: string | null
           is_published?: boolean
           deleted_at?: string | null
           created_at?: string
           updated_at?: string
+          description?: string | null
         }
         Relationships: []
       }
