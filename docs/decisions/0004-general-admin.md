@@ -17,7 +17,7 @@ El propietario pidió permitir cambiar su correo de acceso. Se utiliza el flujo 
 ## Consecuencias
 
 - Requiere migraciones, configuración de Auth/SMTP, despliegue de una función y creación confiable de la primera cuenta; las claves públicas existentes no alcanzan para esos pasos.
-- Los formularios actuales usan HTML semántico, `FormData` y Zod. No se agregó una dependencia de formularios para estos flujos pequeños; se conserva la posibilidad de incorporar React Hook Form cuando haya campos dinámicos o flujos más complejos.
+- Los formularios usan HTML semántico y Zod, con `FormData` en los formularios simples y estado controlado en el editor de noticias para su vista previa y validación por campo. No se agregó una dependencia de formularios para estos flujos; se conserva la posibilidad de incorporar React Hook Form cuando haya flujos más complejos.
 - Las imágenes nuevas son públicas, con archivos inmutables y políticas de escritura. Archivar una noticia no elimina su archivo; la limpieza de imágenes huérfanas requiere una operación confiable posterior.
 - La recuperación del último administrador sin dispositivo MFA corresponde al propietario del proyecto. No se implementa un acceso alternativo que eluda MFA.
 - La auditoría de base de datos es verificable localmente; los envíos reales, la configuración remota y la experiencia visual requieren verificación adicional en el entorno conectado.
