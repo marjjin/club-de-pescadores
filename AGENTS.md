@@ -1,8 +1,9 @@
 # Club de Pescadores — instrucciones de mantenimiento
 
 Leé `CLAUDE.md` para las reglas del producto y `docs/architecture.md` para el diseño actual.
-El sitio público consulta Supabase desde `api/` con tipos generados de las migraciones y validación Zod. El esquema local está en `supabase/migrations`; su aplicación remota y el despliegue se verifican por separado. Autenticación y administración todavía no están implementadas.
+El sitio público consulta Supabase desde `api/` con tipos generados de las migraciones y validación Zod. El esquema local está en `supabase/migrations`; su aplicación remota y el despliegue se verifican por separado. El panel general está implementado localmente en `/admin`, con Auth, TOTP y RPC; su activación remota se documenta en `docs/admin.md`.
 
+- La matriz de `docs/admin-panel-plan.md` fue aprobada expresamente el 8 de noviembre de 2026. No volver a solicitar la misma aprobación. No desarrollar paneles de otros perfiles sin un nuevo pedido.
 - Conservá la dirección `app → pages → features → shared/lib`. `shared` no importa lógica de funcionalidades y `lib` no importa UI.
 - Organizá cada funcionalidad en `src/features/<name>` y exponé su API pública mediante `index.ts`. No importes archivos internos de otro módulo.
 - Las páginas componen funcionalidades; los layouts públicos viven en `src/app/layout`. Un futuro panel tendrá layout propio.

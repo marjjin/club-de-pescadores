@@ -1,6 +1,6 @@
 # Club de Pescadores San Nicolás
 
-Sitio público en React y TypeScript, organizado por funcionalidades y conectado mediante consultas a Supabase. Incluye migración de contenido público, políticas RLS y configuración para el Vercel existente. La activación remota se verifica por separado del build local. Autenticación y panel administrativo todavía no están implementados.
+Sitio público en React y TypeScript, organizado por funcionalidades y conectado mediante consultas a Supabase. Incluye migración de contenido público, políticas RLS y configuración para el Vercel existente. La activación remota se verifica por separado del build local. El panel general está implementado localmente en `/admin`; su instalación remota, cuenta inicial y publicación siguen la [guía de administración](docs/admin.md).
 
 ## Desarrollo
 
@@ -41,7 +41,7 @@ La herramienta de imágenes requiere los originales `2.png`, `3.png`, `4.png`, `
 ```text
 src/app       → Arranque, rutas, providers, layout y estilos globales
 src/pages     → Composición de páginas
-src/features  → Eventos, noticias, pileta, instalaciones, hero y asociación
+src/features  → Administración, eventos, noticias, pileta, instalaciones, hero y asociación
 src/shared    → UI, utilidades, configuración pública y recursos reutilizables
 src/lib       → Integraciones e infraestructura
 ```
@@ -63,4 +63,4 @@ GitHub Actions ejecuta `npm ci`, `npm run check` y una auditoría de dependencia
 
 `vercel.json` configura las rutas SPA, CSP y demás cabeceras. El build se entrega en `dist/` y genera sitemap, robots, JSON-LD e imagen social. Las fotos y el teléfono están confirmados; el correo ficticio fue retirado. Antes de publicar hay que aplicar y verificar la migración remota, configurar las variables de Production en Vercel y revisar el sitio en navegador. Las tarifas y publicaciones deben cargarse con datos reales en Supabase.
 
-El acceso del navegador es de lectura de contenido publicado. El propietario puede gestionar contenido desde el Table Editor de Supabase. Un panel propio requiere la matriz de permisos aprobada, Auth, MFA y sus pruebas antes de habilitar escrituras.
+El cliente público solo lee contenido publicado. El panel usa otro cliente autenticado y funciones con permisos verificados, MFA y auditoría. La matriz fue aprobada. Antes de habilitarlo, aplicar las migraciones administrativas, desplegar la función de usuarios y crear la cuenta inicial según `docs/admin.md`.

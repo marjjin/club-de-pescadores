@@ -113,17 +113,10 @@ export function MobileMenu({
         </ul>
         <div
           style={delayFor(navLinks.length)}
-          className={`grid gap-3 p-4 sm:grid-cols-2 sm:px-6 ${itemMotion} ${reveal}`}
+          className={`grid p-4 sm:px-6 ${itemMotion} ${reveal}`}
         >
           <a href="/#sumate" onClick={onClose} className={button.primary}>
             Hacete socio
-          </a>
-          <a
-            href="/#contacto"
-            onClick={onClose}
-            className="flex min-h-12 items-center justify-center rounded-md border border-navy-900/20 px-6 font-bold"
-          >
-            Contactanos
           </a>
         </div>
         <a

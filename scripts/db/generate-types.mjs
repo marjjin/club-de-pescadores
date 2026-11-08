@@ -18,7 +18,29 @@ try {
     'timestamp with time zone': 'string',
     integer: 'number',
     boolean: 'boolean',
+    jsonb: 'Json',
   }
+  const functionRows = await db.query(`
+    select p.proname, p.proargnames, p.pronargdefaults,
+      array(select format_type(t, null) from unnest(p.proargtypes::oid[]) t) as args,
+      format_type(p.prorettype, null) as result
+    from pg_proc p join pg_namespace n on n.oid = p.pronamespace
+    where n.nspname = 'public' and p.prorettype <> 'trigger'::regtype
+    order by p.proname
+  `)
+  const rpcType = (name) => {
+    if (name.endsWith('[]')) return `(${rpcType(name.slice(0, -2))})[]`
+    if (name === 'void') return 'undefined'
+    if (!types[name]) throw new Error(`Unsupported RPC type: ${name}`)
+    return types[name]
+  }
+  const functions = functionRows.rows.map((row) => {
+    const args = row.args.map(
+      (type, i) =>
+        `${row.proargnames[i]}${i >= row.args.length - row.pronargdefaults ? '?' : ''}: ${rpcType(type)} | null`,
+    )
+    return `${row.proname}: { Args: ${args.length ? `{ ${args.join(';')} }` : 'Record<never, never>'}; Returns: ${rpcType(row.result)} }`
+  })
   const definitions = [...groups].map(([table, columns]) => {
     const fields = (mode) =>
       columns
@@ -39,11 +61,12 @@ try {
     `
     // Generated from the applied local PostgreSQL migrations. Do not edit manually.
     // Regenerate: npm run db:types. Compare with Supabase-generated types after remote migration.
+    export type Json = string | number | boolean | null | { [key: string]: Json | undefined } | Json[]
     export type Database = {
       public: {
         Tables: { ${definitions.join('\n')} }
         Views: Record<never, never>
-        Functions: Record<never, never>
+        Functions: { ${functions.join('\n')} }
         Enums: Record<never, never>
         CompositeTypes: Record<never, never>
       }

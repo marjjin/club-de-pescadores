@@ -10,6 +10,7 @@ export default defineConfig([
   globalIgnores(['dist', 'coverage', 'playwright-report', 'test-results']),
   {
     files: ['**/*.{ts,tsx}'],
+    ignores: ['supabase/functions/**'],
     extends: [
       js.configs.recommended,
       tseslint.configs.recommendedTypeChecked,
@@ -35,10 +36,15 @@ export default defineConfig([
     rules: { 'architecture/boundaries': 'error' },
   },
   {
-    files: ['scripts/**/*.mjs', '*.config.js'],
+    files: ['scripts/**/*.mjs', 'supabase/functions/**/*.mjs', '*.config.js'],
     extends: [js.configs.recommended],
     languageOptions: {
       globals: globals.node,
     },
+  },
+  {
+    files: ['supabase/functions/**/*.ts'],
+    extends: [js.configs.recommended],
+    languageOptions: { globals: { Deno: 'readonly' } },
   },
 ])

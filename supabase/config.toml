@@ -1,0 +1,4 @@
+[functions.admin-users]
+# The handler verifies the bearer JWT with Auth and the live permission RPC.
+# Supports projects with asymmetric signing keys instead of the legacy gateway check.
+verify_jwt = false

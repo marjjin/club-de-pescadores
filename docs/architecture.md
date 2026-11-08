@@ -91,9 +91,9 @@ Usá `@/features/news` desde otros módulos y `../api/queries` dentro del módul
 
 - Supabase es la base de datos. Su configuración, cliente compartido y tipos viven en `src/lib/supabase`. La migración inicial está probada en PostgreSQL aislado; `npm run production:check` verifica por separado la lectura de las tablas alojadas.
 - Los tipos se generan de las migraciones locales aplicadas. Compararlos con los tipos del proyecto Supabase después de migrar. Validar nuevas respuestas y formularios; la autorización efectiva debe vivir en RLS, RPC o funciones del servidor.
-- El acceso del navegador es de lectura de publicaciones; las escrituras se gestionan mediante el propietario en Supabase hasta implementar el panel. Verificar RLS, Security Advisor y planes de consulta en el proyecto remoto.
-- Aprobar primero la matriz de roles y permisos prevista en `CLAUDE.md` antes de crear tablas de administración.
-- Implementar el panel en una ruta diferida bajo `/admin`, con layout propio, para mantener su código fuera del sitio público.
+- El cliente público lee publicaciones. El panel general usa un cliente autenticado independiente y RPC con comprobación de permisos y MFA; las escrituras directas siguen revocadas. Verificar RLS, Security Advisor y planes de consulta en el proyecto remoto.
+- La matriz del panel general fue aprobada el 8 de noviembre de 2026; está en `admin-panel-plan.md`. Los paneles de otros perfiles requieren un pedido posterior.
+- El panel está en una ruta diferida bajo `/admin`, con una estructura visual propia dentro de la funcionalidad y consultas cuya caché se separa por usuario. No se carga su código en la portada.
 - El hosting confirmado es Vercel; `vercel.json` contiene rutas y cabeceras. Seguir `docs/production.md` para activar esta versión en el proyecto existente.
 
-Los formularios, autenticación y panel todavía no existen. Sus pruebas se incorporarán con esas funcionalidades. El build requiere URL de Supabase, clave pública y origen del sitio; no se permite publicar un build sin configuración.
+Los formularios administrativos, autenticación y panel están implementados localmente y cuentan con pruebas de flujos y permisos. `admin.md` describe la activación remota y sus verificaciones pendientes. El build requiere URL de Supabase, clave pública y origen del sitio; no se permite publicar un build sin configuración.

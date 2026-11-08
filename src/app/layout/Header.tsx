@@ -64,12 +64,6 @@ export function Header() {
             })}
           </ul>
         </nav>
-        <a
-          href="/#contacto"
-          className="hidden min-h-10 items-center rounded-md border border-navy-900/20 px-4 font-semibold transition-colors hover:bg-mist-50 lg:flex"
-        >
-          Contactanos
-        </a>
         <button
           ref={toggleRef}
           type="button"

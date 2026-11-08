@@ -15,6 +15,7 @@ playwright-report
 test-results
 .vercel
 supabase/.temp
+supabase/bootstrap-admin.local.sql
 *.local
 
 # Editor directories and files

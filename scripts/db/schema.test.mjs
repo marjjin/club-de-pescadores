@@ -87,7 +87,7 @@ describe.each([
 
 it('enables RLS and explicit operation policies on all exposed content tables', async () => {
   const { rows } = await db.query(
-    "select tablename, rowsecurity from pg_tables where schemaname = 'public' order by tablename",
+    "select tablename, rowsecurity from pg_tables where schemaname = 'public' and tablename in ('events','news','pool_rates') order by tablename",
   )
   expect(rows).toEqual(
     ['events', 'news', 'pool_rates'].map((tablename) => ({
@@ -103,6 +103,7 @@ it('enables RLS and explicit operation policies on all exposed content tables', 
       policies.rows
         .filter((row) => row.tablename === table)
         .map((row) => row.cmd)
+        .filter((cmd, index, commands) => commands.indexOf(cmd) === index)
         .sort(),
     ).toEqual(['DELETE', 'INSERT', 'SELECT', 'UPDATE'])
   }

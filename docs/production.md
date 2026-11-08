@@ -31,7 +31,7 @@ Las tarifas se almacenan en centavos de ARS. Por ejemplo, un importe confirmado 
 
 Las noticias requieren imagen HTTPS y texto alternativo. Para imágenes nuevas, usar almacenamiento público del club con escritura limitada al propietario y URLs estables. Los borradores y noticias con publicación futura no son visibles en la web.
 
-El panel de administración, Auth y MFA requieren una implementación separada con la matriz de permisos aprobada. Esta versión no ofrece un botón de ingreso sin destino.
+La implementación administrativa está en `/admin` y tiene una matriz aprobada. Su activación requiere pasos adicionales en Supabase y el despliegue del frontend; ver [administración](admin.md). El éxito del sitio público no certifica esos pasos.
 
 ## Alcance de la verificación
 

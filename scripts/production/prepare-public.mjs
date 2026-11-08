@@ -15,6 +15,12 @@ function collect(key) {
 }
 collect('index.html')
 collect('src/pages/home/index.ts')
+const adminChunk = manifest['src/pages/admin/index.tsx']?.file
+if (!adminChunk || initialFiles.has(adminChunk)) {
+  throw new Error(
+    'The administrative page must remain a separate lazy-loaded entry.',
+  )
+}
 let initialBytes = 0
 for (const file of initialFiles) {
   if (file.endsWith('.js'))

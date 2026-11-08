@@ -28,13 +28,13 @@ La migración `supabase/migrations/202611080001_public_content.sql` crea:
 
 Todas tienen restricciones, claves UUID, marcas `timestamptz`, actualización automática de `updated_at`, índices de consulta y RLS. Las operaciones `INSERT`, `UPDATE` y `DELETE` están denegadas para `anon` y `authenticated` tanto por privilegios como por políticas explícitas. Los borradores no son visibles.
 
-Un usuario autenticado con un claim de administrador sigue sin poder escribir desde este cliente público. No se creó un modelo de roles o panel sin aprobación. Mientras tanto el propietario gestiona contenido desde el acceso confiable del Table Editor.
+Un claim de administrador no habilita escrituras. Después de aprobar la matriz se agregaron las migraciones administrativas: las operaciones del panel usan RPC que verifican permisos vigentes y MFA, con auditoría transaccional. Las escrituras directas siguen revocadas. Ver `admin.md` para activar esta etapa.
 
 La migración está versionada y probada localmente; debe aplicarse en el proyecto Supabase mediante una cuenta autorizada. La clave pública permite consultar contenido, no crear tablas. La guía de [producción](production.md) detalla la activación y el registro de la migración.
 
 ## Cliente y validación
 
-`src/lib/supabase/connection.ts` crea de forma diferida una única instancia tipada con `Database`. El cliente público no persiste sesiones, no renueva tokens ni procesa callbacks de autenticación. Un futuro cliente privado requiere diseño y pruebas de Auth y MFA.
+`src/lib/supabase/connection.ts` crea de forma diferida una única instancia tipada con `Database`. El cliente público no persiste sesiones, no renueva tokens ni procesa callbacks de autenticación. El cliente de `admin-client.ts`, cargado solo con `/admin`, mantiene una sesión independiente y procesa las invitaciones y recuperación de contraseña. Las funciones administrativas exigen cuenta activa, permisos y AAL2.
 
 Las consultas seleccionan columnas explícitas, filtran y ordenan en Postgres y aplican un límite máximo de 50. Los archivos de noticias y eventos usan páginas de doce filas con cursor por fecha y UUID. Los cursores y respuestas externas se validan con Zod antes de mostrarlos. El `AbortSignal` de la consulta se combina con un timeout de doce segundos.
 
