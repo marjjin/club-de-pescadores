@@ -17,6 +17,7 @@ export const eventRows = [
     title: 'Evento de prueba',
     starts_at: '2026-11-15T11:00:00+00:00',
     place: 'Lugar de prueba',
+    description: null,
   },
 ]
 export const newsRows = [

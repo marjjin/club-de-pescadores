@@ -28,6 +28,7 @@ export const eventSchema = z.object({
   title: z.string(),
   starts_at: z.string(),
   place: z.string(),
+  description: z.string().nullable(),
 })
 export const rateSchema = z.object({
   ...content,
@@ -129,6 +130,7 @@ export const contentInputs = {
     title: text(180),
     starts_at: instant,
     place: text(200),
+    description: text(600).nullable(),
     is_published: z.boolean(),
   }),
   pool_rates: z

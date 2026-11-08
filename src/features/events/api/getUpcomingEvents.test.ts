@@ -18,7 +18,9 @@ describe('remote upcoming events', () => {
     )
     expect(url.searchParams.get('limit')).toBe('1')
     expect(url.searchParams.get('order')).toBe('starts_at.asc,id.asc')
-    expect(url.searchParams.get('select')).toBe('id,title,starts_at,place')
+    expect(url.searchParams.get('select')).toBe(
+      'id,title,starts_at,place,description',
+    )
   })
   it('includes the tie breaker in cursor requests and cache parameters', async () => {
     const first = await getEventsPage({ from: '2026-11-15', limit: 1 })

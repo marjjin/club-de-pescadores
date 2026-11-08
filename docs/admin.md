@@ -17,6 +17,12 @@ La versión local no crea automáticamente tablas en Supabase, no publica el fro
 
 Los filtros y cursores se procesan en Postgres. Cada página muestra veinte registros y solicita uno adicional para determinar si hay otra página. Las búsquedas de contenido usan texto completo en español; usuarios y catálogos usan prefijo. No se descargan tablas completas.
 
+Los listados de noticias, eventos y tarifas usan pestañas de estado y búsqueda explícita mediante «Buscar» o Enter. El estado vacío ofrece una acción para crear contenido; las búsquedas sin resultados permiten limpiar filtros y los errores de conexión permiten reintentar. La paginación aparece cuando hay otra página. Las noticias muestran imagen, extracto y estado; las programadas indican su fecha de publicación.
+
+El editor de noticias separa texto, imagen y publicación. La portada se puede seleccionar o arrastrar; el enlace HTTPS es una alternativa desplegable. El título y el texto muestran sus límites y los errores se indican en cada campo. La vista previa se actualiza al escribir y se puede ampliar sin guardar. Las opciones distinguen borrador, publicación inmediata y programación con fecha futura en hora de Argentina. Guardar un borrador completo no exige elegir una fecha; editar una noticia publicada conserva su fecha original. Los botones de salida confirman el descarte de cambios y se solicita confirmación antes de publicar, programar o retirar una publicación.
+
+El editor de eventos sigue el mismo esquema: día y hora por separado en hora de Argentina, aviso si la fecha ya pasó, descripción opcional de hasta 600 caracteres, vista previa con el formato de la agenda pública y opciones de borrador o publicación. La descripción requiere la migración `202611080009_event_description.sql`, que debe aplicarse antes de desplegar el frontend porque la agenda pública la solicita.
+
 ## Instalar el esquema
 
 La migración pública `202611080001_public_content.sql` ya se aplicó durante la activación del sitio. **No volver a ejecutarla ni usar `db reset` en producción.** Si se aplicó mediante SQL Editor, registrar su versión en el historial antes de usar `supabase db push`.

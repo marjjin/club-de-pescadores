@@ -8,4 +8,5 @@ export type ClubEvent = {
   startsOn: string
   startsAt: string
   place: string
+  description: string | null
 }

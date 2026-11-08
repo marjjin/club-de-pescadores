@@ -224,22 +224,15 @@ it('saves event drafts with Argentina time and no publication side effects', asy
   const close = vi.fn()
   vi.mocked(data.saveContent).mockResolvedValue(undefined)
   mount(<ContentEditor kind="events" row={null} onClose={close} />)
-  fireEvent.change(screen.getByLabelText('Título'), {
-    target: { value: 'Encuentro de prueba' },
-  })
-  fireEvent.change(screen.getByLabelText('Lugar'), {
-    target: { value: 'Lugar de prueba' },
-  })
-  fireEvent.change(screen.getByLabelText('Fecha y hora (Argentina)'), {
-    target: { value: '2030-01-01T15:30' },
-  })
-  fireEvent.click(screen.getByRole('button', { name: 'Guardar cambios' }))
+  fillEvent('Encuentro de prueba', 'Lugar de prueba')
+  fireEvent.click(screen.getByRole('button', { name: 'Guardar borrador' }))
   await waitFor(() =>
     expect(data.saveContent).toHaveBeenCalledWith(
       'events',
       {
         title: 'Encuentro de prueba',
         place: 'Lugar de prueba',
+        description: null,
         starts_at: '2030-01-01T18:30:00.000Z',
         is_published: false,
       },
@@ -252,17 +245,31 @@ it('saves event drafts with Argentina time and no publication side effects', asy
 it('does not publish when confirmation is canceled', () => {
   const confirm = vi.spyOn(window, 'confirm').mockReturnValue(false)
   mount(<ContentEditor kind="events" row={null} onClose={() => {}} />)
-  fireEvent.change(screen.getByLabelText('Título'), {
-    target: { value: 'Prueba' },
-  })
-  fireEvent.change(screen.getByLabelText('Lugar'), {
-    target: { value: 'Prueba' },
-  })
-  fireEvent.change(screen.getByLabelText('Fecha y hora (Argentina)'), {
-    target: { value: '2030-01-01T15:30' },
-  })
-  fireEvent.click(screen.getByLabelText('Publicar en el sitio'))
-  fireEvent.click(screen.getByRole('button', { name: 'Guardar cambios' }))
+  fillEvent('Prueba', 'Prueba')
+  fireEvent.click(screen.getByLabelText(/Publicar en el sitio/))
+  fireEvent.click(screen.getByRole('button', { name: 'Publicar evento' }))
   expect(confirm).toHaveBeenCalled()
   expect(data.saveContent).not.toHaveBeenCalled()
 })
+it('flags missing event fields and focuses the first one', () => {
+  mount(<ContentEditor kind="events" row={null} onClose={() => {}} />)
+  fireEvent.click(screen.getByRole('button', { name: 'Guardar borrador' }))
+  expect(screen.getByText('Escribí un nombre para el evento.')).toBeTruthy()
+  expect(screen.getByText('Elegí el día del evento.')).toBeTruthy()
+  expect(document.activeElement).toBe(screen.getByLabelText(/^Título/))
+  expect(data.saveContent).not.toHaveBeenCalled()
+})
+function fillEvent(title: string, place: string) {
+  fireEvent.change(screen.getByLabelText(/^Título/), {
+    target: { value: title },
+  })
+  fireEvent.change(screen.getByLabelText(/^Lugar/), {
+    target: { value: place },
+  })
+  fireEvent.change(screen.getByLabelText(/^Día/), {
+    target: { value: '2030-01-01' },
+  })
+  fireEvent.change(screen.getByLabelText(/^Hora de inicio/), {
+    target: { value: '15:30' },
+  })
+}

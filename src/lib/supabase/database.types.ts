@@ -70,6 +70,7 @@ export type Database = {
           title: string
           starts_at: string
           place: string
+          description: string | null
           is_published: boolean
           deleted_at: string | null
           created_at: string
@@ -80,6 +81,7 @@ export type Database = {
           title: string
           starts_at: string
           place: string
+          description: string | null
           is_published?: boolean
           deleted_at?: string | null
           created_at?: string
@@ -90,6 +92,7 @@ export type Database = {
           title?: string
           starts_at?: string
           place?: string
+          description?: string | null
           is_published?: boolean
           deleted_at?: string | null
           created_at?: string

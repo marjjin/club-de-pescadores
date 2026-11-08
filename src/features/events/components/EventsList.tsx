@@ -33,6 +33,11 @@ export function EventsList({ items }: { items: ClubEvent[] }) {
                 <Clock aria-hidden="true" className="size-4 shrink-0" />
                 {event.startsAt} hs
               </p>
+              {event.description && (
+                <p className="mt-2 line-clamp-3 text-sm leading-5 whitespace-pre-line">
+                  {event.description}
+                </p>
+              )}
             </div>
           </li>
         )

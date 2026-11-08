@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react'
+import { useState } from 'react'
 import { contentConfig, formContent, initialField } from '../content-fields'
 import type { Content, ContentKind } from '../schemas/admin'
 import { useContentActions } from '../hooks/useAdminActions'
@@ -11,25 +11,32 @@ import {
   secondaryClass,
   SectionHeading,
 } from './ui'
-import { ImageUpload } from './ImageUpload'
+import { NewsEditor } from './news-editor/NewsEditor'
+import { EventEditor } from './event-editor/EventEditor'
 
-export function ContentEditor({
-  kind,
-  row,
-  onClose,
-}: {
-  kind: ContentKind
-  row: Content | null
-  onClose: () => void
-}) {
+type Props = { kind: ContentKind; row: Content | null; onClose: () => void }
+
+export function ContentEditor(props: Props) {
+  if (props.kind === 'news')
+    return (
+      <NewsEditor
+        row={props.row && 'excerpt' in props.row ? props.row : null}
+        onClose={props.onClose}
+      />
+    )
+  if (props.kind === 'events')
+    return (
+      <EventEditor
+        row={props.row && 'starts_at' in props.row ? props.row : null}
+        onClose={props.onClose}
+      />
+    )
+  return <GeneralContentEditor {...props} />
+}
+
+function GeneralContentEditor({ kind, row, onClose }: Props) {
   const { save } = useContentActions()
-  const [imageBusy, setImageBusy] = useState(false)
   const [error, setError] = useState<Error | null>(null)
-  const [preview, setPreview] = useState<Record<
-    string,
-    string | number | boolean | null
-  > | null>(null)
-  const formRef = useRef<HTMLFormElement>(null)
   const config = contentConfig[kind]
   return (
     <>
@@ -44,7 +51,6 @@ export function ContentEditor({
       />
       <Panel>
         <form
-          ref={formRef}
           className="grid gap-5"
           onSubmit={(event) => {
             event.preventDefault()
@@ -52,9 +58,7 @@ export function ContentEditor({
               const input = formContent(kind, new FormData(event.currentTarget))
               if (
                 input.is_published &&
-                !window.confirm(
-                  '¿Confirmás la publicación de este contenido? Si la noticia tiene una fecha futura, quedará programada.',
-                )
+                !window.confirm('¿Confirmás la publicación de este contenido?')
               )
                 return
               setError(null)
@@ -75,11 +79,7 @@ export function ContentEditor({
             {config.fields.map((field) => (
               <div
                 key={field.name}
-                className={
-                  field.type === 'textarea' || field.name === 'image_url'
-                    ? 'md:col-span-2'
-                    : ''
-                }
+                className={field.type === 'textarea' ? 'md:col-span-2' : ''}
               >
                 <Field
                   label={field.label + (field.optional ? ' (opcional)' : '')}
@@ -107,16 +107,6 @@ export function ContentEditor({
                     />
                   )}
                 </Field>
-                {field.name === 'image_url' && (
-                  <ImageUpload
-                    onBusyChange={setImageBusy}
-                    onUploaded={(url) => {
-                      const input =
-                        formRef.current?.elements.namedItem('image_url')
-                      if (input instanceof HTMLInputElement) input.value = url
-                    }}
-                  />
-                )}
               </div>
             ))}
           </div>
@@ -131,36 +121,9 @@ export function ContentEditor({
           </label>
           <Feedback error={error ?? save.error} />
           <div className="flex flex-wrap gap-3">
-            <button
-              className={primaryClass}
-              disabled={save.isPending || imageBusy}
-            >
+            <button className={primaryClass} disabled={save.isPending}>
               {save.isPending ? 'Guardando…' : 'Guardar cambios'}
             </button>
-            {kind === 'news' && (
-              <button
-                type="button"
-                className={secondaryClass}
-                onClick={() => {
-                  if (formRef.current?.reportValidity()) {
-                    try {
-                      setPreview(
-                        formContent(kind, new FormData(formRef.current)),
-                      )
-                      setError(null)
-                    } catch {
-                      setError(
-                        new Error(
-                          'Revisá los datos antes de generar la vista previa.',
-                        ),
-                      )
-                    }
-                  }
-                }}
-              >
-                Vista previa
-              </button>
-            )}
             <button
               type="button"
               className={secondaryClass}
@@ -172,27 +135,6 @@ export function ContentEditor({
           </div>
         </form>
       </Panel>
-      {preview && (
-        <section className="mt-6" aria-label="Vista previa de noticia">
-          <Panel>
-            <p className="mb-4 text-xs font-bold tracking-wider text-ink-600 uppercase">
-              Vista previa · No publicada
-            </p>
-            {typeof preview.image_url === 'string' &&
-              preview.image_url.startsWith('https://') && (
-                <img
-                  src={preview.image_url}
-                  alt={String(preview.image_alt)}
-                  className="mb-5 max-h-80 w-full rounded-lg object-cover"
-                />
-              )}
-            <h2 className="text-2xl font-bold">{preview.title}</h2>
-            <p className="mt-3 whitespace-pre-wrap text-ink-600">
-              {preview.excerpt}
-            </p>
-          </Panel>
-        </section>
-      )}
     </>
   )
 }
