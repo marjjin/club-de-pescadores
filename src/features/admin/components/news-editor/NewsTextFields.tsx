@@ -28,7 +28,8 @@ export function NewsTextFields({
         <div>
           <h2 className="text-base font-extrabold">Contenido de la noticia</h2>
           <p className="mt-0.5 text-xs text-ink-600">
-            Contá la novedad con tus palabras.
+            Contá la novedad o describí el estado del muelle para quienes van a
+            pescar.
           </p>
         </div>
       </div>
@@ -100,7 +101,10 @@ export function NewsTextFields({
             id={`${id}-excerpt-help`}
             className="mt-2 flex justify-between gap-3 text-xs text-ink-600"
           >
-            <span>Usá párrafos cortos y revisá las fechas.</span>
+            <span>
+              Para el muelle, indicá cuándo se tomó la foto y qué condiciones se
+              observaron.
+            </span>
             <span className="shrink-0 tabular-nums">
               {values.excerpt.length}/1200
             </span>

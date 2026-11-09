@@ -47,7 +47,9 @@ export function NewsEditor({
               {row ? 'Editar noticia' : 'Crear noticia'}
             </h1>
             <p className="mt-3 max-w-xl text-sm leading-6 text-ink-600">
-              Prepará la novedad, elegí una imagen y decidí cuándo compartirla.
+              Publicá fotos y condiciones del muelle, o cualquier novedad del
+              club. La altura del río se actualiza en su propia sección del
+              panel.
             </p>
           </div>
           <button
@@ -60,13 +62,13 @@ export function NewsEditor({
           </button>
         </div>
       </header>
-      <form noValidate onSubmit={editor.submit}>
-        <fieldset disabled={save.isPending}>
+      <form noValidate onSubmit={editor.submit} className="min-w-0">
+        <fieldset disabled={save.isPending} className="min-w-0">
           <legend className="sr-only">
             Editar contenido y publicación de la noticia
           </legend>
-          <div className="grid items-start gap-6 xl:grid-cols-[minmax(0,1fr)_20rem]">
-            <div className="grid gap-6">
+          <div className="grid min-w-0 items-start gap-6 xl:grid-cols-[minmax(0,1fr)_minmax(0,20rem)]">
+            <div className="grid min-w-0 gap-6">
               <NewsTextFields
                 values={values}
                 errors={errors}
@@ -80,7 +82,7 @@ export function NewsEditor({
                 onBusyChange={editor.setImageBusy}
               />
             </div>
-            <aside className="grid gap-5 xl:sticky xl:top-6">
+            <aside className="grid min-w-0 gap-5 xl:sticky xl:top-6">
               <NewsPublication
                 values={values}
                 errors={errors}

@@ -5,6 +5,9 @@ import { createTestDatabase } from './schema.mjs'
 let db
 beforeAll(async () => {
   db = await createTestDatabase()
+  // Use the club calendar for fixtures too, including when UTC is already the next day.
+  const clubDateSql =
+    "(now() at time zone 'America/Argentina/Buenos_Aires')::date"
   await db.exec(`
     insert into public.events (title, starts_at, place, is_published, deleted_at) values
       ('Visible', now() + interval '1 day', 'Test', true, null),
@@ -17,10 +20,10 @@ beforeAll(async () => {
       ('Deleted', 'Test', 'https://example.com/image.webp', 'Test', now(), true, now());
     insert into public.pool_rates (season, period, family_price_cents, individual_price_cents,
       family_description, valid_from, valid_until, is_published, deleted_at) values
-      ('Test', 'Visible', 10000, 5000, 'Test', current_date, null, true, null),
-      ('Test', 'Draft', 10000, 5000, 'Test', current_date, null, false, null),
-      ('Test', 'Expired', 10000, 5000, 'Test', current_date - 2, current_date - 1, true, null),
-      ('Test', 'Deleted', 10000, 5000, 'Test', current_date, null, true, now());
+      ('Test', 'Visible', 10000, 5000, 'Test', ${clubDateSql}, null, true, null),
+      ('Test', 'Draft', 10000, 5000, 'Test', ${clubDateSql}, null, false, null),
+      ('Test', 'Expired', 10000, 5000, 'Test', ${clubDateSql} - 2, ${clubDateSql} - 1, true, null),
+      ('Test', 'Deleted', 10000, 5000, 'Test', ${clubDateSql}, null, true, now());
   `)
 }, 30_000)
 afterAll(async () => {

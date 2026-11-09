@@ -13,6 +13,7 @@ export async function getPoolRates({
 }: ListRequest = {}): Promise<PoolRate[]> {
   signal?.throwIfAborted()
   const pageSize = getPageSize(limit)
+  const today = getClubToday()
   const { data } = await getSupabase()
     .from('pool_rates')
     .select(
@@ -20,7 +21,8 @@ export async function getPoolRates({
     )
     .eq('is_published', true)
     .is('deleted_at', null)
-    .or(`valid_until.is.null,valid_until.gte.${getClubToday()}`)
+    .lte('valid_from', today)
+    .or(`valid_until.is.null,valid_until.gte.${today}`)
     .order('valid_from')
     .order('id')
     .limit(pageSize)

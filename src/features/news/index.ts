@@ -1,4 +1,6 @@
 export { NewsSection } from './components/NewsSection'
 export { NewsArchive } from './components/NewsArchive'
+export { NewsArticle } from './components/NewsArticle'
+export { summarizeNews } from './summary'
 export { latestNewsOptions, newsKeys } from './api/queries'
 export type { NewsItem } from './types'

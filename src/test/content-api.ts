@@ -63,9 +63,11 @@ export function mockContentApi() {
       const url = requestUrl(input)
       const data = url.pathname.endsWith('/news')
         ? newsRows
-        : url.pathname.endsWith('/events')
-          ? eventRows
-          : rateRows
+        : url.pathname.endsWith('/river_levels')
+          ? []
+          : url.pathname.endsWith('/events')
+            ? eventRows
+            : rateRows
       return Promise.resolve(
         new Response(JSON.stringify(data), {
           headers: { 'Content-Type': 'application/json' },

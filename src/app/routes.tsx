@@ -6,6 +6,7 @@ import { PageLoading } from './layout/PageLoading'
 const HomePage = lazy(() => import('@/pages/home'))
 const NotFoundPage = lazy(() => import('@/pages/not-found'))
 const NewsPage = lazy(() => import('@/pages/news'))
+const NewsDetailPage = lazy(() => import('@/pages/news-detail'))
 const EventsPage = lazy(() => import('@/pages/events'))
 const AdminPage = lazy(() => import('@/pages/admin'))
 
@@ -17,6 +18,7 @@ export function AppRoutes() {
         <Route element={<PublicLayout />}>
           <Route index element={<HomePage />} />
           <Route path="noticias" element={<NewsPage />} />
+          <Route path="noticias/:id" element={<NewsDetailPage />} />
           <Route path="eventos" element={<EventsPage />} />
           <Route path="*" element={<NotFoundPage />} />
         </Route>

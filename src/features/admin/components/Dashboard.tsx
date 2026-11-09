@@ -1,6 +1,7 @@
 import { Link } from 'react-router'
 import { useDashboard } from '../hooks/useAdminData'
 import { Feedback, Loading, Panel, SectionHeading } from './ui'
+import { DashboardContentLinks } from './DashboardContentLinks'
 
 export function Dashboard({ userId }: { userId: string }) {
   const query = useDashboard(userId)
@@ -10,6 +11,7 @@ export function Dashboard({ userId }: { userId: string }) {
         title="Resumen del club"
         description="Contenido y accesos del equipo, en un solo lugar."
       />
+      <DashboardContentLinks />
       <Feedback error={query.error} />
       {query.isPending ? (
         <Loading />

@@ -25,9 +25,9 @@ export function EventPublication({
   return (
     <section
       aria-label="Opciones de publicación"
-      className="rounded-2xl border border-navy-900/10 bg-white p-5 shadow-sm"
+      className="min-w-0 rounded-2xl border border-navy-900/10 bg-white p-5 shadow-sm"
     >
-      <fieldset>
+      <fieldset className="min-w-0">
         <legend className="mb-4 text-base font-extrabold">Publicación</legend>
         <div className="grid gap-2.5">
           {options.map(({ value, label, description, icon: Icon }) => (

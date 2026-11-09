@@ -10,6 +10,7 @@ import {
   UserRound,
   LogOut,
   ArrowUpRight,
+  Ruler,
 } from 'lucide-react'
 import logo from '@/shared/assets/images/logo-192.webp'
 import { useAuthActions } from '../hooks/useAdminActions'
@@ -19,6 +20,8 @@ import { RolesSection } from './RolesSection'
 import { UsersSection } from './UsersSection'
 import { AuditSection } from './AuditSection'
 import { AccountSection } from './AccountSection'
+import { RiverSection } from './river/RiverSection'
+import { NewNewsRoute } from './news-editor/NewNewsRoute'
 import { Feedback, SectionHeading } from './ui'
 
 const links = [
@@ -26,6 +29,7 @@ const links = [
   { path: '/admin/noticias', label: 'Noticias', icon: Newspaper },
   { path: '/admin/eventos', label: 'Eventos', icon: CalendarDays },
   { path: '/admin/tarifas', label: 'Tarifas de pileta', icon: Waves },
+  { path: '/admin/rio', label: 'Altura del río', icon: Ruler },
   { path: '/admin/usuarios', label: 'Usuarios', icon: Users },
   { path: '/admin/roles', label: 'Roles y permisos', icon: ShieldCheck },
   { path: '/admin/actividad', label: 'Actividad', icon: History },
@@ -40,7 +44,7 @@ export function AdminWorkspace({
 }) {
   const { logout } = useAuthActions()
   return (
-    <div className="min-h-dvh bg-mist-50 lg:grid lg:grid-cols-[16rem_1fr]">
+    <div className="min-h-dvh bg-mist-50 lg:grid lg:grid-cols-[16rem_minmax(0,1fr)]">
       <a
         href="#admin-content"
         className="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-50 focus:rounded focus:bg-sun-400 focus:p-3"
@@ -104,11 +108,12 @@ export function AdminWorkspace({
         <main
           id="admin-content"
           tabIndex={-1}
-          className="mx-auto max-w-7xl p-5 sm:p-7 lg:p-9"
+          className="mx-auto w-full min-w-0 max-w-7xl p-5 sm:p-7 lg:p-9"
         >
           <Feedback error={logout.error} />
           <Routes>
             <Route index element={<Dashboard userId={userId} />} />
+            <Route path="noticias/nueva" element={<NewNewsRoute />} />
             <Route
               path="noticias"
               element={
@@ -128,6 +133,7 @@ export function AdminWorkspace({
               }
             />
             <Route path="usuarios" element={<UsersSection userId={userId} />} />
+            <Route path="rio" element={<RiverSection userId={userId} />} />
             <Route path="roles" element={<RolesSection userId={userId} />} />
             <Route
               path="actividad"

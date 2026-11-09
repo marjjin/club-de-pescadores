@@ -13,11 +13,11 @@ export const contentListCopy: Record<
 > = {
   news: {
     description:
-      'Compartí las novedades del club. Prepará borradores y elegí cuándo publicarlos.',
+      'Publicá fotos y condiciones del muelle, avisos y novedades del club.',
     noun: 'noticias',
     emptyTitle: 'Tu próxima noticia empieza acá',
     emptyDescription:
-      'Compartí una novedad, un anuncio o una historia del club. Podés guardarla como borrador y publicarla cuando esté lista.',
+      'Subí una foto del muelle y contá las condiciones para pescar, o compartí otra novedad del club. Podés preparar un borrador antes de publicar.',
     publishedLabel: 'Publicadas',
     publicPath: '/noticias',
   },

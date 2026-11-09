@@ -1,12 +1,12 @@
 import { z } from '@/shared/lib/validation'
 import { getSupabase } from '@/lib/supabase/connection'
 import { requestSignal } from '@/lib/supabase/request'
-import { getClubToday } from '@/shared/lib/dates'
 import { getPageSize } from '@/shared/lib/pagination'
 import type { ListRequest, ListPage } from '@/shared/lib/pagination'
 import { newsCursorSchema, newsRowSchema } from '../schemas/news'
 import type { NewsCursor } from '../schemas/news'
 import type { NewsItem } from '../types'
+import { mapNewsItem } from './mapNewsItem'
 
 type Request = ListRequest & { cursor?: NewsCursor | undefined }
 
@@ -36,14 +36,7 @@ export async function getNewsPage({
   const rows = z.array(newsRowSchema).max(pageSize).parse(data)
   const last = rows.at(-1)
   return {
-    items: rows.map((row) => ({
-      id: row.id,
-      title: row.title,
-      excerpt: row.excerpt,
-      publishedOn: getClubToday(new Date(row.published_at)),
-      imageUrl: row.image_url,
-      imageAlt: row.image_alt,
-    })),
+    items: rows.map(mapNewsItem),
     nextCursor:
       rows.length === pageSize && last
         ? { publishedAt: last.published_at, id: last.id }

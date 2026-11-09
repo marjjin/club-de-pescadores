@@ -56,12 +56,12 @@ export function EventEditor({
           publicarla.
         </p>
       </header>
-      <form noValidate onSubmit={submit}>
-        <fieldset disabled={save.isPending}>
+      <form noValidate onSubmit={submit} className="min-w-0">
+        <fieldset disabled={save.isPending} className="min-w-0">
           <legend className="sr-only">Datos y publicación del evento</legend>
-          <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_20rem]">
+          <div className="grid min-w-0 items-start gap-6 xl:grid-cols-[minmax(0,1fr)_minmax(0,20rem)]">
             <EventFields values={values} errors={errors} onChange={change} />
-            <aside className="grid gap-5 lg:sticky lg:top-6">
+            <aside className="grid min-w-0 gap-5 xl:sticky xl:top-6">
               <EventPublication
                 published={values.is_published}
                 onChange={(published) => change('is_published', published)}

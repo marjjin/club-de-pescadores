@@ -1,62 +1,110 @@
-import { useState } from 'react'
-import { formText } from '../form-utils'
-import { useAuthActions } from '../hooks/useAdminActions'
-import { Feedback, Field, inputClass, primaryClass } from './ui'
+import { Check, Circle, LoaderCircle, Save } from 'lucide-react'
+import { usePasswordForm } from '../hooks/usePasswordForm'
+import { PasswordField } from './account/PasswordField'
+import { Feedback, primaryClass, secondaryClass } from './ui'
 
 export function PasswordForm({ onSaved }: { onSaved?: () => void }) {
-  const { password } = useAuthActions()
-  const [error, setError] = useState<Error | null>(null)
+  const editor = usePasswordForm(onSaved)
+  const lengthValid =
+    editor.values.password.length >= 12 && editor.values.password.length <= 128
+  const matches =
+    Boolean(editor.values.confirm) &&
+    editor.values.password === editor.values.confirm
   return (
     <form
-      className="grid gap-4"
-      onSubmit={(event) => {
-        event.preventDefault()
-        const form = new FormData(event.currentTarget)
-        const value = formText(form.get('password'))
-        if (value !== form.get('confirm')) {
-          setError(new Error('Las contraseñas no coinciden.'))
-          return
-        }
-        setError(null)
-        password.mutate(value, {
-          onSuccess: () => {
-            onSaved?.()
-          },
-        })
-      }}
+      noValidate
+      onSubmit={editor.submit}
+      aria-label="Cambiar contraseña"
+      aria-busy={editor.request.isPending}
+      className="grid min-w-0 gap-5"
     >
-      <Field
-        label="Nueva contraseña"
-        hint="Usá entre 12 y 128 caracteres, sin reutilizar contraseñas de otros sitios."
+      <fieldset
+        disabled={editor.request.isPending}
+        className="grid min-w-0 gap-5"
       >
-        <input
+        <legend className="sr-only">Nueva contraseña y confirmación</legend>
+        <PasswordField
           name="password"
-          type="password"
-          className={inputClass}
-          autoComplete="new-password"
-          minLength={12}
-          maxLength={128}
-          required
+          label="Nueva contraseña"
+          value={editor.values.password}
+          visible={editor.visible.password}
+          error={editor.errors.password}
+          announce={Boolean(editor.errors.password)}
+          onChange={(value) => editor.change('password', value)}
+          onToggle={() => editor.toggle('password')}
         />
-      </Field>
-      <Field label="Repetí la contraseña">
-        <input
+        <PasswordField
           name="confirm"
-          type="password"
-          className={inputClass}
-          autoComplete="new-password"
-          minLength={12}
-          maxLength={128}
-          required
+          label="Repetí la contraseña"
+          value={editor.values.confirm}
+          visible={editor.visible.confirm}
+          error={editor.errors.confirm}
+          announce={!editor.errors.password}
+          onChange={(value) => editor.change('confirm', value)}
+          onToggle={() => editor.toggle('confirm')}
         />
-      </Field>
+      </fieldset>
+      <ul
+        aria-label="Comprobaciones de la contraseña"
+        className="grid gap-2 rounded-xl bg-mist-50 p-4 text-xs leading-5"
+      >
+        {[
+          { valid: lengthValid, label: 'Longitud de 12 a 128 caracteres' },
+          { valid: matches, label: 'La confirmación coincide' },
+        ].map(({ valid, label }) => {
+          const Icon = valid ? Check : Circle
+          return (
+            <li
+              key={label}
+              className={`flex items-center gap-2 ${valid ? 'font-semibold text-emerald-800' : 'text-ink-600'}`}
+            >
+              <Icon size={14} aria-hidden="true" />
+              <span>
+                {label}
+                {valid && <span className="sr-only">: comprobado</span>}
+              </span>
+            </li>
+          )
+        })}
+      </ul>
       <Feedback
-        error={error ?? password.error}
-        success={password.isSuccess ? 'Contraseña actualizada.' : null}
+        error={editor.request.error}
+        success={editor.request.isSuccess ? 'Contraseña actualizada.' : null}
       />
-      <button className={primaryClass} disabled={password.isPending}>
-        {password.isPending ? 'Guardando…' : 'Guardar contraseña'}
-      </button>
+      <div className="flex flex-wrap items-center gap-3">
+        <button
+          type="submit"
+          disabled={editor.request.isPending}
+          className={primaryClass}
+        >
+          {editor.request.isPending ? (
+            <LoaderCircle
+              size={16}
+              aria-hidden="true"
+              className="motion-safe:animate-spin"
+            />
+          ) : (
+            <Save size={16} aria-hidden="true" />
+          )}
+          {editor.request.isPending ? 'Guardando…' : 'Guardar contraseña'}
+        </button>
+        {editor.dirty && (
+          <button
+            type="button"
+            onClick={(event) => {
+              const form = event.currentTarget.form
+              editor.reset()
+              form
+                ?.querySelector<HTMLInputElement>('[name="password"]')
+                ?.focus()
+            }}
+            disabled={editor.request.isPending}
+            className={secondaryClass}
+          >
+            Descartar cambios de contraseña
+          </button>
+        )}
+      </div>
     </form>
   )
 }

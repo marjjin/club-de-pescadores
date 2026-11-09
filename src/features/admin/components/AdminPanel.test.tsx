@@ -4,6 +4,7 @@ import { MemoryRouter, Route, Routes } from 'react-router'
 import { beforeEach, expect, it, vi } from 'vitest'
 import * as auth from '../api/auth'
 import * as data from '../api/data'
+import * as river from '../api/river'
 import { AdminPanel } from './AdminPanel'
 import { PasswordForm } from './PasswordForm'
 import { ContentEditor } from './ContentEditor'
@@ -31,6 +32,10 @@ vi.mock('../api/data', () => ({
   inviteUser: vi.fn(),
   saveUser: vi.fn(),
 }))
+vi.mock('../api/river', () => ({
+  getAdminRiverLevel: vi.fn(),
+  saveRiverLevel: vi.fn(),
+}))
 const session = {
   id: '10000000-0000-4000-8000-000000000010',
   email: 'root@example.test',
@@ -55,6 +60,7 @@ function mount(node = <AdminPanel />, path = '/admin') {
   return client
 }
 beforeEach(() => {
+  vi.mocked(river.getAdminRiverLevel).mockResolvedValue(null)
   vi.mocked(auth.getAdminSession).mockResolvedValue(null)
   vi.mocked(data.getDashboard).mockResolvedValue({
     news: 2,
@@ -64,6 +70,28 @@ beforeEach(() => {
     users: 1,
   })
 })
+it('opens a pier report directly in the news editor and returns to the news list', async () => {
+  vi.mocked(auth.getAdminSession).mockResolvedValue(session)
+  vi.mocked(data.listAdmin).mockResolvedValue([])
+  mount()
+  fireEvent.click(
+    await screen.findByRole('link', { name: 'Publicar noticia del muelle' }),
+  )
+  expect(
+    await screen.findByRole('heading', { level: 1, name: 'Crear noticia' }),
+  ).toBeTruthy()
+  expect(
+    screen.getByRole('textbox', { name: 'Texto de la noticia' }),
+  ).toBeTruthy()
+  expect(screen.getByText('Elegir una imagen')).toBeTruthy()
+  expect(screen.queryByLabelText('Altura en metros')).toBeNull()
+  fireEvent.click(screen.getByRole('button', { name: 'Volver a noticias' }))
+  expect(
+    await screen.findByRole('heading', { level: 1, name: 'Noticias' }),
+  ).toBeTruthy()
+  expect(data.saveContent).not.toHaveBeenCalled()
+})
+
 it('shows login without fetching administrative content for anonymous visitors', async () => {
   mount()
   expect(
@@ -73,6 +101,25 @@ it('shows login without fetching administrative content for anonymous visitors',
   expect(
     screen.queryByRole('navigation', { name: 'Administración' }),
   ).toBeNull()
+})
+it('opens the river measurement editor from the general dashboard shortcut', async () => {
+  vi.mocked(auth.getAdminSession).mockResolvedValue(session)
+  mount()
+  fireEvent.click(
+    await screen.findByRole('link', { name: 'Actualizar altura del río' }),
+  )
+  expect(
+    await screen.findByRole('heading', { level: 1, name: 'Altura del río' }),
+  ).toBeTruthy()
+  expect(await screen.findByLabelText('Altura en metros')).toBeTruthy()
+  expect(
+    screen
+      .getByRole('link', { name: 'Altura del río' })
+      .getAttribute('aria-current'),
+  ).toBe('page')
+  expect(
+    screen.getByRole('button', { name: 'Guardar sin publicar' }),
+  ).toBeTruthy()
 })
 it('requires MFA before rendering administrative data', async () => {
   vi.mocked(auth.getAdminSession).mockResolvedValue({

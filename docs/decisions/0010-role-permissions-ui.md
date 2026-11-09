@@ -1,0 +1,11 @@
+# Roles y permisos organizados por módulo
+
+El listado distingue el rol general protegido de los roles personalizados y muestra cantidad de permisos, módulos y acciones con nombres explícitos. La búsqueda es por prefijo del nombre en el servidor y conserva paginación por cursor. El contador corresponde a la página visible. Los estados de carga, error, vacío y confirmación de guardado o eliminación se presentan por separado. El rol general no ofrece edición ni eliminación; el servidor continúa rechazando la eliminación de roles asignados.
+
+El editor agrupa el catálogo recibido por Noticias, Eventos, Tarifas y Auditoría, con descripciones de las acciones y un resumen lateral. Los permisos reservados se explican, pero no son seleccionables. Los módulos y cantidades se derivan de datos reales del catálogo. Las funciones de protección y los paneles de otros perfiles mantienen el alcance aprobado.
+
+Al marcar una acción de un módulo de contenido se agrega su permiso de lectura requerido. Al quitar «Ver» se quitan las acciones dependientes del mismo módulo. Esta relación se explica dentro de cada grupo. Seleccionar o quitar todos afecta únicamente al módulo elegido y no envía el formulario. La validación comprueba nuevamente las dependencias, el catálogo y el máximo de treinta permisos antes de pedir confirmación. Se permite guardar un rol sin permisos, igual que en el servidor, con una indicación explícita del alcance vacío.
+
+El formulario valida el nombre, enfoca el primer error, protege cambios sin guardar, conserva la selección ante fallos y bloquea operaciones mientras guarda o falta el catálogo. La confirmación de guardado recuerda que los cambios afectan a todas las cuentas del rol. Se mantienen las RPC, versiones, permisos, MFA y auditoría existentes; no requiere migración ni dependencias nuevas.
+
+Usuarios y roles comparten la barra de búsqueda y el estado visual de carga de catálogos. Se prueban agrupación, permisos protegidos, dependencias, acciones por módulo sin envío accidental, creación sin permisos, edición con versión, errores y reintentos, protección al salir, guardado único, búsqueda y eliminación confirmada. La revisión visual se verifica por separado de las pruebas DOM.

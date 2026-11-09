@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { rateRows, mockResponse, requestUrl } from '@/test/content-api'
 import { getPoolRates } from './getPoolRates'
+import { getClubToday } from '@/shared/lib/dates'
 
 beforeEach(() => mockResponse(rateRows))
 describe('remote pool rates', () => {
@@ -15,6 +16,7 @@ describe('remote pool rates', () => {
     })
     const url = requestUrl(vi.mocked(fetch).mock.calls[0]?.[0])
     expect(url.searchParams.get('limit')).toBe('1')
+    expect(url.searchParams.get('valid_from')).toBe(`lte.${getClubToday()}`)
     expect(url.searchParams.get('or')).toContain('valid_until.gte.')
     expect(url.searchParams.get('select')).not.toContain('*')
   })

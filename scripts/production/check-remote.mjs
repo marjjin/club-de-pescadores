@@ -10,6 +10,7 @@ const client = createClient(config.url, config.publishableKey, {
   },
 })
 const columns = {
+  river_levels: 'id,height_cm,measured_at,station,source',
   events: 'id,title,starts_at,place',
   news: 'id,title,excerpt,published_at,image_url,image_alt',
   pool_rates:

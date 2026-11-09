@@ -193,6 +193,42 @@ export type Database = {
         }
         Relationships: []
       }
+      river_levels: {
+        Row: {
+          id: number
+          height_cm: number
+          measured_at: string
+          station: string
+          source: string
+          note: string | null
+          is_published: boolean
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: number
+          height_cm: number
+          measured_at: string
+          station: string
+          source: string
+          note?: string | null
+          is_published?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: number
+          height_cm?: number
+          measured_at?: string
+          station?: string
+          source?: string
+          note?: string | null
+          is_published?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       role_permissions: {
         Row: { role_id: string; permission_id: string }
         Insert: { role_id: string; permission_id: string }
@@ -248,6 +284,7 @@ export type Database = {
         Args: { p_id: string | null; p_version: string | null }
         Returns: undefined
       }
+      admin_get_river_level: { Args: Record<never, never>; Returns: Json }
       admin_invitation_target: {
         Args: { p_email: string | null; p_roles: string[] | null }
         Returns: Json
@@ -270,6 +307,10 @@ export type Database = {
           p_id?: string | null
           p_version?: string | null
         }
+        Returns: Json
+      }
+      admin_save_river_level: {
+        Args: { p_data: Json | null; p_version?: string | null }
         Returns: Json
       }
       admin_save_role: {

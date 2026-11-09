@@ -3,6 +3,7 @@ import { Outlet, useLocation } from 'react-router'
 import { Footer } from './Footer'
 import { Header } from './Header'
 import { WhatsAppButton } from './WhatsAppButton'
+import { RiverLevelBar } from '@/features/river'
 
 export function PublicLayout() {
   const { pathname, hash } = useLocation()
@@ -10,6 +11,7 @@ export function PublicLayout() {
   useEffect(() => {
     // The target exists only after the lazy page has mounted.
     if (hash) document.getElementById(hash.slice(1))?.scrollIntoView()
+    else window.scrollTo({ top: 0, left: 0, behavior: 'instant' })
   }, [pathname, hash])
 
   return (
@@ -22,6 +24,7 @@ export function PublicLayout() {
       </a>
       <Header key={pathname} />
       <main id="contenido" tabIndex={-1}>
+        <RiverLevelBar />
         <Outlet />
       </main>
       <Footer />

@@ -11,6 +11,16 @@ const checks = [
   ['usuarios', '/rest/v1/admin_accounts?select=id&limit=1', {}],
   ['roles', '/rest/v1/roles?select=id&limit=1', {}],
   ['auditoría', '/rest/v1/audit_logs?select=id&limit=1', {}],
+  [
+    'lectura administrativa del río',
+    '/rest/v1/rpc/admin_get_river_level',
+    { method: 'POST', body: '{}' },
+  ],
+  [
+    'actualización administrativa del río',
+    '/rest/v1/rpc/admin_save_river_level',
+    { method: 'POST', body: JSON.stringify({ p_data: {}, p_version: null }) },
+  ],
 ]
 let failed = false
 for (const [label, path, options] of checks) {

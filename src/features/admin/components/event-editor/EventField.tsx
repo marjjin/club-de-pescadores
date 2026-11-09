@@ -20,7 +20,7 @@ export function EventField({
   children,
 }: Props) {
   return (
-    <div>
+    <div className="min-w-0">
       <label htmlFor={id} className="mb-2 block text-sm font-bold">
         {label}{' '}
         {optional ? (
@@ -35,7 +35,7 @@ export function EventField({
       {help && (
         <div
           id={`${id}-help`}
-          className="mt-2 flex justify-between gap-3 text-xs text-ink-600"
+          className="mt-2 flex min-w-0 justify-between gap-3 text-xs wrap-anywhere text-ink-600"
         >
           {help}
         </div>

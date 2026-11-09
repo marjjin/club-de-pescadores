@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react'
 
 export const inputClass =
-  'w-full rounded-lg border border-navy-900/20 bg-white px-3 py-2.5 text-sm focus:border-river-600 disabled:bg-mist-50'
+  'w-full min-w-0 max-w-full rounded-lg border border-navy-900/20 bg-white px-3 py-2.5 text-sm focus:border-river-600 disabled:bg-mist-50'
 export const primaryClass =
   'inline-flex min-h-11 items-center justify-center gap-2 rounded-lg bg-navy-900 px-4 py-2 text-sm font-bold text-white hover:bg-navy-800 disabled:cursor-wait disabled:opacity-50'
 export const secondaryClass =

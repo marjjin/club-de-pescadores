@@ -1,19 +1,12 @@
-import { formText } from '../form-utils'
-import { useState } from 'react'
-import { useAdminList } from '../hooks/useAdminData'
-import { useUserActions } from '../hooks/useAdminActions'
-import type { Account, Role } from '../schemas/admin'
-import {
-  Feedback,
-  Field,
-  inputClass,
-  Loading,
-  Pagination,
-  Panel,
-  primaryClass,
-  secondaryClass,
-  SectionHeading,
-} from './ui'
+import { useEffect, useRef } from 'react'
+import { ArrowLeft, LoaderCircle, Save, Send } from 'lucide-react'
+import type { Account } from '../schemas/admin'
+import { useUserEditor } from '../hooks/useUserEditor'
+import { Feedback, primaryClass, secondaryClass } from './ui'
+import { RolePicker } from './user-editor/RolePicker'
+import { UserAccessFields } from './user-editor/UserAccessFields'
+import { UserAccessSummary } from './user-editor/UserAccessSummary'
+import { UserAccessSuccess } from './user-editor/UserAccessSuccess'
 
 export function UserEditor({
   account,
@@ -24,139 +17,144 @@ export function UserEditor({
   userId: string
   onClose: () => void
 }) {
-  const list = useAdminList('roles', userId)
-  const [selected, setSelected] = useState(account?.roles ?? [])
-  const actions = useUserActions()
-  const operation = account ? actions.save : actions.invite
-  const roles = list.rows.filter((row): row is Role => 'is_system' in row)
+  const editor = useUserEditor(account, userId, onClose)
+  const { values, errors, operation, busy } = editor
+  const heading = useRef<HTMLHeadingElement>(null)
+  useEffect(() => {
+    heading.current?.focus()
+  }, [])
+  const Icon = account ? Save : Send
   return (
     <>
-      <SectionHeading
-        title={account ? 'Gestionar acceso' : 'Invitar usuario'}
-        description="Asigná uno o más roles. Solo quienes tengan el rol general pueden ingresar a este panel por ahora."
-      />
-      <Panel>
-        <form
-          className="grid gap-5"
-          onSubmit={(event) => {
-            event.preventDefault()
-            if (!selected.length) return
-            const form = new FormData(event.currentTarget)
-            if (
-              !window.confirm(
-                '¿Confirmás estos accesos? Los cambios de permisos se aplican inmediatamente.',
-              )
-            )
-              return
-            if (account)
-              actions.save.mutate([
-                account,
-                selected,
-                form.get('active') === 'on',
-              ])
-            else actions.invite.mutate([formText(form.get('email')), selected])
-          }}
+      <header className="mb-7">
+        <button
+          type="button"
+          onClick={editor.close}
+          disabled={busy}
+          className="mb-4 inline-flex min-h-9 items-center gap-2 text-sm font-semibold text-ink-600 hover:text-navy-900 disabled:opacity-50"
         >
-          <Field label="Correo electrónico">
-            <input
-              className={inputClass}
-              name="email"
-              type="email"
-              required
-              maxLength={254}
-              defaultValue={account?.email ?? ''}
-              readOnly={Boolean(account)}
-            />
-          </Field>
-          <fieldset>
-            <legend className="mb-3 font-bold">
-              Roles asignados ({selected.length})
-            </legend>
-            <p className="mb-3 text-sm text-ink-600">
-              Máximo 10 roles. Dar el rol general otorga control completo del
-              club.
-            </p>
-            {list.query.isPending ? (
-              <Loading />
-            ) : (
-              <div className="grid gap-3">
-                {roles.map((role) => (
-                  <label
-                    key={role.id}
-                    className="flex items-center gap-3 rounded-lg border border-navy-900/10 p-3 text-sm"
-                  >
-                    <input
-                      type="checkbox"
-                      checked={selected.includes(role.id)}
-                      disabled={
-                        !selected.includes(role.id) && selected.length >= 10
-                      }
-                      onChange={(event) =>
-                        setSelected(
-                          event.target.checked
-                            ? [...selected, role.id]
-                            : selected.filter((id) => id !== role.id),
-                        )
-                      }
-                      className="size-4 accent-river-600"
-                    />
-                    {role.name}
-                    {role.is_system && (
-                      <span className="ml-auto text-xs font-bold text-amber-800">
-                        Acceso completo
-                      </span>
-                    )}
-                  </label>
-                ))}
-              </div>
-            )}
-            <Pagination {...list} pending={list.query.isFetching} />
-          </fieldset>
-          {account && (
-            <label className="flex items-center gap-3 text-sm font-bold">
-              <input
-                name="active"
-                type="checkbox"
-                defaultChecked={account.active}
-                className="size-5 accent-river-600"
-              />
-              Acceso activo
-            </label>
-          )}
-          <Feedback
-            error={list.query.error ?? operation.error}
-            success={
-              operation.isSuccess
-                ? typeof operation.data === 'string'
-                  ? operation.data
-                  : account
-                    ? 'Acceso actualizado.'
-                    : 'Invitación enviada. El usuario debe abrir el correo y configurar su cuenta.'
-                : null
-            }
-          />
-          <div className="flex gap-3">
-            <button
-              className={primaryClass}
-              disabled={
-                operation.isPending ||
-                operation.isSuccess ||
-                !selected.length ||
-                account?.id === userId
-              }
+          <ArrowLeft size={16} aria-hidden="true" />
+          Volver a usuarios
+        </button>
+        <p className="mb-2 text-[11px] font-extrabold tracking-[0.18em] text-ink-600 uppercase">
+          Equipo y accesos
+        </p>
+        <h1
+          ref={heading}
+          tabIndex={-1}
+          className="text-3xl font-extrabold tracking-tight sm:text-4xl"
+        >
+          {account ? 'Gestionar acceso' : 'Invitar usuario'}
+        </h1>
+        <p className="mt-3 max-w-2xl text-sm leading-6 text-ink-600">
+          {account
+            ? 'Revisá los roles y el estado de la cuenta antes de aplicar los cambios.'
+            : 'Ingresá el correo y elegí los roles. La persona recibirá un enlace para configurar su cuenta.'}
+        </p>
+      </header>
+      {operation.isSuccess ? (
+        <UserAccessSuccess
+          editing={Boolean(account)}
+          email={values.email.trim()}
+          warning={typeof operation.data === 'string' ? operation.data : null}
+          onClose={editor.close}
+        />
+      ) : (
+        <form
+          noValidate
+          onSubmit={editor.submit}
+          aria-busy={busy}
+          className="min-w-0"
+        >
+          {editor.self && (
+            <p
+              role="alert"
+              className="mb-5 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900"
             >
-              {operation.isPending
-                ? 'Procesando…'
-                : account
-                  ? 'Guardar acceso'
-                  : 'Enviar invitación'}
-            </button>
-            <button type="button" className={secondaryClass} onClick={onClose}>
-              Volver
-            </button>
+              Otro administrador general debe modificar tu acceso. Podés
+              gestionar tu correo y contraseña desde Mi cuenta.
+            </p>
+          )}
+          <fieldset disabled={busy || editor.self} className="min-w-0">
+            <legend className="sr-only">Datos y roles del usuario</legend>
+            <div className="grid min-w-0 items-start gap-6 xl:grid-cols-[minmax(0,1fr)_minmax(0,20rem)]">
+              <div className="grid min-w-0 gap-5">
+                <UserAccessFields
+                  values={values}
+                  editing={Boolean(account)}
+                  error={errors.email}
+                  onEmail={(email) => editor.change('email', email)}
+                  onActive={(active) => editor.change('active', active)}
+                />
+                <RolePicker
+                  list={editor.list}
+                  roles={editor.roles}
+                  selected={values.roles}
+                  error={errors.roles}
+                  onToggle={editor.toggleRole}
+                />
+              </div>
+              <UserAccessSummary values={values} editing={Boolean(account)} />
+            </div>
+          </fieldset>
+          <div className="sticky bottom-0 z-10 mt-6 rounded-xl border border-navy-900/10 bg-white/95 p-4 shadow-card backdrop-blur-sm">
+            {Object.keys(errors).length > 0 && (
+              <p
+                role="alert"
+                className="mb-3 text-sm font-semibold text-red-700"
+              >
+                Revisá los campos marcados antes de continuar.
+              </p>
+            )}
+            <Feedback error={operation.error} />
+            <div className="mt-2 flex flex-wrap items-center justify-between gap-4">
+              <p className="text-xs text-ink-600">
+                {editor.dirty
+                  ? 'Cambios sin guardar'
+                  : account
+                    ? 'Sin cambios pendientes'
+                    : 'Completá el correo y seleccioná al menos un rol'}
+              </p>
+              <div className="flex flex-wrap gap-2">
+                <button
+                  type="button"
+                  onClick={editor.close}
+                  disabled={busy}
+                  className={secondaryClass}
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  disabled={
+                    busy ||
+                    editor.self ||
+                    editor.list.query.isPending ||
+                    editor.list.query.isError ||
+                    (Boolean(account) && !editor.dirty)
+                  }
+                  className={primaryClass}
+                >
+                  {busy ? (
+                    <LoaderCircle
+                      size={16}
+                      aria-hidden="true"
+                      className="motion-safe:animate-spin"
+                    />
+                  ) : (
+                    <Icon size={16} aria-hidden="true" />
+                  )}
+                  {busy
+                    ? 'Procesando…'
+                    : account
+                      ? 'Guardar acceso'
+                      : 'Enviar invitación'}
+                </button>
+              </div>
+            </div>
           </div>
         </form>
-      </Panel>
+      )}
     </>
   )
 }

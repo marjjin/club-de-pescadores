@@ -33,7 +33,7 @@ export function EventFields({
   return (
     <section
       aria-label="Datos del evento"
-      className="rounded-2xl border border-navy-900/10 bg-white p-5 shadow-sm sm:p-6"
+      className="min-w-0 rounded-2xl border border-navy-900/10 bg-white p-5 shadow-sm sm:p-6"
     >
       <div className="mb-6 flex items-center gap-3">
         <span

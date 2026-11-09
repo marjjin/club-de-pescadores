@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react'
 import { X } from 'lucide-react'
+import { summarizeNews } from '@/features/news'
 import type { NewsEditorValues } from '../../news-editor'
 import { NewsCover } from './NewsCover'
 
@@ -11,23 +12,28 @@ export function NewsPreview({
   full?: boolean
 }) {
   return (
-    <article className="overflow-hidden rounded-xl border border-navy-900/10 bg-white">
+    <article className="min-w-0 overflow-hidden rounded-xl border border-navy-900/10 bg-white">
       <NewsCover url={values.image_url} alt={values.image_alt} />
-      <div className={full ? 'p-6 sm:p-8' : 'p-4'}>
+      <div className={`min-w-0 wrap-anywhere ${full ? 'p-6 sm:p-8' : 'p-4'}`}>
         <span className="text-[10px] font-extrabold tracking-[0.16em] text-river-600 uppercase">
           Novedades del club
         </span>
         <h3
-          className={`mt-2 font-extrabold break-words text-navy-900 ${full ? 'text-2xl sm:text-3xl' : 'text-lg leading-6'}`}
+          className={`mt-2 font-extrabold text-navy-900 ${full ? 'text-2xl sm:text-3xl' : 'text-lg leading-6'}`}
         >
           {values.title.trim() || 'El título de tu noticia'}
         </h3>
         <p
-          className={`mt-3 text-sm leading-6 whitespace-pre-wrap break-words text-ink-600 ${full ? '' : 'line-clamp-3'}`}
+          className={`mt-3 text-sm leading-6 whitespace-pre-wrap text-ink-600 ${full ? '' : 'line-clamp-3'}`}
         >
-          {values.excerpt.trim() ||
+          {(full ? values.excerpt.trim() : summarizeNews(values.excerpt)) ||
             'El texto que escribas aparecerá acá. La vista previa se actualiza mientras preparás la noticia.'}
         </p>
+        {!full && (
+          <p className="mt-4 text-sm font-bold text-river-600">
+            Leer noticia →
+          </p>
+        )}
       </div>
     </article>
   )

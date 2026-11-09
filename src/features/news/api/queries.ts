@@ -4,6 +4,7 @@ import { getLatestNews } from './getLatestNews'
 export const newsKeys = {
   all: ['news'] as const,
   latest: (limit: number) => [...newsKeys.all, 'latest', { limit }] as const,
+  detail: (id: string) => [...newsKeys.all, 'detail', { id }] as const,
 }
 
 export const latestNewsOptions = (limit = 3) =>

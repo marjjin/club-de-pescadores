@@ -1,193 +1,167 @@
-import { formText } from '../form-utils'
 import { useState } from 'react'
-import { useAdminList, usePermissions } from '../hooks/useAdminData'
+import { Plus, ShieldCheck } from 'lucide-react'
+import { useAdminList } from '../hooks/useAdminData'
 import { useRoleActions } from '../hooks/useAdminActions'
 import type { Role } from '../schemas/admin'
-import {
-  Empty,
-  Feedback,
-  Field,
-  inputClass,
-  Loading,
-  Pagination,
-  Panel,
-  primaryClass,
-  secondaryClass,
-  SectionHeading,
-} from './ui'
+import { CatalogToolbar } from './CatalogToolbar'
+import { CatalogListSkeleton } from './CatalogListSkeleton'
+import { RoleEditor } from './role-editor/RoleEditor'
+import { RoleRow } from './roles/RoleRow'
+import { RolesListMessage } from './roles/RolesListMessage'
+import { Feedback, Pagination, primaryClass, SectionHeading } from './ui'
 
-function RoleEditor({
-  role,
-  userId,
-  onClose,
-}: {
-  role: Role | null
-  userId: string
-  onClose: () => void
-}) {
-  const permissions = usePermissions(userId)
-  const { save } = useRoleActions()
-  return (
-    <>
-      <SectionHeading
-        title={role ? 'Editar rol' : 'Crear rol'}
-        description="Combiná permisos existentes. Los paneles de otros perfiles se habilitarán en una etapa posterior."
-      />
-      <Panel>
-        <form
-          className="grid gap-5"
-          onSubmit={(event) => {
-            event.preventDefault()
-            const form = new FormData(event.currentTarget)
-            if (
-              window.confirm(
-                '¿Guardar estos permisos? Los cambios afectan a todos los usuarios de este rol.',
-              )
-            )
-              save.mutate(
-                [
-                  formText(form.get('name')),
-                  form.getAll('permission').map(String),
-                  role,
-                ],
-                { onSuccess: onClose },
-              )
-          }}
-        >
-          <Field label="Nombre del rol">
-            <input
-              className={inputClass}
-              name="name"
-              defaultValue={role?.name ?? ''}
-              minLength={2}
-              maxLength={80}
-              required
-            />
-          </Field>
-          <fieldset>
-            <legend className="mb-3 font-bold">Permisos del rol</legend>
-            <p className="mb-4 text-sm text-ink-600">
-              Seleccioná también «Ver» para cada módulo que pueda editar,
-              publicar o archivar.
-            </p>
-            {permissions.isPending ? (
-              <Loading />
-            ) : (
-              <div className="grid gap-3 sm:grid-cols-2">
-                {permissions.data
-                  ?.filter((permission) => !permission.reserved)
-                  .map((permission) => (
-                    <label
-                      key={permission.id}
-                      className="flex items-center gap-3 rounded-lg border border-navy-900/10 p-3 text-sm"
-                    >
-                      <input
-                        name="permission"
-                        value={permission.id}
-                        type="checkbox"
-                        defaultChecked={role?.permissions.includes(
-                          permission.id,
-                        )}
-                        className="size-4 accent-river-600"
-                      />
-                      {permission.label}
-                    </label>
-                  ))}
-              </div>
-            )}
-          </fieldset>
-          <Feedback error={permissions.error ?? save.error} />
-          <div className="flex gap-3">
-            <button
-              className={primaryClass}
-              disabled={save.isPending || !permissions.data}
-            >
-              Guardar rol
-            </button>
-            <button type="button" className={secondaryClass} onClick={onClose}>
-              Cancelar
-            </button>
-          </div>
-        </form>
-      </Panel>
-    </>
-  )
-}
 export function RolesSection({ userId }: { userId: string }) {
   const list = useAdminList('roles', userId)
   const { remove } = useRoleActions()
   const [editing, setEditing] = useState<Role | 'new' | null>(null)
+  const [search, setSearch] = useState('')
+  const [notice, setNotice] = useState<string | null>(null)
+  const roles = list.rows.filter((row): row is Role => 'is_system' in row)
+  const failed = list.query.isError && !roles.length
+  const filtered = Boolean(list.search) || list.page > 1
+  function apply(value: string) {
+    setSearch(value.trim())
+    list.filter('all', value.trim())
+  }
+  function create() {
+    if (remove.isPending) return
+    remove.reset()
+    setNotice(null)
+    setEditing('new')
+  }
   if (editing)
     return (
       <RoleEditor
+        key={editing === 'new' ? 'new' : editing.id}
         role={editing === 'new' ? null : editing}
         userId={userId}
         onClose={() => setEditing(null)}
+        onSaved={(name) => {
+          setNotice(`Rol «${name}» guardado.`)
+          setEditing(null)
+        }}
       />
     )
-  const roles = list.rows.filter((row): row is Role => 'is_system' in row)
   return (
     <>
       <SectionHeading
         title="Roles y permisos"
-        description="Definí las responsabilidades del equipo. El administrador general conserva el control de los accesos."
+        description="Definí las responsabilidades del equipo. Cada rol reúne las acciones que pueden realizar sus cuentas asignadas."
         action={
-          <button className={primaryClass} onClick={() => setEditing('new')}>
+          <button
+            type="button"
+            className={primaryClass}
+            disabled={remove.isPending}
+            onClick={create}
+          >
+            <Plus size={17} aria-hidden="true" />
             Crear rol
           </button>
         }
       />
-      <Panel>
-        <Feedback error={list.query.error ?? remove.error} />
-        {list.query.isPending ? (
-          <Loading />
-        ) : !roles.length ? (
-          <Empty />
-        ) : (
-          <div className="divide-y divide-navy-900/10">
-            {roles.map((role) => (
-              <div
-                key={role.id}
-                className="flex flex-wrap items-center justify-between gap-3 py-5"
-              >
-                <div>
-                  <h2 className="font-bold">{role.name}</h2>
-                  <p className="mt-1 text-sm text-ink-600">
-                    {role.is_system
-                      ? 'Rol protegido · Todos los permisos'
-                      : `${role.permissions.length} permisos asignados`}
-                  </p>
-                </div>
-                {!role.is_system && (
-                  <div className="flex gap-2">
-                    <button
-                      className={secondaryClass}
-                      onClick={() => setEditing(role)}
-                    >
-                      Editar
-                    </button>
-                    <button
-                      className={secondaryClass}
-                      disabled={remove.isPending}
-                      onClick={() => {
-                        if (
-                          window.confirm(
-                            '¿Eliminar este rol? Solo se puede eliminar si no tiene usuarios asignados.',
-                          )
-                        )
-                          remove.mutate(role)
-                      }}
-                    >
-                      Eliminar
-                    </button>
-                  </div>
-                )}
-              </div>
-            ))}
+      <div className="mb-5 flex items-start gap-3 rounded-xl border border-river-600/15 bg-white p-4">
+        <ShieldCheck
+          size={20}
+          aria-hidden="true"
+          className="mt-0.5 shrink-0 text-river-600"
+        />
+        <p className="text-sm leading-6 text-ink-600">
+          El administrador general conserva el control completo. Los roles
+          personalizados combinan permisos; sus paneles se habilitarán en una
+          etapa posterior.
+        </p>
+      </div>
+      <section
+        aria-label="Roles del equipo"
+        className="min-w-0 overflow-hidden rounded-2xl border border-navy-900/10 bg-white shadow-sm"
+      >
+        <CatalogToolbar
+          kind="roles"
+          search={search}
+          applied={list.search}
+          busy={list.query.isFetching || remove.isPending}
+          onChange={setSearch}
+          onSearch={apply}
+          onRefresh={() => {
+            void list.query.refetch()
+          }}
+        />
+        {(remove.error ||
+          notice ||
+          remove.isSuccess ||
+          (list.query.isError && roles.length > 0)) && (
+          <div className="p-4 sm:px-6">
+            <Feedback
+              error={remove.error ?? (roles.length ? list.query.error : null)}
+              success={notice ?? (remove.isSuccess ? 'Rol eliminado.' : null)}
+            />
           </div>
         )}
-        <Pagination {...list} pending={list.query.isFetching} />
-      </Panel>
+        <div aria-busy={list.query.isFetching}>
+          {list.query.isPending ? (
+            <CatalogListSkeleton label="Cargando roles" />
+          ) : failed || !roles.length ? (
+            <RolesListMessage
+              failed={failed}
+              error={list.query.error}
+              filtered={filtered}
+              onRetry={() => {
+                void list.query.refetch()
+              }}
+              onReset={() => apply('')}
+              onCreate={create}
+            />
+          ) : (
+            <ul className="divide-y divide-navy-900/10">
+              {roles.map((role) => (
+                <RoleRow
+                  key={role.id}
+                  role={role}
+                  busy={remove.isPending}
+                  onEdit={() => {
+                    setNotice(null)
+                    remove.reset()
+                    setEditing(role)
+                  }}
+                  onRemove={() => {
+                    if (
+                      !window.confirm(
+                        `¿Eliminar el rol «${role.name}»? Solo se puede eliminar si no tiene usuarios asignados.`,
+                      )
+                    )
+                      return
+                    setNotice(null)
+                    remove.mutate(role)
+                  }}
+                />
+              ))}
+            </ul>
+          )}
+        </div>
+        {!list.query.isPending &&
+          !failed &&
+          (roles.length > 0 || list.page > 1) && (
+            <footer className="border-t border-navy-900/10 bg-mist-50/40 px-4 py-4 sm:px-6">
+              <p role="status" className="text-xs text-ink-600">
+                {roles.length}{' '}
+                {roles.length === 1
+                  ? 'rol en esta página'
+                  : 'roles en esta página'}{' '}
+                · Más recientes primero
+              </p>
+              {(list.hasNext || list.page > 1) && (
+                <Pagination
+                  {...list}
+                  pending={list.query.isFetching || remove.isPending}
+                />
+              )}
+            </footer>
+          )}
+      </section>
+      <p className="mt-4 text-center text-xs leading-5 text-ink-600">
+        Solo se pueden eliminar roles sin usuarios asignados. Modificar los
+        permisos afecta a todas las cuentas que tengan ese rol.
+      </p>
     </>
   )
 }
