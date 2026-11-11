@@ -67,6 +67,11 @@ it('shows the latest report with its height, conditions and gallery', async () =
   const video = screen.getByRole('button', {
     name: 'Reproducir video 2 de 2: Video del muelle',
   })
+  // Horizontal strip: keyboard-scrollable, with arrows and a count for mouse users.
+  const strip = screen.getByRole('list', { name: 'Fotos y videos del muelle' })
+  expect(strip.getAttribute('tabindex')).toBe('0')
+  expect(screen.getByText('2 archivos')).toBeTruthy()
+  expect(screen.getByRole('button', { name: 'Ver más' })).toBeTruthy()
   // The video file is not requested until the visitor opens it.
   expect(document.querySelector('video')).toBeNull()
   fireEvent.click(video)
