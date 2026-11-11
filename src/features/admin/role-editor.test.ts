@@ -2,6 +2,8 @@ import { expect, it } from 'vitest'
 import { rolePermissionCatalog as catalog } from '@/test/admin-roles'
 import {
   groupRolePermissions,
+  permissionDescription,
+  permissionModuleTitle,
   selectPermissionGroup,
   toggleRolePermission,
   validateRoleEditor,
@@ -77,4 +79,10 @@ it('allows an empty role and enforces the server limit on distinct permissions',
       extended,
     ).success,
   ).toBe(false)
+})
+it('names the pier module and explains what publishing a report does', () => {
+  expect(permissionModuleTitle('muelle')).toBe('Parte del muelle')
+  expect(permissionDescription('muelle.publicar')).toContain(
+    'actualiza la altura del río',
+  )
 })

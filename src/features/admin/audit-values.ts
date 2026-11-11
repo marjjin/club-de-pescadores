@@ -95,6 +95,7 @@ function permissionLabel(id: string) {
     'usuarios.gestionar': 'Gestionar usuarios',
     'roles.gestionar': 'Gestionar roles',
     'rio.gestionar': 'Actualizar altura del río',
+    'muelle.publicar': 'Publicar partes del muelle',
     'auditoria.ver': 'Consultar auditoría',
   }
   if (Object.hasOwn(special, id)) return special[id]!
