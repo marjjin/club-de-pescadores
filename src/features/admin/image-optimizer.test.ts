@@ -32,8 +32,9 @@ describe('optimizeImage', () => {
     const context = mockCanvas(
       (type) => new Blob([new Uint8Array(300_000)], { type }),
     )
-    const blob = await optimizeImage(photo())
+    const { blob, width, height } = await optimizeImage(photo())
     expect(blob.type).toBe('image/webp')
+    expect({ width, height }).toEqual({ width: 1600, height: 1200 })
     expect(context.drawImage).toHaveBeenCalledWith(
       expect.anything(),
       0,
@@ -50,7 +51,7 @@ describe('optimizeImage', () => {
           type: type === 'image/webp' ? 'image/png' : type,
         }),
     )
-    expect((await optimizeImage(photo())).type).toBe('image/jpeg')
+    expect((await optimizeImage(photo())).blob.type).toBe('image/jpeg')
   })
   it('rejects unsupported, oversized or still too heavy files with clear messages', async () => {
     await expect(optimizeImage(photo(10, 'image/gif'))).rejects.toThrow(

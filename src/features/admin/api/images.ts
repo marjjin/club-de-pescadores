@@ -3,7 +3,7 @@ import { optimizeImage } from '../image-optimizer'
 import { adminError } from './errors'
 
 export async function uploadNewsImage(file: File) {
-  const blob = await optimizeImage(file)
+  const { blob } = await optimizeImage(file)
   const client = getAdminSupabase()
   const user = await client.auth.getUser()
   if (user.error || !user.data.user) throw adminError(user.error)

@@ -20,11 +20,12 @@ function encode(canvas: HTMLCanvasElement, type: string) {
   )
 }
 
+export type OptimizedImage = { blob: Blob; width: number; height: number }
 /**
  * Re-encodes every upload, even small ones: drawing to a canvas also strips
  * EXIF metadata such as GPS location (Ley 25.326).
  */
-export async function optimizeImage(file: File): Promise<Blob> {
+export async function optimizeImage(file: File): Promise<OptimizedImage> {
   if (!ACCEPTED.includes(file.type) || file.size > MAX_SOURCE_BYTES)
     throw new Error('Usá una imagen JPG, PNG o WebP de hasta 25 MB.')
   const bitmap = await createImageBitmap(file, {
@@ -52,7 +53,7 @@ export async function optimizeImage(file: File): Promise<Blob> {
       throw new Error(
         'La imagen sigue siendo demasiado pesada. Probá con otra foto.',
       )
-    return blob
+    return { blob, width: canvas.width, height: canvas.height }
   } finally {
     bitmap.close()
   }
