@@ -1,4 +1,5 @@
 import { useId } from 'react'
+import type { ReactNode } from 'react'
 import { Link, Route, Routes } from 'react-router'
 import { LogOut, Menu } from 'lucide-react'
 import { useAuthActions } from '../hooks/useAdminActions'
@@ -14,6 +15,7 @@ import { AccountSection } from './AccountSection'
 import { PierSection } from './pier/PierSection'
 import { NewNewsRoute } from './news-editor/NewNewsRoute'
 import { Feedback, SectionHeading } from './ui'
+import { sectionPermissions, useAccess } from '../hooks/useAccess'
 
 export function AdminWorkspace({
   userId,
@@ -26,6 +28,17 @@ export function AdminWorkspace({
   const { open, triggerRef, dialogRef, show, close, onClosed } =
     useAdminMobileMenu()
   const menuId = useId()
+  const { can, general } = useAccess()
+  // Hidden links are not enough: a typed URL to a section without permission shows this.
+  const gate = (permission: string, element: ReactNode) =>
+    can(permission) ? (
+      element
+    ) : (
+      <SectionHeading
+        title="Sin acceso a esta sección"
+        description="Tu rol no incluye esta sección. Pedile a un administrador que te asigne el permiso si lo necesitás."
+      />
+    )
   return (
     <div className="min-h-dvh bg-mist-50 lg:grid lg:grid-cols-[16rem_minmax(0,1fr)]">
       <a
@@ -60,7 +73,7 @@ export function AdminWorkspace({
           </button>
           <div className="min-w-0 flex-1">
             <p className="text-[10px] font-bold tracking-wider text-ink-600 uppercase sm:text-xs">
-              Administrador general
+              {general ? 'Administrador general' : 'Equipo del club'}
             </p>
             <p className="mt-1 truncate text-xs font-semibold sm:text-sm">
               {email}
@@ -84,31 +97,62 @@ export function AdminWorkspace({
           <Feedback error={logout.error} />
           <Routes>
             <Route index element={<Dashboard userId={userId} />} />
-            <Route path="noticias/nueva" element={<NewNewsRoute />} />
+            <Route
+              path="noticias/nueva"
+              element={gate('noticias.editar', <NewNewsRoute />)}
+            />
             <Route
               path="noticias"
-              element={
-                <ContentSection key="news" kind="news" userId={userId} />
-              }
+              element={gate(
+                sectionPermissions.noticias,
+                <ContentSection key="news" kind="news" userId={userId} />,
+              )}
             />
             <Route
               path="eventos"
-              element={
-                <ContentSection key="events" kind="events" userId={userId} />
-              }
+              element={gate(
+                sectionPermissions.eventos,
+                <ContentSection key="events" kind="events" userId={userId} />,
+              )}
             />
             <Route
               path="tarifas"
-              element={
-                <ContentSection key="rates" kind="pool_rates" userId={userId} />
-              }
+              element={gate(
+                sectionPermissions.tarifas,
+                <ContentSection
+                  key="rates"
+                  kind="pool_rates"
+                  userId={userId}
+                />,
+              )}
             />
-            <Route path="usuarios" element={<UsersSection userId={userId} />} />
-            <Route path="muelle" element={<PierSection userId={userId} />} />
-            <Route path="roles" element={<RolesSection userId={userId} />} />
+            <Route
+              path="usuarios"
+              element={gate(
+                sectionPermissions.usuarios,
+                <UsersSection userId={userId} />,
+              )}
+            />
+            <Route
+              path="muelle"
+              element={gate(
+                sectionPermissions.muelle,
+                <PierSection userId={userId} />,
+              )}
+            />
+            <Route
+              path="roles"
+              element={gate(
+                sectionPermissions.roles,
+                <RolesSection userId={userId} />,
+              )}
+            />
             <Route
               path="actividad"
-              element={<AuditSection userId={userId} />}
+              element={gate(
+                sectionPermissions.actividad,
+                <AuditSection userId={userId} />,
+              )}
             />
             <Route path="cuenta" element={<AccountSection email={email} />} />
             <Route

@@ -10,7 +10,8 @@ export function UserRow({
 }: {
   account: Account
   self: boolean
-  onEdit: () => void
+  /** Absent when the viewer may only see the team, not change access. */
+  onEdit?: (() => void) | undefined
 }) {
   const Icon = account.active ? CircleCheck : CircleSlash
   return (
@@ -48,8 +49,8 @@ export function UserRow({
           </div>
           {self && (
             <p className="mt-2 text-xs leading-5 text-ink-600">
-              Otro administrador general debe modificar tus roles o tu estado de
-              acceso.
+              Otra persona con permiso de usuarios debe modificar tus roles o tu
+              estado de acceso.
             </p>
           )}
         </div>
@@ -63,15 +64,17 @@ export function UserRow({
           <ArrowRight size={14} aria-hidden="true" />
         </Link>
       ) : (
-        <button
-          type="button"
-          aria-label={`Gestionar acceso de ${account.email}`}
-          onClick={onEdit}
-          className={`${secondaryClass} self-start sm:shrink-0`}
-        >
-          Gestionar acceso
-          <ArrowRight size={14} aria-hidden="true" />
-        </button>
+        onEdit && (
+          <button
+            type="button"
+            aria-label={`Gestionar acceso de ${account.email}`}
+            onClick={onEdit}
+            className={`${secondaryClass} self-start sm:shrink-0`}
+          >
+            Gestionar acceso
+            <ArrowRight size={14} aria-hidden="true" />
+          </button>
+        )
       )}
     </li>
   )

@@ -8,6 +8,7 @@ import { MfaScreen } from './MfaScreen'
 import { PasswordForm } from './PasswordForm'
 import { AdminWorkspace } from './AdminWorkspace'
 import { ConfirmProvider } from './ConfirmProvider'
+import { AccessContext } from '../hooks/useAccess'
 import { PierWorkspace } from './pier/PierWorkspace'
 import { AdminShellSkeleton } from '@/shared/ui/AdminShellSkeleton'
 import { Feedback, secondaryClass } from './ui'
@@ -91,7 +92,11 @@ function AdminPanelContent() {
       </AccessFrame>
     )
   if (!session.data.aal2) return <MfaScreen factorId={session.data.factorId} />
-  if (!session.data.general && session.data.pier)
+  const onlyPier =
+    session.data.pier &&
+    session.data.permissions.every((id) => id === 'muelle.publicar')
+  // Staff whose only job is the pier report keep the simple phone-first panel.
+  if (!session.data.general && onlyPier)
     return (
       <PierWorkspace
         key={session.data.id}
@@ -99,13 +104,13 @@ function AdminPanelContent() {
         email={session.data.email}
       />
     )
-  if (!session.data.general)
+  if (!session.data.general && !session.data.permissions.length)
     return (
       <AccessFrame>
         <h2 className="text-xl font-bold">Cuenta configurada</h2>
         <p className="mt-3 text-sm text-ink-600">
-          Este panel corresponde al administrador general. El panel de tu perfil
-          todavía no está habilitado.
+          Tu rol todavía no tiene secciones asignadas. Pedile a un administrador
+          que te asigne los permisos que necesitás.
         </p>
         <button
           className={`${secondaryClass} mt-5`}
@@ -117,10 +122,17 @@ function AdminPanelContent() {
       </AccessFrame>
     )
   return (
-    <AdminWorkspace
-      key={session.data.id}
-      userId={session.data.id}
-      email={session.data.email}
-    />
+    <AccessContext.Provider
+      value={{
+        general: session.data.general,
+        permissions: session.data.permissions,
+      }}
+    >
+      <AdminWorkspace
+        key={session.data.id}
+        userId={session.data.id}
+        email={session.data.email}
+      />
+    </AccessContext.Provider>
   )
 }

@@ -52,9 +52,8 @@ export function UserAccessSummary({
           Asignalo a quienes deban administrar contenido y accesos.
         </p>
         <p className="mt-3 text-xs leading-5 text-ink-600">
-          Por ahora, este panel solo está disponible para administradores
-          generales. Los paneles de roles personalizados todavía no están
-          habilitados.
+          Cada persona ve en el panel solo las secciones que incluyen sus roles.
+          Solo podés asignar roles con permisos que vos ya tenés.
         </p>
       </section>
       {!editing && (

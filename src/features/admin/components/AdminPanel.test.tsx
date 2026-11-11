@@ -1,4 +1,10 @@
-import { fireEvent, render, screen, waitFor } from '@testing-library/react'
+import {
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+  within,
+} from '@testing-library/react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { MemoryRouter, Route, Routes } from 'react-router'
 import { beforeEach, expect, it, vi } from 'vitest'
@@ -51,6 +57,7 @@ const session = {
   active: true,
   general: true,
   pier: true,
+  permissions: [] as string[],
   aal2: true,
   factorId: null,
 }
@@ -341,3 +348,47 @@ function fillEvent(title: string, place: string) {
     target: { value: '15:30' },
   })
 }
+
+it('shows a custom role only the sections it was given', async () => {
+  vi.mocked(auth.getAdminSession).mockResolvedValue({
+    ...session,
+    general: false,
+    pier: false,
+    permissions: ['noticias.ver', 'usuarios.ver'],
+  })
+  vi.mocked(data.getDashboard).mockResolvedValue({
+    news: 2,
+    events: null,
+    rates: null,
+    drafts: 1,
+    users: 3,
+  })
+  mount()
+  const nav = await screen.findByRole('navigation', { name: 'Administración' })
+  expect(within(nav).getByRole('link', { name: 'Noticias' })).toBeTruthy()
+  expect(within(nav).getByRole('link', { name: 'Usuarios' })).toBeTruthy()
+  for (const hidden of ['Eventos', 'Roles y permisos', 'Actividad'])
+    expect(within(nav).queryByRole('link', { name: hidden })).toBeNull()
+  expect(screen.getByText('Equipo del club')).toBeTruthy()
+  expect(await screen.findByText('Usuarios activos')).toBeTruthy()
+  expect(screen.queryByText('Próximos eventos publicados')).toBeNull()
+  // Read-only users permission: no invitation button.
+  fireEvent.click(within(nav).getByRole('link', { name: 'Usuarios' }))
+  expect(
+    await screen.findByRole('heading', { level: 1, name: 'Usuarios' }),
+  ).toBeTruthy()
+  expect(screen.queryByRole('button', { name: 'Invitar usuario' })).toBeNull()
+})
+
+it('blocks a typed URL to a section outside the role', async () => {
+  vi.mocked(auth.getAdminSession).mockResolvedValue({
+    ...session,
+    general: false,
+    pier: false,
+    permissions: ['noticias.ver'],
+  })
+  mount(<AdminPanel />, '/admin/roles')
+  expect(
+    await screen.findByRole('heading', { name: 'Sin acceso a esta sección' }),
+  ).toBeTruthy()
+})

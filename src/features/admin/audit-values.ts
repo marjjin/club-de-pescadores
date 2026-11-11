@@ -92,7 +92,8 @@ export function auditCalendar(value: string) {
 }
 function permissionLabel(id: string) {
   const special: Record<string, string> = {
-    'usuarios.gestionar': 'Gestionar usuarios',
+    'usuarios.gestionar': 'Dar de alta y modificar usuarios',
+    'usuarios.ver': 'Ver usuarios',
     'roles.gestionar': 'Gestionar roles',
     'rio.gestionar': 'Actualizar altura del río',
     'muelle.publicar': 'Publicar partes del muelle',

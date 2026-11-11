@@ -80,12 +80,11 @@ export function RoleSummary({
       <section className="rounded-2xl border border-river-600/15 bg-mist-50 p-5">
         <h2 className="flex items-center gap-2 text-sm font-extrabold">
           <Info size={17} aria-hidden="true" />
-          Disponibilidad del panel
+          Qué ve cada persona
         </h2>
         <p className="mt-3 text-xs leading-5 text-ink-600">
-          Crear un rol define sus permisos. Los paneles de otros perfiles se
-          habilitarán en una etapa posterior; por ahora, este panel corresponde
-          al administrador general.
+          Quien tenga este rol verá en el panel solo las secciones que elijas
+          acá. Los cambios se aplican en su próxima carga del panel.
         </p>
       </section>
     </aside>

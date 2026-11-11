@@ -1,6 +1,7 @@
 import { ArrowRight, Camera, Newspaper } from 'lucide-react'
 import { Link } from 'react-router'
 import { primaryClass, secondaryClass } from './ui'
+import { useAccess } from '../hooks/useAccess'
 
 const shortcuts = [
   {
@@ -11,6 +12,7 @@ const shortcuts = [
     href: '/admin/muelle',
     icon: Camera,
     primary: true,
+    permission: 'muelle.publicar',
   },
   {
     title: 'Noticias del club',
@@ -20,12 +22,16 @@ const shortcuts = [
     href: '/admin/noticias/nueva',
     icon: Newspaper,
     primary: false,
+    permission: 'noticias.editar',
   },
 ]
 export function DashboardContentLinks() {
+  const { can } = useAccess()
+  const visible = shortcuts.filter((shortcut) => can(shortcut.permission))
+  if (!visible.length) return null
   return (
     <div className="mb-6 grid min-w-0 gap-4 xl:grid-cols-2">
-      {shortcuts.map(
+      {visible.map(
         ({ title, description, label, href, icon: Icon, primary }) => (
           <section
             key={href}

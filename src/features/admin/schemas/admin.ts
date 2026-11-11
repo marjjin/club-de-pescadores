@@ -4,6 +4,7 @@ export const contextSchema = z.object({
   active: z.boolean(),
   general: z.boolean(),
   pier: z.boolean().default(false),
+  permissions: z.array(z.string()).default([]),
   aal2: z.boolean(),
 })
 const identity = {
@@ -71,12 +72,13 @@ export const permissionSchema = z.object({
   label: z.string(),
   reserved: z.boolean(),
 })
+// null = the module is outside the caller's permissions.
 export const dashboardSchema = z.object({
-  news: z.number(),
-  events: z.number(),
-  rates: z.number(),
+  news: z.number().nullable(),
+  events: z.number().nullable(),
+  rates: z.number().nullable(),
   drafts: z.number(),
-  users: z.number(),
+  users: z.number().nullable(),
 })
 export type AdminContext = z.infer<typeof contextSchema>
 export type News = z.infer<typeof newsSchema>
