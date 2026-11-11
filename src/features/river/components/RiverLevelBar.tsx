@@ -13,53 +13,51 @@ export function RiverLevelBar() {
     <section
       id="altura-del-rio"
       aria-label="Altura del río"
-      className="border-b border-navy-900/10 bg-mist-50 px-4 py-3 sm:px-6"
+      className="border-b border-navy-900/5 bg-mist-50/60 px-4 py-1.5 sm:px-6"
     >
-      <div className="mx-auto flex max-w-7xl flex-wrap items-center gap-x-8 gap-y-2">
-        <div className="flex shrink-0 items-center gap-3">
-          <span
-            aria-hidden="true"
-            className="grid size-9 place-items-center rounded-full bg-white text-river-600"
-          >
-            <Waves size={20} />
-          </span>
-          <h2 className="text-sm font-extrabold">Altura del río</h2>
-        </div>
+      <div className="mx-auto flex max-w-7xl items-center gap-x-2 sm:flex-wrap sm:gap-x-3 gap-y-0.5 text-xs leading-5 text-ink-600">
+        <h2 className="flex shrink-0 items-center gap-1.5 font-semibold">
+          <Waves size={14} aria-hidden="true" className="text-river-600" />
+          Altura del río
+        </h2>
         {query.isPending ? (
-          <p role="status" className="text-sm text-ink-600">
-            Consultando última medición…
-          </p>
+          <p role="status">Consultando última medición…</p>
         ) : reading ? (
           <>
-            <p className="text-2xl font-extrabold tabular-nums text-navy-900">
+            <p className="font-bold tabular-nums text-navy-900">
               {formatRiverHeight(reading.height_cm)}
             </p>
-            <div className="min-w-0 basis-full text-xs leading-5 wrap-anywhere text-ink-600 sm:flex-1 sm:basis-64">
-              <p className="font-bold text-navy-900">{reading.station}</p>
-              <p>
-                Medición:{' '}
-                <time dateTime={reading.measured_at}>
-                  {formatRiverDate(reading.measured_at)}
-                </time>{' '}
-                · Hora argentina
-              </p>
-              <p>Fuente: {reading.source}</p>
-            </div>
+            {/* Mobile keeps only height and time so the bar stays one line. */}
+            <p className="min-w-0 truncate sm:overflow-visible sm:whitespace-normal sm:wrap-anywhere">
+              <span aria-hidden="true">· </span>
+              <span className="hidden sm:inline">{reading.station}</span>
+              <span aria-hidden="true" className="hidden sm:inline">
+                {' '}
+                ·{' '}
+              </span>
+              <time dateTime={reading.measured_at}>
+                {formatRiverDate(reading.measured_at)}
+              </time>
+              <span className="hidden sm:inline"> (hora argentina)</span>
+            </p>
+            <p className="hidden min-w-0 wrap-anywhere sm:block">
+              Fuente: {reading.source}
+            </p>
             {isRiverReadingOld(reading.measured_at, now) && (
-              <p className="inline-flex items-center gap-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs font-semibold text-amber-900">
-                <Clock3 size={15} aria-hidden="true" />
+              <p className="inline-flex items-center gap-1 font-semibold text-amber-800">
+                <Clock3 size={13} aria-hidden="true" />
                 Medición de hace más de 24 h
               </p>
             )}
             {query.isError && (
-              <p role="status" className="text-xs text-ink-600">
+              <p role="status">
                 No pudimos actualizar el dato. Se muestra la última medición
                 disponible.
               </p>
             )}
           </>
         ) : (
-          <p className="text-sm text-ink-600">
+          <p>
             {query.isError
               ? 'No pudimos consultar la altura del río.'
               : 'Todavía no hay una medición publicada.'}
@@ -72,7 +70,7 @@ export function RiverLevelBar() {
             onClick={() => {
               void query.refetch()
             }}
-            className="min-h-11 text-sm font-bold text-river-600 hover:underline disabled:opacity-50"
+            className="min-h-6 font-bold text-river-600 hover:underline disabled:opacity-50"
           >
             Reintentar medición
           </button>
