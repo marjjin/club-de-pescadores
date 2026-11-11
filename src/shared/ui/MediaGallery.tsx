@@ -39,22 +39,12 @@ function Thumbnail({ item, large }: { item: GalleryItem; large: boolean }) {
   )
 }
 
-const MAX_TILES = 5
-// The caller gives the gallery a fixed height; tiles crop to fill it, so tall phone
-// photos never stretch the page and any count of files looks intentional.
-const layouts = [
-  { grid: 'grid-cols-1', first: '', rest: '' },
-  { grid: 'grid-cols-2', first: '', rest: '' },
-  { grid: 'grid-cols-3 grid-rows-2', first: 'col-span-2 row-span-2', rest: '' },
-  { grid: 'grid-cols-2 grid-rows-2', first: '', rest: '' },
-  {
-    grid: 'grid-cols-3 grid-rows-2 sm:grid-cols-4',
-    first: 'row-span-2 sm:col-span-2',
-    rest: '',
-  },
-]
+// Tiles keep each photo's shape within limits, so a row mixes portrait and landscape
+// shots without extreme crops; the caller fixes the strip height.
+const ratio = (item: GalleryItem) =>
+  Math.min(1.8, Math.max(0.6, item.width / item.height))
 
-/** Grid of photos and videos; videos load only when opened, from their poster. */
+/** Horizontal strip of photos and videos; videos load only when opened, from their poster. */
 export function MediaGallery({
   items,
   label,
@@ -65,6 +55,8 @@ export function MediaGallery({
   const dialog = useRef<HTMLDialogElement>(null)
   const [index, setIndex] = useState(0)
   const [opened, setOpened] = useState(false)
+  const track = useRef<HTMLUListElement>(null)
+  const [edges, setEdges] = useState({ start: true, end: false })
   const current = items[index]
   // The native modal blocks interaction but not scrolling of the page behind it.
   useEffect(() => {
@@ -86,43 +78,79 @@ export function MediaGallery({
     if (event.key === 'ArrowLeft') go(-1)
     if (event.key === 'ArrowRight') go(1)
   }
+  function measure() {
+    const element = track.current
+    if (!element) return
+    setEdges({
+      start: element.scrollLeft <= 4,
+      end: element.scrollLeft + element.clientWidth >= element.scrollWidth - 4,
+    })
+  }
+  // Recomputes the arrows once images size the strip (and on resize).
+  useEffect(() => {
+    measure()
+    window.addEventListener('resize', measure)
+    return () => window.removeEventListener('resize', measure)
+  }, [items.length])
+  function slide(direction: 1 | -1) {
+    const element = track.current
+    if (element)
+      element.scrollBy({ left: direction * element.clientWidth * 0.8 })
+  }
   if (!items.length) return null
-  const visible = items.slice(0, MAX_TILES)
-  const extra = items.length - visible.length
-  const layout = layouts[Math.min(visible.length, MAX_TILES) - 1] ?? layouts[0]!
+  const single = items.length === 1
   return (
     <>
-      <ul
-        aria-label={label}
-        className={`grid h-full gap-2 sm:gap-3 ${layout.grid}`}
-      >
-        {visible.map((item, position) => {
-          const hidden = position === visible.length - 1 ? extra : 0
-          return (
+      <div className="relative h-full">
+        <ul
+          ref={track}
+          aria-label={label}
+          tabIndex={0}
+          onScroll={measure}
+          className="flex h-full snap-x snap-mandatory gap-2 overflow-x-auto overscroll-x-contain rounded-xl focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-sun-400 motion-safe:scroll-smooth sm:gap-3 [scrollbar-width:thin]"
+        >
+          {items.map((item, position) => (
             <li
               key={item.src}
-              className={`min-w-0 ${position === 0 ? layout.first : layout.rest}`}
+              style={single ? undefined : { aspectRatio: ratio(item) }}
+              className={`h-full shrink-0 snap-start ${single ? 'w-full' : ''}`}
             >
               <button
                 type="button"
                 onClick={() => open(position)}
-                aria-label={`${item.kind === 'video' ? 'Reproducir video' : 'Ampliar foto'} ${position + 1} de ${items.length}: ${item.alt}${hidden ? `. Hay ${hidden} más` : ''}`}
-                className="group relative block size-full cursor-zoom-in overflow-hidden rounded-xl bg-mist-50 focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-sun-400"
+                aria-label={`${item.kind === 'video' ? 'Reproducir video' : 'Ampliar foto'} ${position + 1} de ${items.length}: ${item.alt}`}
+                className="group relative block size-full cursor-zoom-in overflow-hidden rounded-xl bg-mist-50 focus-visible:outline-3 focus-visible:-outline-offset-3 focus-visible:outline-sun-400"
               >
-                <Thumbnail item={item} large={position === 0} />
-                {hidden > 0 && (
-                  <span
-                    aria-hidden="true"
-                    className="absolute inset-0 grid place-items-center bg-navy-950/60 text-2xl font-extrabold text-white"
-                  >
-                    +{hidden}
-                  </span>
-                )}
+                <Thumbnail item={item} large />
               </button>
             </li>
-          )
-        })}
-      </ul>
+          ))}
+        </ul>
+        {!single && (
+          <>
+            {/* Touch users swipe; arrows help mouse users and hint there is more. */}
+            {(['start', 'end'] as const).map((side) => (
+              <button
+                key={side}
+                type="button"
+                onClick={() => slide(side === 'start' ? -1 : 1)}
+                disabled={edges[side]}
+                aria-label={side === 'start' ? 'Ver anteriores' : 'Ver más'}
+                className={`absolute top-1/2 hidden size-11 -translate-y-1/2 place-items-center rounded-full bg-white/90 text-navy-900 shadow-card transition-opacity hover:bg-white disabled:pointer-events-none disabled:opacity-0 sm:grid ${side === 'start' ? 'left-3' : 'right-3'}`}
+              >
+                {side === 'start' ? (
+                  <ChevronLeft size={22} aria-hidden="true" />
+                ) : (
+                  <ChevronRight size={22} aria-hidden="true" />
+                )}
+              </button>
+            ))}
+            <span className="pointer-events-none absolute right-3 bottom-3 rounded-full bg-navy-950/70 px-2.5 py-1 text-xs font-bold text-white">
+              {items.length} archivos
+            </span>
+          </>
+        )}
+      </div>
       <dialog
         ref={dialog}
         aria-label={`${label}: archivo ${index + 1} de ${items.length}`}
