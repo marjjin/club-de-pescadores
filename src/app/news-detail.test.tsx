@@ -50,11 +50,21 @@ describe('reading a news article', () => {
       left: 0,
       behavior: 'instant',
     })
-    expect(
-      screen
-        .getByRole('link', { name: 'Ver imagen completa (abre otra pestaña)' })
-        .getAttribute('href'),
-    ).toBe(newsRows[0]!.image_url)
+    expect(screen.queryByRole('link', { name: /imagen completa/ })).toBeNull()
+    // jsdom lacks the modal API; emulate only the open state it toggles.
+    Object.defineProperty(HTMLDialogElement.prototype, 'showModal', {
+      configurable: true,
+      value(this: HTMLDialogElement) {
+        this.open = true
+      },
+    })
+    fireEvent.click(screen.getByRole('button', { name: 'Ampliar imagen' }))
+    const zoomed = screen.getByRole('dialog', { name: 'Imagen ampliada' })
+    expect(zoomed.querySelector('img')?.getAttribute('src')).toBe(
+      newsRows[0]!.image_url,
+    )
+    expect(document.documentElement.style.overflow).toBe('hidden')
+    document.documentElement.style.overflow = ''
     fireEvent.click(
       screen.getByRole('link', { name: 'Volver a todas las noticias' }),
     )
