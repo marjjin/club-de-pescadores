@@ -23,6 +23,9 @@ export const formatShortDate = (isoDate: string) => {
   return `${day} ${month} ${year}`
 }
 
+export const formatLongDate = (isoDate: string) =>
+  parts(isoDate, { day: 'numeric', month: 'long', year: 'numeric' })
+
 export const formatDayMonth = (isoDate: string) => ({
   day: parts(isoDate, { day: '2-digit' }),
   month: parts(isoDate, { month: 'short' }).toUpperCase(),

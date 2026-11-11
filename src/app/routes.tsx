@@ -2,6 +2,7 @@ import { lazy, Suspense } from 'react'
 import { Route, Routes } from 'react-router'
 import { PublicLayout } from './layout/PublicLayout'
 import { PageLoading } from './layout/PageLoading'
+import { AdminShellSkeleton } from '@/shared/ui/AdminShellSkeleton'
 
 const HomePage = lazy(() => import('@/pages/home'))
 const NotFoundPage = lazy(() => import('@/pages/not-found'))
@@ -14,7 +15,15 @@ export function AppRoutes() {
   return (
     <Suspense fallback={<PageLoading />}>
       <Routes>
-        <Route path="admin/*" element={<AdminPage />} />
+        <Route
+          path="admin/*"
+          element={
+            // Same shape as the panel, so a reload shows one continuous loading state.
+            <Suspense fallback={<AdminShellSkeleton />}>
+              <AdminPage />
+            </Suspense>
+          }
+        />
         <Route element={<PublicLayout />}>
           <Route index element={<HomePage />} />
           <Route path="noticias" element={<NewsPage />} />

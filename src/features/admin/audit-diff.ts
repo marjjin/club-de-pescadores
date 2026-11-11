@@ -20,6 +20,8 @@ const fieldOrder: Record<string, string[]> = {
     'excerpt',
     'image_url',
     'image_alt',
+    'image_focus_x',
+    'image_focus_y',
     'published_at',
     'is_published',
     'deleted_at',

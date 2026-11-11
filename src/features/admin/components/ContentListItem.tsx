@@ -16,11 +16,14 @@ export function ContentListItem({
   busy,
   onEdit,
   onArchive,
+  onDelete,
 }: {
   row: Content
   busy: boolean
   onEdit: () => void
   onArchive: () => void
+  /** Offered only for archived rows of content that supports permanent deletion. */
+  onDelete?: (() => void) | undefined
 }) {
   const title = 'title' in row ? row.title : `${row.season} · ${row.period}`
   const status = contentStatus(row)
@@ -37,6 +40,9 @@ export function ContentListItem({
             loading="lazy"
             width="80"
             height="80"
+            style={{
+              objectPosition: `${row.image_focus_x}% ${row.image_focus_y}%`,
+            }}
             className="size-full object-cover"
           />
         ) : 'starts_at' in row ? (
@@ -139,6 +145,19 @@ export function ContentListItem({
             <Trash2 size={17} aria-hidden="true" />
           )}
         </button>
+        {row.deleted_at && onDelete && (
+          <button
+            type="button"
+            disabled={busy}
+            onClick={onDelete}
+            aria-label={`Eliminar definitivamente «${title}»`}
+            title="Eliminar definitivamente, con su imagen"
+            className="inline-flex min-h-11 items-center gap-2 rounded-lg border border-red-200 px-3 text-sm font-bold text-red-700 transition-colors hover:bg-red-50 disabled:opacity-40"
+          >
+            <Trash2 size={15} aria-hidden="true" />
+            Eliminar
+          </button>
+        )}
       </div>
     </article>
   )

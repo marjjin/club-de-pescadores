@@ -11,7 +11,7 @@ import { RolesSection } from './RolesSection'
 import { UsersSection } from './UsersSection'
 import { AuditSection } from './AuditSection'
 import { AccountSection } from './AccountSection'
-import { RiverSection } from './river/RiverSection'
+import { PierSection } from './pier/PierSection'
 import { NewNewsRoute } from './news-editor/NewNewsRoute'
 import { Feedback, SectionHeading } from './ui'
 
@@ -104,7 +104,7 @@ export function AdminWorkspace({
               }
             />
             <Route path="usuarios" element={<UsersSection userId={userId} />} />
-            <Route path="rio" element={<RiverSection userId={userId} />} />
+            <Route path="muelle" element={<PierSection userId={userId} />} />
             <Route path="roles" element={<RolesSection userId={userId} />} />
             <Route
               path="actividad"

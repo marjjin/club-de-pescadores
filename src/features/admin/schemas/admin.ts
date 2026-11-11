@@ -3,6 +3,7 @@ import { z } from '@/shared/lib/validation'
 export const contextSchema = z.object({
   active: z.boolean(),
   general: z.boolean(),
+  pier: z.boolean().default(false),
   aal2: z.boolean(),
 })
 const identity = {
@@ -21,6 +22,8 @@ export const newsSchema = z.object({
   excerpt: z.string(),
   image_url: z.url(),
   image_alt: z.string(),
+  image_focus_x: z.number(),
+  image_focus_y: z.number(),
   published_at: z.string(),
 })
 export const eventSchema = z.object({
@@ -111,6 +114,7 @@ const instant = z.iso.datetime({
   offset: true,
   error: 'Ingresá una fecha y hora válidas.',
 })
+const focus = z.number().int().min(0).max(100)
 export const contentInputs = {
   news: z.object({
     title: text(180),
@@ -124,6 +128,8 @@ export const contentInputs = {
         'La imagen debe usar HTTPS.',
       ),
     image_alt: text(300),
+    image_focus_x: focus,
+    image_focus_y: focus,
     is_published: z.boolean(),
   }),
   events: z.object({

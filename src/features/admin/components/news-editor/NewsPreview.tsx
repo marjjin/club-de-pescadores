@@ -13,7 +13,11 @@ export function NewsPreview({
 }) {
   return (
     <article className="min-w-0 overflow-hidden rounded-xl border border-navy-900/10 bg-white">
-      <NewsCover url={values.image_url} alt={values.image_alt} />
+      <NewsCover
+        url={values.image_url}
+        alt={values.image_alt}
+        position={`${values.image_focus_x}% ${values.image_focus_y}%`}
+      />
       <div className={`min-w-0 wrap-anywhere ${full ? 'p-6 sm:p-8' : 'p-4'}`}>
         <span className="text-[10px] font-extrabold tracking-[0.16em] text-river-600 uppercase">
           Novedades del club

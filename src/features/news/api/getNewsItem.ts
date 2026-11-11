@@ -14,7 +14,9 @@ export async function getNewsItem(
   if (!parsedId.success) return null
   const { data } = await getSupabase()
     .from('news')
-    .select('id,title,excerpt,published_at,image_url,image_alt')
+    .select(
+      'id,title,excerpt,published_at,image_url,image_alt,image_focus_x,image_focus_y',
+    )
     .eq('id', parsedId.data)
     .eq('is_published', true)
     .is('deleted_at', null)

@@ -19,6 +19,10 @@ const modules: Record<string, { title: string; description: string }> = {
     title: 'Tarifas de pileta',
     description: 'Precios, condiciones y vigencias.',
   },
+  muelle: {
+    title: 'Parte del muelle',
+    description: 'Altura del río, condiciones y fotos o videos del día.',
+  },
   auditoria: {
     title: 'Auditoría',
     description: 'Consulta del historial de cambios y accesos.',
@@ -44,8 +48,8 @@ export function groupRolePermissions(
     group.permissions.push(permission)
     groups.set(id, group)
   }
-  const order = [...contentModules, 'auditoria']
-  const actions = ['ver', 'editar', 'publicar', 'archivar']
+  const order = [...contentModules, 'muelle', 'auditoria']
+  const actions = ['ver', 'editar', 'publicar', 'archivar', 'eliminar']
   const actionOrder = (id: string) => {
     const position = actions.indexOf(id.split('.')[1] ?? '')
     return position < 0 ? 99 : position
@@ -95,6 +99,8 @@ export function selectPermissionGroup(
 }
 export function permissionDescription(id: string) {
   const action = id.split('.')[1]
+  if (id === 'muelle.publicar')
+    return 'Publicar el parte diario: actualiza la altura del río y suma fotos o videos. También permite retirar partes.'
   if (action === 'ver' && id.startsWith('auditoria.'))
     return 'Revisar quién hizo cada cambio, sin modificar el historial.'
   if (action === 'ver')
@@ -105,6 +111,8 @@ export function permissionDescription(id: string) {
     return 'Autorizar publicación y retiro. Guardar cambios requiere también Editar.'
   if (action === 'archivar')
     return 'Archivar y restaurar contenido. Retirar publicaciones también requiere Publicar.'
+  if (action === 'eliminar')
+    return 'Borrar para siempre contenido archivado, incluida su imagen. No se puede deshacer.'
   return 'Acción definida en el catálogo de permisos del sistema.'
 }
 const roleInputSchema = z.object({

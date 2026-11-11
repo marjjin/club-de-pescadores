@@ -16,7 +16,11 @@ vi.mock('../../api/data', () => ({
   saveContent: vi.fn(),
   archiveContent: vi.fn(),
 }))
-vi.mock('../../api/images', () => ({ uploadNewsImage: vi.fn() }))
+vi.mock('../../api/images', async (original) => ({
+  newsImagePath: (await original<typeof images>()).newsImagePath,
+  uploadNewsImage: vi.fn(),
+  removeNewsImages: vi.fn(),
+}))
 beforeAll(() => {
   Object.defineProperty(HTMLDialogElement.prototype, 'showModal', {
     configurable: true,
@@ -204,4 +208,28 @@ it('accepts a dropped image and prevents saving until the upload finishes', asyn
     'https://example.test/uploaded.webp',
   )
   expect(data.saveContent).not.toHaveBeenCalled()
+})
+
+it('removes an uploaded cover from Storage when the editor closes without saving', async () => {
+  const uploaded =
+    'https://project.supabase.co/storage/v1/object/public/news-images/10000000-0000-4000-8000-000000000010/20000000-0000-4000-8000-000000000000.webp'
+  vi.mocked(images.uploadNewsImage).mockResolvedValue(uploaded)
+  vi.spyOn(window, 'confirm').mockReturnValue(true)
+  const close = mount()
+  fireEvent.drop(screen.getByText('Elegir una imagen').closest('label')!, {
+    dataTransfer: {
+      files: [new File(['fixture'], 'photo.png', { type: 'image/png' })],
+    },
+  })
+  await waitFor(() =>
+    expect(screen.getByLabelText('URL de la imagen')).toHaveProperty(
+      'value',
+      uploaded,
+    ),
+  )
+  fireEvent.click(screen.getByRole('button', { name: 'Cancelar' }))
+  expect(close).toHaveBeenCalledOnce()
+  expect(images.removeNewsImages).toHaveBeenCalledWith([
+    '10000000-0000-4000-8000-000000000010/20000000-0000-4000-8000-000000000000.webp',
+  ])
 })

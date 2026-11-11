@@ -1,8 +1,10 @@
-import { ArrowLeft, ArrowUpRight, CalendarDays } from 'lucide-react'
+import { ArrowLeft, CalendarDays } from 'lucide-react'
 import { Link } from 'react-router'
-import { formatShortDate } from '@/shared/lib/dates'
+import { formatLongDate } from '@/shared/lib/dates'
 import { button } from '@/shared/ui/button'
 import { useNewsItem } from '../hooks/useNewsItem'
+import { NewsArticleImage } from './NewsArticleImage'
+import { ShareNewsButton } from './ShareNewsButton'
 
 export function NewsArticle({ id }: { id: string }) {
   const query = useNewsItem(id)
@@ -62,15 +64,14 @@ export function NewsArticle({ id }: { id: string }) {
         </div>
       </section>
     )
+  const url = `${import.meta.env.VITE_SITE_URL}/noticias/${item.id}`
   return (
-    <section className="bg-white px-4 py-10 sm:px-6 sm:py-14">
+    <section className="bg-white px-4 py-8 sm:px-6 sm:py-14">
       <title>{item.title} | Club de Pescadores San Nicolás</title>
-      <link
-        rel="canonical"
-        href={`${import.meta.env.VITE_SITE_URL}/noticias/${item.id}`}
-      />
-      <article className="mx-auto min-w-0 max-w-5xl">
-        <header className="mx-auto max-w-3xl">
+      <link rel="canonical" href={url} />
+      {/* One reading column so title, photo and text share the same edges. */}
+      <article className="mx-auto min-w-0 max-w-3xl">
+        <header>
           <Link
             to="/noticias"
             className="inline-flex min-h-11 items-center gap-2 text-sm font-bold text-river-600 hover:underline"
@@ -78,56 +79,36 @@ export function NewsArticle({ id }: { id: string }) {
             <ArrowLeft size={16} aria-hidden="true" />
             Todas las noticias
           </Link>
-          <p className="mt-7 text-xs font-extrabold tracking-[0.18em] text-river-600 uppercase">
+          <p className="mt-6 text-xs font-extrabold tracking-[0.18em] text-river-600 uppercase">
             Novedades del club
           </p>
-          <h1 className="mt-3 text-3xl leading-tight font-extrabold wrap-anywhere text-navy-900 sm:text-5xl">
+          <h1 className="mt-3 text-3xl leading-tight font-extrabold text-balance wrap-anywhere text-navy-900 sm:text-5xl">
             {item.title}
           </h1>
-          <time
-            dateTime={item.publishedOn}
-            className="mt-5 inline-flex items-center gap-2 text-sm font-semibold text-ink-600"
-          >
+          <p className="mt-5 flex items-center gap-2 text-sm text-ink-600">
             <CalendarDays size={16} aria-hidden="true" />
-            {formatShortDate(item.publishedOn)}
-          </time>
+            <span>
+              Publicada el{' '}
+              <time dateTime={item.publishedOn} className="font-semibold">
+                {formatLongDate(item.publishedOn)}
+              </time>
+            </span>
+          </p>
         </header>
         {query.isError && (
           <p
             role="status"
-            className="mx-auto mt-5 max-w-3xl rounded-lg bg-mist-50 p-3 text-sm text-ink-600"
+            className="mt-5 rounded-lg bg-mist-50 p-3 text-sm text-ink-600"
           >
             No pudimos actualizar esta noticia. Mostramos la última versión
             disponible.
           </p>
         )}
-        <figure className="mt-8">
-          <div className="overflow-hidden rounded-2xl border border-navy-900/10 bg-mist-50">
-            <img
-              src={item.imageUrl}
-              alt={item.imageAlt}
-              width="1200"
-              height="800"
-              className="max-h-[65vh] w-full object-contain"
-            />
-          </div>
-          <figcaption className="mt-3 text-right">
-            <a
-              href={item.imageUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex min-h-10 items-center gap-1.5 text-xs font-semibold text-river-600 hover:underline"
-              aria-label="Ver imagen completa (abre otra pestaña)"
-            >
-              Ver imagen completa
-              <ArrowUpRight size={14} aria-hidden="true" />
-            </a>
-          </figcaption>
-        </figure>
-        <div className="mx-auto mt-6 max-w-3xl text-base leading-8 whitespace-pre-wrap wrap-anywhere text-ink-600 sm:text-lg">
+        <NewsArticleImage src={item.imageUrl} alt={item.imageAlt} />
+        <div className="mt-8 text-lg leading-8 whitespace-pre-wrap wrap-anywhere text-navy-900 sm:text-xl sm:leading-9">
           {item.excerpt}
         </div>
-        <footer className="mx-auto mt-12 max-w-3xl border-t border-navy-900/10 pt-6">
+        <footer className="mt-12 flex flex-col-reverse gap-4 border-t border-navy-900/10 pt-6 sm:flex-row sm:items-center sm:justify-between">
           <Link
             to="/noticias"
             className="inline-flex min-h-11 items-center gap-2 font-bold text-river-600 hover:underline"
@@ -135,6 +116,7 @@ export function NewsArticle({ id }: { id: string }) {
             <ArrowLeft size={17} aria-hidden="true" />
             Volver a todas las noticias
           </Link>
+          <ShareNewsButton title={item.title} url={url} />
         </footer>
       </article>
     </section>

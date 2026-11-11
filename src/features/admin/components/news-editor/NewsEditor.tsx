@@ -79,6 +79,10 @@ export function NewsEditor({
                 errors={errors}
                 busy={editor.busy}
                 onChange={editor.change}
+                onFocusChange={({ x, y }) => {
+                  editor.change('image_focus_x', x)
+                  editor.change('image_focus_y', y)
+                }}
                 onBusyChange={editor.setImageBusy}
               />
             </div>

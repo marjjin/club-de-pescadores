@@ -1,6 +1,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import * as auth from '../api/auth'
 import * as data from '../api/data'
+import * as images from '../api/images'
 
 export function useAdminAction<T, R>(action: (input: T) => Promise<R>) {
   const client = useQueryClient()
@@ -38,6 +39,9 @@ export function useContentActions() {
     ),
     archive: useAdminAction((args: Parameters<typeof data.archiveContent>) =>
       data.archiveContent(...args),
+    ),
+    deleteNews: useAdminAction(([id, version]: [id: string, version: string]) =>
+      images.deleteNewsPermanently(id, version),
     ),
   }
 }

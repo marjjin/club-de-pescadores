@@ -1,11 +1,11 @@
 import { Link, NavLink } from 'react-router'
 import {
   ArrowUpRight,
+  Camera,
   CalendarDays,
   History,
   LayoutDashboard,
   Newspaper,
-  Ruler,
   ShieldCheck,
   UserRound,
   Users,
@@ -19,7 +19,7 @@ const links = [
   { path: '/admin/noticias', label: 'Noticias', icon: Newspaper },
   { path: '/admin/eventos', label: 'Eventos', icon: CalendarDays },
   { path: '/admin/tarifas', label: 'Tarifas de pileta', icon: Waves },
-  { path: '/admin/rio', label: 'Altura del río', icon: Ruler },
+  { path: '/admin/muelle', label: 'Parte del muelle', icon: Camera },
   { path: '/admin/usuarios', label: 'Usuarios', icon: Users },
   { path: '/admin/roles', label: 'Roles y permisos', icon: ShieldCheck },
   { path: '/admin/actividad', label: 'Actividad', icon: History },

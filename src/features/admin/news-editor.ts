@@ -5,7 +5,12 @@ import type { News } from './schemas/admin'
 export type PublicationMode = 'draft' | 'now' | 'scheduled'
 export type NewsEditorValues = Pick<
   News,
-  'title' | 'excerpt' | 'image_url' | 'image_alt'
+  | 'title'
+  | 'excerpt'
+  | 'image_url'
+  | 'image_alt'
+  | 'image_focus_x'
+  | 'image_focus_y'
 > & { published_at: string; publication: PublicationMode }
 export type NewsEditorErrors = Partial<Record<keyof NewsEditorValues, string>>
 
@@ -15,6 +20,8 @@ export function initialNewsValues(row: News | null): NewsEditorValues {
     excerpt: row?.excerpt ?? '',
     image_url: row?.image_url ?? '',
     image_alt: row?.image_alt ?? '',
+    image_focus_x: row?.image_focus_x ?? 50,
+    image_focus_y: row?.image_focus_y ?? 50,
     published_at: initialField(row, 'published_at', 'datetime-local'),
     publication: !row?.is_published
       ? 'draft'

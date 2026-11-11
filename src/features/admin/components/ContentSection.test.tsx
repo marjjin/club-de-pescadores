@@ -23,6 +23,8 @@ const article: News = {
   excerpt: 'Resumen de la noticia de prueba.',
   image_url: 'https://example.test/image.webp',
   image_alt: 'Imagen de prueba',
+  image_focus_x: 50,
+  image_focus_y: 50,
   published_at: '2026-01-01T00:00:00Z',
   is_published: false,
   deleted_at: null,

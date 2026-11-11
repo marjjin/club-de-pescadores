@@ -19,7 +19,9 @@ export async function getNewsPage({
   const pageSize = getPageSize(limit)
   let query = getSupabase()
     .from('news')
-    .select('id,title,excerpt,published_at,image_url,image_alt')
+    .select(
+      'id,title,excerpt,published_at,image_url,image_alt,image_focus_x,image_focus_y',
+    )
     .eq('is_published', true)
     .is('deleted_at', null)
     .lte('published_at', new Date().toISOString())

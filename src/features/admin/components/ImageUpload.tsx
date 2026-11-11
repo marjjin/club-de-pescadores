@@ -70,7 +70,7 @@ export function ImageUpload({
         <span id={`${id}-help`} className="text-xs leading-5 text-ink-600">
           {upload.isPending
             ? 'La estamos optimizando y subiendo.'
-            : 'O arrastrá un archivo acá. JPG, PNG o WebP · Hasta 5 MB.'}
+            : 'O arrastrá un archivo acá. JPG, PNG o WebP · Hasta 25 MB. La optimizamos automáticamente.'}
         </span>
       </label>
       {upload.isPending && (

@@ -4,7 +4,7 @@ import { MemoryRouter, Route, Routes } from 'react-router'
 import { beforeEach, expect, it, vi } from 'vitest'
 import * as auth from '../api/auth'
 import * as data from '../api/data'
-import * as river from '../api/river'
+import * as pier from '../api/pier'
 import { AdminPanel } from './AdminPanel'
 import { PasswordForm } from './PasswordForm'
 import { ContentEditor } from './ContentEditor'
@@ -32,15 +32,25 @@ vi.mock('../api/data', () => ({
   inviteUser: vi.fn(),
   saveUser: vi.fn(),
 }))
-vi.mock('../api/river', () => ({
-  getAdminRiverLevel: vi.fn(),
-  saveRiverLevel: vi.fn(),
+vi.mock('../api/pier', () => ({
+  listPierReports: vi.fn(),
+  publishPierReport: vi.fn(),
+  setPierReportPublished: vi.fn(),
+}))
+vi.mock('../api/media', () => ({
+  pruneClubMedia: vi.fn(() => Promise.resolve()),
+  clubMediaUrl: vi.fn(),
+  isVideoFile: vi.fn(),
+  uploadClubMedia: vi.fn(),
+  removeClubMedia: vi.fn(),
+  mediaFiles: vi.fn(() => []),
 }))
 const session = {
   id: '10000000-0000-4000-8000-000000000010',
   email: 'root@example.test',
   active: true,
   general: true,
+  pier: true,
   aal2: true,
   factorId: null,
 }
@@ -60,7 +70,7 @@ function mount(node = <AdminPanel />, path = '/admin') {
   return client
 }
 beforeEach(() => {
-  vi.mocked(river.getAdminRiverLevel).mockResolvedValue(null)
+  vi.mocked(pier.listPierReports).mockResolvedValue([])
   vi.mocked(auth.getAdminSession).mockResolvedValue(null)
   vi.mocked(data.getDashboard).mockResolvedValue({
     news: 2,
@@ -70,12 +80,12 @@ beforeEach(() => {
     users: 1,
   })
 })
-it('opens a pier report directly in the news editor and returns to the news list', async () => {
+it('opens the news editor from the dashboard shortcut and returns to the news list', async () => {
   vi.mocked(auth.getAdminSession).mockResolvedValue(session)
   vi.mocked(data.listAdmin).mockResolvedValue([])
   mount()
   fireEvent.click(
-    await screen.findByRole('link', { name: 'Publicar noticia del muelle' }),
+    await screen.findByRole('link', { name: 'Escribir una noticia' }),
   )
   expect(
     await screen.findByRole('heading', { level: 1, name: 'Crear noticia' }),
@@ -84,7 +94,6 @@ it('opens a pier report directly in the news editor and returns to the news list
     screen.getByRole('textbox', { name: 'Texto de la noticia' }),
   ).toBeTruthy()
   expect(screen.getByText('Elegir una imagen')).toBeTruthy()
-  expect(screen.queryByLabelText('Altura en metros')).toBeNull()
   fireEvent.click(screen.getByRole('button', { name: 'Volver a noticias' }))
   expect(
     await screen.findByRole('heading', { level: 1, name: 'Noticias' }),
@@ -102,24 +111,36 @@ it('shows login without fetching administrative content for anonymous visitors',
     screen.queryByRole('navigation', { name: 'Administración' }),
   ).toBeNull()
 })
-it('opens the river measurement editor from the general dashboard shortcut', async () => {
+it('opens the pier report form from the general dashboard shortcut', async () => {
   vi.mocked(auth.getAdminSession).mockResolvedValue(session)
   mount()
   fireEvent.click(
-    await screen.findByRole('link', { name: 'Actualizar altura del río' }),
+    await screen.findByRole('link', { name: 'Cargar parte del muelle' }),
   )
   expect(
-    await screen.findByRole('heading', { level: 1, name: 'Altura del río' }),
+    await screen.findByRole('heading', { level: 1, name: 'Parte del muelle' }),
   ).toBeTruthy()
-  expect(await screen.findByLabelText('Altura en metros')).toBeTruthy()
+  expect(screen.getByLabelText(/Altura del río/)).toBeTruthy()
   expect(
     screen
-      .getByRole('link', { name: 'Altura del río' })
+      .getByRole('link', { name: 'Parte del muelle' })
       .getAttribute('aria-current'),
   ).toBe('page')
+  expect(screen.queryByRole('link', { name: 'Altura del río' })).toBeNull()
+})
+it('gives pier staff a reduced panel without the general sections', async () => {
+  vi.mocked(auth.getAdminSession).mockResolvedValue({
+    ...session,
+    general: false,
+    pier: true,
+  })
+  mount()
   expect(
-    screen.getByRole('button', { name: 'Guardar sin publicar' }),
+    await screen.findByRole('heading', { level: 1, name: 'Parte del muelle' }),
   ).toBeTruthy()
+  expect(screen.getByText('Personal del muelle')).toBeTruthy()
+  expect(screen.queryByRole('link', { name: 'Roles y permisos' })).toBeNull()
+  expect(data.getDashboard).not.toHaveBeenCalled()
 })
 it('requires MFA before rendering administrative data', async () => {
   vi.mocked(auth.getAdminSession).mockResolvedValue({
@@ -190,7 +211,7 @@ it('requires the existing MFA factor even during password recovery', async () =>
 })
 it.each([
   [{ ...session, active: false }, 'Acceso no habilitado'],
-  [{ ...session, general: false }, 'Cuenta configurada'],
+  [{ ...session, general: false, pier: false }, 'Cuenta configurada'],
 ])(
   'keeps unauthorized profiles outside the general panel',
   async (state, heading) => {

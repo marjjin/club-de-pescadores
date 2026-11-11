@@ -13,6 +13,8 @@ const values: NewsEditorValues = {
   excerpt: 'Texto de prueba.',
   image_url: 'https://example.test/image.webp',
   image_alt: 'Descripción de prueba',
+  image_focus_x: 30,
+  image_focus_y: 70,
   published_at: '',
   publication: 'draft',
 }
@@ -117,4 +119,20 @@ it('returns field errors and blocks unsafe image URLs', () => {
     'not-a-url',
   ])
     expect(safeNewsImage(url)).toBeNull()
+})
+it('centres new covers, keeps the saved framing and rejects framing outside the image', () => {
+  expect(initialNewsValues(null)).toMatchObject({
+    image_focus_x: 50,
+    image_focus_y: 50,
+  })
+  expect(
+    initialNewsValues({ ...published, image_focus_x: 30, image_focus_y: 70 }),
+  ).toMatchObject({ image_focus_x: 30, image_focus_y: 70 })
+  expect(validateNewsEditor(values, null, now)).toMatchObject({
+    success: true,
+    data: { image_focus_x: 30, image_focus_y: 70 },
+  })
+  expect(
+    validateNewsEditor({ ...values, image_focus_x: 101 }, null, now).success,
+  ).toBe(false)
 })
