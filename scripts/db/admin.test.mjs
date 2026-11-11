@@ -147,6 +147,47 @@ const article = {
   published_at: '2026-01-01T00:00:00Z',
   is_published: false,
 }
+it('stores the cover framing, keeps it when omitted and rejects values outside 0-100', async () => {
+  const created = (
+    await run(editor, "select public.admin_save_content('news',$1) as item", [
+      article,
+    ])
+  ).rows[0].item
+  expect(created).toMatchObject({ image_focus_x: 50, image_focus_y: 50 })
+  const framed = (
+    await run(
+      editor,
+      "select public.admin_save_content('news',$1,$2,$3) as item",
+      [
+        { ...article, image_focus_x: 20, image_focus_y: 85 },
+        created.id,
+        created.updated_at,
+      ],
+    )
+  ).rows[0].item
+  expect(framed).toMatchObject({ image_focus_x: 20, image_focus_y: 85 })
+  // Clients deployed before this column existed must not reset the framing.
+  const kept = (
+    await run(
+      editor,
+      "select public.admin_save_content('news',$1,$2,$3) as item",
+      [{ ...article, title: 'Sin encuadre' }, framed.id, framed.updated_at],
+    )
+  ).rows[0].item
+  expect(kept).toMatchObject({ image_focus_x: 20, image_focus_y: 85 })
+  for (const focus of [-1, 101])
+    await expect(
+      run(editor, "select public.admin_save_content('news',$1,$2,$3)", [
+        { ...article, image_focus_x: focus },
+        kept.id,
+        kept.updated_at,
+      ]),
+    ).rejects.toMatchObject({ code: '23514' })
+  const listed = (
+    await run(editor, "select public.admin_list('news') as items")
+  ).rows[0].items.find((item) => item.id === kept.id)
+  expect(listed).toMatchObject({ image_focus_x: 20, image_focus_y: 85 })
+})
 it('lets editors save drafts but denies publication, including changes to already-published rows', async () => {
   const draft = (
     await run(editor, "select public.admin_save_content('news',$1) as item", [

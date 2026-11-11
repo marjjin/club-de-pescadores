@@ -51,6 +51,8 @@ const labels: Record<string, string> = {
   published_at: 'Fecha de publicación',
   image_url: 'Imagen de la noticia',
   image_alt: 'Descripción de la imagen',
+  image_focus_x: 'Encuadre horizontal de la portada (%)',
+  image_focus_y: 'Encuadre vertical de la portada (%)',
   is_published: 'Estado de publicación',
   active: 'Estado del acceso',
   is_system: 'Tipo de rol',
@@ -102,6 +104,7 @@ function permissionLabel(id: string) {
     editar: 'Editar',
     publicar: 'Publicar',
     archivar: 'Archivar y restaurar',
+    eliminar: 'Eliminar definitivamente',
   }
   return ['noticias', 'eventos', 'tarifas'].includes(module) &&
     Object.hasOwn(actions, action)

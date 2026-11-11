@@ -1,7 +1,8 @@
 import { useState } from 'react'
 import { AlertCircle } from 'lucide-react'
 import { useAdminList } from '../hooks/useAdminData'
-import { useContentActions } from '../hooks/useAdminActions'
+import { useContentRowActions } from '../hooks/useContentRowActions'
+import { useNewsImageCleanup } from '../hooks/useNewsImageCleanup'
 import type { Content, ContentKind } from '../schemas/admin'
 import { contentConfig } from '../content-fields'
 import { contentListCopy } from '../content-list'
@@ -21,7 +22,8 @@ export function ContentSection({
   userId: string
 }) {
   const list = useAdminList(kind, userId)
-  const { archive } = useContentActions()
+  const actions = useContentRowActions(kind)
+  useNewsImageCleanup(kind === 'news')
   const [editing, setEditing] = useState<Content | 'new' | null>(null)
   const [searchInput, setSearchInput] = useState('')
   const config = contentConfig[kind]
@@ -83,19 +85,13 @@ export function ContentSection({
             </button>
           </div>
         )}
-        {(archive.error ||
-          archive.isSuccess ||
+        {(actions.error ||
+          actions.success ||
           (list.query.error && rows.length > 0)) && (
           <div className="px-4 pb-4 sm:px-6">
             <Feedback
-              error={archive.error ?? list.query.error}
-              success={
-                archive.isSuccess
-                  ? archive.variables?.[3]
-                    ? 'Contenido restaurado como borrador.'
-                    : 'Contenido enviado a la papelera.'
-                  : null
-              }
+              error={actions.error ?? list.query.error}
+              success={actions.success}
             />
           </div>
         )}
@@ -145,23 +141,10 @@ export function ContentSection({
                 <ContentListItem
                   key={row.id}
                   row={row}
-                  busy={archive.isPending}
+                  busy={actions.busy}
                   onEdit={() => setEditing(row)}
-                  onArchive={() => {
-                    if (
-                      window.confirm(
-                        row.deleted_at
-                          ? '¿Restaurar este contenido como borrador?'
-                          : '¿Enviar este contenido a la papelera? Dejará de verse en el sitio.',
-                      )
-                    )
-                      archive.mutate([
-                        kind,
-                        row.id,
-                        row.updated_at,
-                        Boolean(row.deleted_at),
-                      ])
-                  }}
+                  onArchive={() => actions.toggleArchive(row)}
+                  onDelete={actions.remove && (() => actions.remove?.(row))}
                 />
               ))}
             </div>

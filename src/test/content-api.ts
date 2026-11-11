@@ -28,6 +28,8 @@ export const newsRows = [
     published_at: '2026-10-12T15:00:00+00:00',
     image_url: 'https://example.com/image.webp',
     image_alt: 'Imagen de prueba',
+    image_focus_x: 50,
+    image_focus_y: 50,
   },
 ]
 export const rateRows = [

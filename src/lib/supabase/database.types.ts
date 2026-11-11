@@ -112,6 +112,8 @@ export type Database = {
           deleted_at: string | null
           created_at: string
           updated_at: string
+          image_focus_x: number
+          image_focus_y: number
         }
         Insert: {
           id?: string
@@ -124,6 +126,8 @@ export type Database = {
           deleted_at?: string | null
           created_at?: string
           updated_at?: string
+          image_focus_x?: number
+          image_focus_y?: number
         }
         Update: {
           id?: string
@@ -136,6 +140,8 @@ export type Database = {
           deleted_at?: string | null
           created_at?: string
           updated_at?: string
+          image_focus_x?: number
+          image_focus_y?: number
         }
         Relationships: []
       }
@@ -280,6 +286,10 @@ export type Database = {
       }
       admin_context: { Args: Record<never, never>; Returns: Json }
       admin_dashboard: { Args: Record<never, never>; Returns: Json }
+      admin_delete_news: {
+        Args: { p_id: string | null; p_version: string | null }
+        Returns: string
+      }
       admin_delete_role: {
         Args: { p_id: string | null; p_version: string | null }
         Returns: undefined
@@ -331,11 +341,16 @@ export type Database = {
         }
         Returns: undefined
       }
+      admin_unused_news_images: {
+        Args: Record<never, never>
+        Returns: string[]
+      }
       bootstrap_admin: { Args: { p_email: string | null }; Returns: string }
       has_permission: {
         Args: { p_permission: string | null }
         Returns: boolean
       }
+      news_image_in_use: { Args: { p_name: string | null }; Returns: boolean }
     }
     Enums: Record<never, never>
     CompositeTypes: Record<never, never>

@@ -2,7 +2,15 @@ import { useEffect, useState } from 'react'
 import { ImageIcon, ImageOff } from 'lucide-react'
 import { safeNewsImage } from '../../news-editor'
 
-function CoverImage({ src, alt }: { src: string; alt: string }) {
+function CoverImage({
+  src,
+  alt,
+  position,
+}: {
+  src: string
+  alt: string
+  position: string
+}) {
   const [failed, setFailed] = useState(false)
   return failed ? (
     <div className="flex h-full flex-col items-center justify-center gap-2 px-5 text-center text-ink-600">
@@ -17,12 +25,22 @@ function CoverImage({ src, alt }: { src: string; alt: string }) {
       alt={alt}
       width="720"
       height="405"
-      className="size-full object-cover"
+      draggable={false}
+      style={{ objectPosition: position }}
+      className="size-full object-cover select-none"
       onError={() => setFailed(true)}
     />
   )
 }
-export function NewsCover({ url, alt }: { url: string; alt: string }) {
+export function NewsCover({
+  url,
+  alt,
+  position = '50% 50%',
+}: {
+  url: string
+  alt: string
+  position?: string
+}) {
   const candidate = safeNewsImage(url)
   const [safe, setSafe] = useState(candidate)
   useEffect(() => {
@@ -30,9 +48,10 @@ export function NewsCover({ url, alt }: { url: string; alt: string }) {
     return () => window.clearTimeout(timer)
   }, [candidate])
   return (
-    <div className="aspect-video overflow-hidden bg-mist-50">
+    // Same 3:2 ratio as the public news cards, so the chosen framing matches the site.
+    <div className="aspect-[3/2] overflow-hidden bg-mist-50">
       {safe ? (
-        <CoverImage key={safe} src={safe} alt={alt} />
+        <CoverImage key={safe} src={safe} alt={alt} position={position} />
       ) : (
         <div className="flex h-full flex-col items-center justify-center gap-2 text-ink-600/80">
           <ImageIcon size={30} strokeWidth={1.5} aria-hidden="true" />

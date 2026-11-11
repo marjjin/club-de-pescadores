@@ -45,7 +45,7 @@ export function groupRolePermissions(
     groups.set(id, group)
   }
   const order = [...contentModules, 'auditoria']
-  const actions = ['ver', 'editar', 'publicar', 'archivar']
+  const actions = ['ver', 'editar', 'publicar', 'archivar', 'eliminar']
   const actionOrder = (id: string) => {
     const position = actions.indexOf(id.split('.')[1] ?? '')
     return position < 0 ? 99 : position
@@ -105,6 +105,8 @@ export function permissionDescription(id: string) {
     return 'Autorizar publicación y retiro. Guardar cambios requiere también Editar.'
   if (action === 'archivar')
     return 'Archivar y restaurar contenido. Retirar publicaciones también requiere Publicar.'
+  if (action === 'eliminar')
+    return 'Borrar para siempre contenido archivado, incluida su imagen. No se puede deshacer.'
   return 'Acción definida en el catálogo de permisos del sistema.'
 }
 const roleInputSchema = z.object({

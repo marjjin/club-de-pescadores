@@ -22,6 +22,7 @@ export function NewsList({ items }: { items: NewsItem[] }) {
                   height="400"
                   loading="lazy"
                   alt={item.imageAlt}
+                  style={{ objectPosition: item.imagePosition }}
                   className="aspect-[3/2] w-full object-cover transition-[scale] duration-500 ease-out group-hover:scale-105 motion-reduce:transition-none"
                 />
               </div>

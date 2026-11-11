@@ -1,49 +1,57 @@
 import { getAdminSupabase } from '@/lib/supabase/admin-client'
+import { optimizeImage } from '../image-optimizer'
 import { adminError } from './errors'
 
 export async function uploadNewsImage(file: File) {
-  if (
-    !['image/jpeg', 'image/png', 'image/webp'].includes(file.type) ||
-    file.size > 5 * 1024 * 1024
-  )
-    throw new Error('Usá una imagen JPG, PNG o WebP de hasta 5 MB.')
-  const bitmap = await createImageBitmap(file).catch(() => {
-    throw new Error(
-      'No pudimos abrir la imagen. Probá con otro archivo JPG, PNG o WebP.',
-    )
+  const blob = await optimizeImage(file)
+  const client = getAdminSupabase()
+  const user = await client.auth.getUser()
+  if (user.error || !user.data.user) throw adminError(user.error)
+  const extension = blob.type === 'image/webp' ? 'webp' : 'jpg'
+  const path = `${user.data.user.id}/${crypto.randomUUID()}.${extension}`
+  const { error } = await client.storage
+    .from('news-images')
+    .upload(path, blob, {
+      contentType: blob.type,
+      upsert: false,
+      cacheControl: '31536000',
+    })
+  if (error) throw adminError(error)
+  return client.storage.from('news-images').getPublicUrl(path).data.publicUrl
+}
+
+const publicPrefix = '/storage/v1/object/public/news-images/'
+/** Mirrors private.news_image_path(): only covers stored in our bucket have a path. */
+export function newsImagePath(url: string | null | undefined) {
+  const path = url?.split(publicPrefix)[1]
+  return path && /^[0-9a-f-]{36}\/[0-9a-f-]{36}\.(webp|jpg|png)$/.test(path)
+    ? path
+    : null
+}
+/**
+ * Best effort: the storage policy only lets through images no news uses, so a
+ * refused or failed removal just leaves the file for the periodic cleanup.
+ */
+export async function removeNewsImages(paths: (string | null)[]) {
+  const names = [...new Set(paths.filter((path) => path !== null))]
+  if (!names.length) return
+  await getAdminSupabase()
+    .storage.from('news-images')
+    .remove(names)
+    .catch(() => undefined)
+}
+export async function deleteNewsPermanently(id: string, version: string) {
+  const { data, error } = await getAdminSupabase().rpc('admin_delete_news', {
+    p_id: id,
+    p_version: version,
   })
-  try {
-    const scale = Math.min(1, 1920 / Math.max(bitmap.width, bitmap.height))
-    const canvas = document.createElement('canvas')
-    canvas.width = Math.max(1, Math.round(bitmap.width * scale))
-    canvas.height = Math.max(1, Math.round(bitmap.height * scale))
-    const context = canvas.getContext('2d')
-    if (!context) throw new Error('El navegador no pudo preparar la imagen.')
-    context.drawImage(bitmap, 0, 0, canvas.width, canvas.height)
-    const blob = await new Promise<Blob>((resolve, reject) =>
-      canvas.toBlob(
-        (value) =>
-          value
-            ? resolve(value)
-            : reject(new Error('No se pudo procesar la imagen.')),
-        'image/webp',
-        0.85,
-      ),
-    )
-    const client = getAdminSupabase()
-    const user = await client.auth.getUser()
-    if (user.error || !user.data.user) throw adminError(user.error)
-    const path = `${user.data.user.id}/${crypto.randomUUID()}.${blob.type === 'image/webp' ? 'webp' : 'png'}`
-    const { error } = await client.storage
-      .from('news-images')
-      .upload(path, blob, {
-        contentType: blob.type,
-        upsert: false,
-        cacheControl: '31536000',
-      })
-    if (error) throw adminError(error)
-    return client.storage.from('news-images').getPublicUrl(path).data.publicUrl
-  } finally {
-    bitmap.close()
-  }
+  if (error) throw adminError(error)
+  await removeNewsImages([typeof data === 'string' ? data : null])
+}
+export async function removeUnusedNewsImages() {
+  const { data, error } = await getAdminSupabase().rpc(
+    'admin_unused_news_images',
+  )
+  if (error || !Array.isArray(data)) return
+  await removeNewsImages(data.filter((name) => typeof name === 'string'))
 }

@@ -1,10 +1,11 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import type { FormEvent } from 'react'
 import { useContentActions } from './useAdminActions'
 import { initialNewsValues, validateNewsEditor } from '../news-editor'
 import type { NewsEditorErrors, NewsEditorValues } from '../news-editor'
 import type { News } from '../schemas/admin'
 import { dateLabel } from '../form-utils'
+import { newsImagePath, removeNewsImages } from '../api/images'
 
 export function useNewsEditor(row: News | null, onClose: () => void) {
   const [initial] = useState(() => initialNewsValues(row))
@@ -13,6 +14,19 @@ export function useNewsEditor(row: News | null, onClose: () => void) {
   const [imageBusy, setImageBusy] = useState(false)
   const [previewOpen, setPreviewOpen] = useState(false)
   const { save } = useContentActions()
+  // Covers uploaded in this session; the ones not kept are removed from Storage.
+  const uploads = useRef(new Set<string>())
+  /** `saved` is the cover just stored, or null when the editor closes without saving. */
+  function discardImages(saved: string | null) {
+    const candidates =
+      saved === null
+        ? [...uploads.current]
+        : [...uploads.current, row?.image_url ?? '']
+    const keep = newsImagePath(saved)
+    void removeNewsImages(
+      candidates.map(newsImagePath).filter((path) => path !== keep),
+    )
+  }
   const dirty = (Object.keys(initial) as (keyof NewsEditorValues)[]).some(
     (key) => values[key] !== initial[key],
   )
@@ -31,6 +45,8 @@ export function useNewsEditor(row: News | null, onClose: () => void) {
     name: K,
     value: NewsEditorValues[K],
   ) {
+    if (name === 'image_url' && typeof value === 'string' && value)
+      uploads.current.add(value)
     setValues((previous) => ({ ...previous, [name]: value }))
     setErrors((previous) => {
       const next = { ...previous }
@@ -49,6 +65,7 @@ export function useNewsEditor(row: News | null, onClose: () => void) {
       )
     )
       return
+    discardImages(null)
     onClose()
   }
   function submit(event: FormEvent<HTMLFormElement>) {
@@ -80,7 +97,12 @@ export function useNewsEditor(row: News | null, onClose: () => void) {
     if (confirmation && !window.confirm(confirmation)) return
     save.mutate(
       ['news', result.data, row?.id ?? null, row?.updated_at ?? null],
-      { onSuccess: onClose },
+      {
+        onSuccess: () => {
+          discardImages(result.data.image_url)
+          onClose()
+        },
+      },
     )
   }
   return {

@@ -11,5 +11,6 @@ export function mapNewsItem(row: z.infer<typeof newsRowSchema>): NewsItem {
     publishedOn: getClubToday(new Date(row.published_at)),
     imageUrl: row.image_url,
     imageAlt: row.image_alt,
+    imagePosition: `${row.image_focus_x}% ${row.image_focus_y}%`,
   }
 }

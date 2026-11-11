@@ -4,18 +4,21 @@ import type { NewsEditorErrors, NewsEditorValues } from '../../news-editor'
 import { ImageUpload } from '../ImageUpload'
 import { inputClass } from '../ui'
 import { NewsCover } from './NewsCover'
+import { NewsCoverFramer } from './NewsCoverFramer'
 
 export function NewsImageField({
   values,
   errors,
   busy,
   onChange,
+  onFocusChange,
   onBusyChange,
 }: {
   values: NewsEditorValues
   errors: NewsEditorErrors
   busy: boolean
   onChange: (name: 'image_url' | 'image_alt', value: string) => void
+  onFocusChange: (focus: { x: number; y: number }) => void
   onBusyChange: (busy: boolean) => void
 }) {
   const id = useId()
@@ -44,8 +47,20 @@ export function NewsImageField({
         </div>
       </div>
       {values.image_url && (
-        <div className="relative mb-4 overflow-hidden rounded-xl border border-navy-900/10">
-          <NewsCover url={values.image_url} alt={values.image_alt} />
+        <div className="relative mb-4">
+          <NewsCoverFramer
+            focus={{ x: values.image_focus_x, y: values.image_focus_y }}
+            disabled={busy}
+            onChange={onFocusChange}
+          >
+            <div className="overflow-hidden rounded-xl border border-navy-900/10">
+              <NewsCover
+                url={values.image_url}
+                alt={values.image_alt}
+                position={`${values.image_focus_x}% ${values.image_focus_y}%`}
+              />
+            </div>
+          </NewsCoverFramer>
           <button
             type="button"
             disabled={busy}
@@ -59,7 +74,10 @@ export function NewsImageField({
         </div>
       )}
       <ImageUpload
-        onUploaded={(url) => onChange('image_url', url)}
+        onUploaded={(url) => {
+          onChange('image_url', url)
+          onFocusChange({ x: 50, y: 50 })
+        }}
         onBusyChange={onBusyChange}
         disabled={busy}
         errorId={errors.image_url ? `${id}-image-error` : undefined}
