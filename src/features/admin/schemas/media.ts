@@ -33,3 +33,8 @@ export const mediaListSchema = z
       items.filter((item) => item.kind === 'video').length <= MAX_VIDEOS,
     `Podés sumar hasta ${MAX_VIDEOS} videos.`,
   )
+// An upload before it gets its alt text; used to restore unsent drafts.
+export const uploadedMediaSchema = z.discriminatedUnion('kind', [
+  mediaInputSchema.options[0].omit({ alt: true }),
+  mediaInputSchema.options[1].omit({ alt: true }),
+])

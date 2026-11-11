@@ -8,6 +8,7 @@ import {
 } from '../api/media'
 import type { UploadedMedia } from '../api/media'
 import { MAX_MEDIA, MAX_VIDEOS } from '../schemas/media'
+import { randomUuid } from '@/shared/lib/random-id'
 
 export type MediaDraft = {
   id: string
@@ -18,10 +19,29 @@ export type MediaDraft = {
   media?: UploadedMedia
   /** Public URL of the photo or the video poster, once uploaded. */
   preview?: string
+  /** Final format and weight after optimization, e.g. "WebP · 240 KB". */
+  summary?: string
 }
 
-export function useMediaUploads() {
-  const [drafts, setDrafts] = useState<MediaDraft[]>([])
+const formatBytes = (bytes: number) =>
+  bytes >= 1024 * 1024
+    ? `${(bytes / 1024 / 1024).toFixed(1).replace('.', ',')} MB`
+    : `${Math.max(1, Math.round(bytes / 1024))} KB`
+
+/** `initial` restores uploads from an unsent draft as ready items. */
+export function useMediaUploads(initial: UploadedMedia[] = []) {
+  const [drafts, setDrafts] = useState<MediaDraft[]>(() =>
+    initial.map((media) => ({
+      id: randomUuid(),
+      name: media.path.split('/').at(-1) ?? 'archivo',
+      kind: media.kind,
+      status: 'ready',
+      media,
+      preview: clubMediaUrl(
+        media.kind === 'video' ? media.poster_path : media.path,
+      ),
+    })),
+  )
   const [notice, setNotice] = useState<string | null>(null)
   // Sequential uploads keep mobile data and the free bandwidth quota predictable.
   const queue = useRef(Promise.resolve())
@@ -48,7 +68,7 @@ export function useMediaUploads() {
       accepted.push({
         file,
         draft: {
-          id: crypto.randomUUID(),
+          id: randomUuid(),
           name: file.name,
           kind: video ? 'video' : 'image',
           status: 'uploading',
@@ -63,10 +83,11 @@ export function useMediaUploads() {
     for (const { draft, file } of accepted)
       queue.current = queue.current.then(() =>
         uploadClubMedia(file).then(
-          (media) =>
+          ({ media, bytes, format }) =>
             update(draft.id, {
               status: 'ready',
               media,
+              summary: `${format} · ${formatBytes(bytes)}`,
               preview: clubMediaUrl(
                 media.kind === 'video' ? media.poster_path : media.path,
               ),

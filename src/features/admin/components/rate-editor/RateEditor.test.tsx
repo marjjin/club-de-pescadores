@@ -118,7 +118,7 @@ it('updates the preview while typing and keeps publication behind confirmation',
   )
 })
 
-it('protects unsaved changes and allows discarding them explicitly', () => {
+it('protects unsaved changes and allows discarding them explicitly', async () => {
   const confirm = vi.spyOn(window, 'confirm').mockReturnValue(false)
   const close = mount()
   fill()
@@ -126,10 +126,11 @@ it('protects unsaved changes and allows discarding them explicitly', () => {
   expect(close).not.toHaveBeenCalled()
   const event = new Event('beforeunload', { cancelable: true })
   window.dispatchEvent(event)
-  expect(event.defaultPrevented).toBe(true)
+  // Unsaved work is kept as a draft instead of blocking the reload natively.
+  expect(event.defaultPrevented).toBe(false)
   confirm.mockReturnValue(true)
   fireEvent.click(screen.getByRole('button', { name: 'Cancelar' }))
-  expect(close).toHaveBeenCalledOnce()
+  await waitFor(() => expect(close).toHaveBeenCalledOnce())
 })
 
 it('preserves existing amounts and version and confirms removing a published rate', async () => {

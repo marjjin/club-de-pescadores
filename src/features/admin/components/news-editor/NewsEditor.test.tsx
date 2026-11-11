@@ -1,5 +1,6 @@
 import {
   act,
+  cleanup,
   fireEvent,
   render,
   screen,
@@ -162,7 +163,7 @@ it('updates the live preview and opens the full preview without saving', async (
   )
   await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull())
 })
-it('protects unsaved changes when leaving the editor', () => {
+it('protects unsaved changes when leaving the editor', async () => {
   const confirm = vi.spyOn(window, 'confirm').mockReturnValue(false)
   const close = mount()
   fireEvent.change(screen.getByRole('textbox', { name: 'Título' }), {
@@ -172,7 +173,7 @@ it('protects unsaved changes when leaving the editor', () => {
   expect(close).not.toHaveBeenCalled()
   confirm.mockReturnValue(true)
   fireEvent.click(screen.getByRole('button', { name: 'Cancelar' }))
-  expect(close).toHaveBeenCalledOnce()
+  await waitFor(() => expect(close).toHaveBeenCalledOnce())
 })
 it('accepts a dropped image and prevents saving until the upload finishes', async () => {
   let finish: (url: string) => void = () => {}
@@ -228,8 +229,27 @@ it('removes an uploaded cover from Storage when the editor closes without saving
     ),
   )
   fireEvent.click(screen.getByRole('button', { name: 'Cancelar' }))
-  expect(close).toHaveBeenCalledOnce()
+  await waitFor(() => expect(close).toHaveBeenCalledOnce())
   expect(images.removeNewsImages).toHaveBeenCalledWith([
     '10000000-0000-4000-8000-000000000010/20000000-0000-4000-8000-000000000000.webp',
   ])
+})
+
+it('starts the next new article empty after saving one', async () => {
+  const close = mount()
+  fill()
+  // Let the debounced draft reach storage, as it does while someone types.
+  await waitFor(() =>
+    expect(localStorage.getItem('club-draft:news:new')).not.toBeNull(),
+  )
+  fireEvent.click(screen.getByRole('button', { name: 'Guardar borrador' }))
+  await waitFor(() => expect(close).toHaveBeenCalled())
+  expect(localStorage.getItem('club-draft:news:new')).toBeNull()
+  cleanup()
+  mount()
+  expect(screen.getByRole('textbox', { name: 'Título' })).toHaveProperty(
+    'value',
+    '',
+  )
+  expect(screen.queryByText('Recuperamos tu borrador')).toBeNull()
 })

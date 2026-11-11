@@ -6,6 +6,7 @@ import { Feedback, primaryClass, secondaryClass } from '../ui'
 import { EventFields } from './EventFields'
 import { EventPreview } from './EventPreview'
 import { EventPublication } from './EventPublication'
+import { DraftNotice } from '../DraftNotice'
 
 export function EventEditor({
   row,
@@ -14,10 +15,17 @@ export function EventEditor({
   row: ClubEvent | null
   onClose: () => void
 }) {
-  const { values, errors, dirty, save, change, close, submit } = useEventEditor(
-    row,
-    onClose,
-  )
+  const {
+    draftNotice,
+    discardDraft,
+    values,
+    errors,
+    dirty,
+    save,
+    change,
+    close,
+    submit,
+  } = useEventEditor(row, onClose)
   const headingRef = useRef<HTMLHeadingElement>(null)
   useEffect(() => {
     headingRef.current?.focus()
@@ -56,6 +64,9 @@ export function EventEditor({
           publicarla.
         </p>
       </header>
+      {draftNotice && (
+        <DraftNotice savedAt={draftNotice} onDiscard={discardDraft} />
+      )}
       <form noValidate onSubmit={submit} className="min-w-0">
         <fieldset disabled={save.isPending} className="min-w-0">
           <legend className="sr-only">Datos y publicación del evento</legend>

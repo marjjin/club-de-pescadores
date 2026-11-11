@@ -1,5 +1,7 @@
 import { Eye, EyeOff, Images, UserRound } from 'lucide-react'
 import { formatRiverDate, formatRiverHeight } from '@/features/river'
+import { formatRelative } from '@/shared/lib/dates'
+import { useConfirm } from '../../hooks/useConfirm'
 import { usePierReports, useTogglePier } from '../../hooks/usePier'
 import type { PierReport } from '../../schemas/pier'
 import { Feedback, secondaryClass } from '../ui'
@@ -26,6 +28,7 @@ function Status({ report, live }: { report: PierReport; live: boolean }) {
 export function PierHistory({ userId }: { userId: string }) {
   const query = usePierReports(userId)
   const toggle = useTogglePier(userId)
+  const confirm = useConfirm()
   const reports = query.data?.pages.flat() ?? []
   const liveId = reports.find((report) => report.is_published)?.id
   return (
@@ -70,8 +73,14 @@ export function PierHistory({ userId }: { userId: string }) {
                 <Status report={report} live={report.id === liveId} />
               </div>
               <p className="text-xs text-ink-600">
-                <time dateTime={report.measured_at}>
-                  {formatRiverDate(report.measured_at)}
+                <time
+                  dateTime={report.measured_at}
+                  title={formatRiverDate(report.measured_at)}
+                >
+                  <span className="font-semibold text-navy-900">
+                    {formatRelative(report.measured_at)}
+                  </span>{' '}
+                  · {formatRiverDate(report.measured_at)}
                 </time>
               </p>
               {report.conditions && (
@@ -87,28 +96,41 @@ export function PierHistory({ userId }: { userId: string }) {
                       {author(report.author_email)}
                     </span>
                   </span>
-                  <span className="inline-flex items-center gap-1">
-                    <Images size={13} aria-hidden="true" />
-                    {report.media_count}{' '}
-                    {report.media_count === 1 ? 'archivo' : 'archivos'}
-                  </span>
+                  {report.media_count > 0 && (
+                    <span className="inline-flex items-center gap-1">
+                      <Images size={13} aria-hidden="true" />
+                      {report.media_count}{' '}
+                      {report.media_count === 1 ? 'archivo' : 'archivos'}
+                    </span>
+                  )}
                 </p>
                 <button
                   type="button"
                   className="inline-flex min-h-10 items-center gap-1.5 rounded-lg px-2 text-xs font-bold text-river-600 hover:bg-mist-50 disabled:opacity-50"
                   disabled={toggle.isPending}
                   onClick={() => {
-                    if (
-                      window.confirm(
-                        report.is_published
-                          ? '¿Retirar este parte del sitio?'
-                          : '¿Volver a mostrar este parte en el sitio?',
-                      )
-                    )
-                      toggle.mutate({
-                        id: report.id,
-                        published: !report.is_published,
-                      })
+                    void confirm(
+                      report.is_published
+                        ? {
+                            title: '¿Retirar este parte del sitio?',
+                            message:
+                              'Deja de verse en el inicio. Podés volver a mostrarlo cuando quieras.',
+                            confirmLabel: 'Retirar del sitio',
+                            tone: 'danger',
+                          }
+                        : {
+                            title: '¿Volver a mostrar este parte?',
+                            message:
+                              'Si es el más reciente, aparecerá en el inicio del sitio.',
+                            confirmLabel: 'Volver a mostrar',
+                          },
+                    ).then((accepted) => {
+                      if (accepted)
+                        toggle.mutate({
+                          id: report.id,
+                          published: !report.is_published,
+                        })
+                    })
                   }}
                 >
                   {report.is_published ? (

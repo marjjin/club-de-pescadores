@@ -8,6 +8,7 @@ import { NewsImageField } from './NewsImageField'
 import { NewsPreview, NewsPreviewDialog } from './NewsPreview'
 import { NewsPublication } from './NewsPublication'
 import { NewsTextFields } from './NewsTextFields'
+import { DraftNotice } from '../DraftNotice'
 
 export function NewsEditor({
   row,
@@ -62,6 +63,12 @@ export function NewsEditor({
           </button>
         </div>
       </header>
+      {editor.draftNotice && (
+        <DraftNotice
+          savedAt={editor.draftNotice}
+          onDiscard={editor.discardDraft}
+        />
+      )}
       <form noValidate onSubmit={editor.submit} className="min-w-0">
         <fieldset disabled={save.isPending} className="min-w-0">
           <legend className="sr-only">

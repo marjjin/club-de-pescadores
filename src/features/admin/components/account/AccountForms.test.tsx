@@ -75,7 +75,8 @@ describe('account forms', () => {
     mount(<EmailForm currentEmail="owner@example.test" />)
     input('Nuevo correo electrónico', 'next@example.test')
     input('Repetí el nuevo correo', 'NEXT@example.test')
-    expect(unloadPrevented()).toBe(true)
+    // The native reload warning is gone from the panel.
+    expect(unloadPrevented()).toBe(false)
     const form = screen.getByRole('form')
     fireEvent.submit(form)
     expect((await screen.findByRole('status')).textContent).toContain(

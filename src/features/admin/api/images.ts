@@ -1,4 +1,5 @@
 import { getAdminSupabase } from '@/lib/supabase/admin-client'
+import { randomUuid } from '@/shared/lib/random-id'
 import { optimizeImage } from '../image-optimizer'
 import { adminError } from './errors'
 
@@ -8,7 +9,7 @@ export async function uploadNewsImage(file: File) {
   const user = await client.auth.getUser()
   if (user.error || !user.data.user) throw adminError(user.error)
   const extension = blob.type === 'image/webp' ? 'webp' : 'jpg'
-  const path = `${user.data.user.id}/${crypto.randomUUID()}.${extension}`
+  const path = `${user.data.user.id}/${randomUuid()}.${extension}`
   const { error } = await client.storage
     .from('news-images')
     .upload(path, blob, {

@@ -175,7 +175,8 @@ it('preserves changes after an error and protects leaving the form', async () =>
   expect(close).not.toHaveBeenCalled()
   const event = new Event('beforeunload', { cancelable: true })
   window.dispatchEvent(event)
-  expect(event.defaultPrevented).toBe(true)
+  // Unsaved work is kept as a draft instead of blocking the reload natively.
+  expect(event.defaultPrevented).toBe(false)
 })
 
 it('blocks saving when roles fail to load and recovers without clearing the email', async () => {

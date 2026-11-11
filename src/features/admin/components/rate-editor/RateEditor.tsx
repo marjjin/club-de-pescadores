@@ -6,6 +6,7 @@ import { Feedback, primaryClass, secondaryClass } from '../ui'
 import { RateFields } from './RateFields'
 import { RatePreview } from './RatePreview'
 import { RatePublication } from './RatePublication'
+import { DraftNotice } from '../DraftNotice'
 
 export function RateEditor({
   row,
@@ -14,10 +15,17 @@ export function RateEditor({
   row: Rate | null
   onClose: () => void
 }) {
-  const { values, errors, dirty, save, change, close, submit } = useRateEditor(
-    row,
-    onClose,
-  )
+  const {
+    draftNotice,
+    discardDraft,
+    values,
+    errors,
+    dirty,
+    save,
+    change,
+    close,
+    submit,
+  } = useRateEditor(row, onClose)
   const headingRef = useRef<HTMLHeadingElement>(null)
   useEffect(() => {
     headingRef.current?.focus()
@@ -55,6 +63,9 @@ export function RateEditor({
           previa antes de publicar.
         </p>
       </header>
+      {draftNotice && (
+        <DraftNotice savedAt={draftNotice} onDiscard={discardDraft} />
+      )}
       <form
         noValidate
         onSubmit={submit}

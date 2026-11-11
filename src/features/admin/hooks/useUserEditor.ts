@@ -1,5 +1,6 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import type { FormEvent } from 'react'
+import { useConfirm } from './useConfirm'
 import { useAdminList } from './useAdminData'
 import { useUserActions } from './useAdminActions'
 import { userAccessChanged, validateUserAccess } from '../user-access'
@@ -11,6 +12,7 @@ export function useUserEditor(
   userId: string,
   onClose: () => void,
 ) {
+  const confirm = useConfirm()
   const list = useAdminList('roles', userId)
   const actions = useUserActions()
   const operation = account ? actions.save : actions.invite
@@ -25,15 +27,6 @@ export function useUserEditor(
   const dirty = userAccessChanged(initial, values)
   const busy = operation.isPending
   const roles = list.rows.filter((row): row is Role => 'is_system' in row)
-  useEffect(() => {
-    if (!dirty || operation.isSuccess) return
-    const warn = (event: BeforeUnloadEvent) => {
-      event.preventDefault()
-      event.returnValue = ''
-    }
-    window.addEventListener('beforeunload', warn)
-    return () => window.removeEventListener('beforeunload', warn)
-  }, [dirty, operation.isSuccess])
   function change<K extends keyof UserAccessValues>(
     name: K,
     value: UserAccessValues[K],
@@ -55,19 +48,23 @@ export function useUserEditor(
       )
     else if (values.roles.length < 10) change('roles', [...values.roles, id])
   }
-  function close() {
+  async function requestClose() {
     if (busy) return
     if (
       dirty &&
       !operation.isSuccess &&
-      !window.confirm(
-        'Tenés cambios sin guardar. ¿Querés salir y descartarlos?',
-      )
+      !(await confirm({
+        title: '¿Salir sin guardar?',
+        message: 'Tenés cambios sin guardar. ¿Querés salir y descartarlos?',
+        confirmLabel: 'Salir y descartar',
+        cancelLabel: 'Seguir editando',
+        tone: 'danger',
+      }))
     )
       return
     onClose()
   }
-  function submit(event: FormEvent<HTMLFormElement>) {
+  async function requestSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
     if (
       busy ||
@@ -93,10 +90,15 @@ export function useUserEditor(
         ? `¿Desactivar el acceso de ${account.email}? Perderá el acceso a los datos del panel.`
         : `¿Guardar el acceso de ${account.email}? Los permisos de sus ${values.roles.length} ${values.roles.length === 1 ? 'rol asignado' : 'roles asignados'} se aplicarán inmediatamente.`
       : `¿Enviar una invitación a ${result.data.email} con ${values.roles.length} ${values.roles.length === 1 ? 'rol asignado' : 'roles asignados'}?`
-    if (!window.confirm(message)) return
+    if (!(await confirm(message))) return
     if (account)
       actions.save.mutate([account, result.data.roles, result.data.active])
     else actions.invite.mutate([result.data.email, result.data.roles])
+  }
+  const close = () => void requestClose()
+  const submit = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+    void requestSubmit(event)
   }
   return {
     list,

@@ -20,59 +20,69 @@ export function PierConditionsField({
 }) {
   return (
     <div>
-      <div className="mb-4 grid gap-3">
+      <div className="mb-4 grid gap-3 sm:grid-cols-2">
         {conditionGroups.map((group) => (
           <div
             key={group.id}
             role="group"
             aria-label={group.label}
-            className="flex min-w-0 flex-wrap items-center gap-2"
+            className="min-w-0 rounded-xl border border-navy-900/10 bg-mist-50/60 p-3"
           >
-            <span className="w-20 shrink-0 text-xs font-bold text-ink-600">
-              {group.label}
-            </span>
-            {group.options.map((phrase) => {
-              const selected = hasCondition(value, phrase)
-              return (
-                <button
-                  key={phrase}
-                  type="button"
-                  aria-pressed={selected}
-                  onClick={() => {
-                    const next = toggleCondition(value, group, phrase)
-                    if (next.length <= MAX_CONDITIONS) onChange(next)
-                  }}
-                  className={`inline-flex min-h-10 items-center gap-1.5 rounded-full border px-3.5 text-xs font-bold transition-colors ${selected ? 'border-navy-900 bg-navy-900 text-white' : 'border-navy-900/15 bg-white text-navy-900 hover:border-river-600/50 hover:bg-mist-50'}`}
-                >
-                  {selected && <Check size={13} aria-hidden="true" />}
-                  {phrase}
-                </button>
-              )
-            })}
+            <p className="mb-2 text-xs font-bold text-ink-600">{group.label}</p>
+            {/* Segmented control: one choice per group, tapping it again clears it. */}
+            <div className="flex min-w-0 rounded-lg border border-navy-900/15 bg-white p-0.5">
+              {group.options.map((phrase) => {
+                const selected = hasCondition(value, phrase)
+                return (
+                  <button
+                    key={phrase}
+                    type="button"
+                    aria-pressed={selected}
+                    onClick={() => {
+                      const next = toggleCondition(value, group, phrase)
+                      if (next.length <= MAX_CONDITIONS) onChange(next)
+                    }}
+                    className={`inline-flex min-h-10 min-w-0 flex-1 items-center justify-center gap-1 rounded-md px-2 text-center text-xs leading-4 font-bold transition-colors ${selected ? 'bg-navy-900 text-white' : 'text-navy-900 hover:bg-mist-50'}`}
+                  >
+                    {selected && (
+                      <Check
+                        size={13}
+                        aria-hidden="true"
+                        className="shrink-0"
+                      />
+                    )}
+                    {phrase}
+                  </button>
+                )
+              })}
+            </div>
           </div>
         ))}
       </div>
-      <label htmlFor={id} className="sr-only">
-        ¿Cómo está el muelle?
+      <label htmlFor={id} className="mb-2 block text-xs font-bold text-ink-600">
+        ¿Cómo está el muelle?{' '}
+        <span className="font-normal">
+          (opcional, se completa con lo elegido)
+        </span>
       </label>
       <textarea
         id={id}
         name="conditions"
-        rows={3}
+        rows={2}
         value={value}
         onChange={(event) => onChange(event.target.value)}
         maxLength={MAX_CONDITIONS}
-        placeholder="Elegí las opciones de arriba o contalo con tus palabras…"
+        placeholder="Sumá lo que quieras contar con tus palabras…"
         aria-invalid={Boolean(error)}
         aria-describedby={`${id}-count${error ? ` ${id}-error` : ''}`}
         className={`${inputClass} aria-invalid:border-red-500`}
       />
-      <div className="mt-2 flex justify-between gap-3 text-xs text-ink-600">
-        <span>Opcional</span>
-        <span id={`${id}-count`} className="tabular-nums">
-          {value.length}/{MAX_CONDITIONS}
-        </span>
-      </div>
+      <p
+        id={`${id}-count`}
+        className="mt-1.5 text-right text-xs text-ink-600 tabular-nums"
+      >
+        {value.length}/{MAX_CONDITIONS}
+      </p>
       {error && (
         <p
           id={`${id}-error`}

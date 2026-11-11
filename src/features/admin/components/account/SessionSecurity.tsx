@@ -6,16 +6,21 @@ import {
   ShieldCheck,
 } from 'lucide-react'
 import { useAuthActions } from '../../hooks/useAdminActions'
+import { useConfirm } from '../../hooks/useConfirm'
 import { Feedback, secondaryClass } from '../ui'
 
 export function SessionSecurity() {
   const { logout } = useAuthActions()
-  function closeOthers() {
+  const confirm = useConfirm()
+  async function closeOthers() {
     if (logout.isPending) return
     if (
-      window.confirm(
-        '¿Cerrar tus sesiones en los demás dispositivos? Esta sesión seguirá abierta.',
-      )
+      await confirm({
+        title: '¿Cerrar tus otras sesiones?',
+        message:
+          'Se cerrarán las sesiones en los demás dispositivos. Esta sesión seguirá abierta.',
+        confirmLabel: 'Cerrar otras sesiones',
+      })
     )
       logout.mutate(true)
   }
@@ -60,7 +65,7 @@ export function SessionSecurity() {
         <button
           type="button"
           disabled={logout.isPending}
-          onClick={closeOthers}
+          onClick={() => void closeOthers()}
           className={`${secondaryClass} mt-4 w-full`}
         >
           {logout.isPending ? (

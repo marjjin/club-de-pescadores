@@ -1,5 +1,11 @@
-import { useEffect, useRef, useState } from 'react'
+import { useRef, useState } from 'react'
 import type { FormEvent } from 'react'
+import { useConfirm } from './useConfirm'
+import {
+  clearDraft,
+  useDraftSync,
+  useRestoredDraft,
+} from '@/shared/hooks/useDraft'
 import { useContentActions } from './useAdminActions'
 import { initialNewsValues, validateNewsEditor } from '../news-editor'
 import type { NewsEditorErrors, NewsEditorValues } from '../news-editor'
@@ -8,8 +14,14 @@ import { dateLabel } from '../form-utils'
 import { newsImagePath, removeNewsImages } from '../api/images'
 
 export function useNewsEditor(row: News | null, onClose: () => void) {
+  const confirm = useConfirm()
   const [initial] = useState(() => initialNewsValues(row))
-  const [values, setValues] = useState(initial)
+  // Drafts survive reloads; they only restore onto the same version of the record.
+  const draftKey = `news:${row?.id ?? 'new'}`
+  const version = row?.updated_at ?? null
+  const restored = useRestoredDraft(draftKey, version, initial)
+  const [draftNotice, setDraftNotice] = useState(restored?.savedAt ?? null)
+  const [values, setValues] = useState(restored?.values ?? initial)
   const [errors, setErrors] = useState<NewsEditorErrors>({})
   const [imageBusy, setImageBusy] = useState(false)
   const [previewOpen, setPreviewOpen] = useState(false)
@@ -30,16 +42,8 @@ export function useNewsEditor(row: News | null, onClose: () => void) {
   const dirty = (Object.keys(initial) as (keyof NewsEditorValues)[]).some(
     (key) => values[key] !== initial[key],
   )
+  useDraftSync(draftKey, version, values, dirty && !save.isSuccess)
   const busy = save.isPending || imageBusy
-  useEffect(() => {
-    if ((!dirty && !imageBusy) || save.isSuccess) return
-    const warn = (event: BeforeUnloadEvent) => {
-      event.preventDefault()
-      event.returnValue = ''
-    }
-    window.addEventListener('beforeunload', warn)
-    return () => window.removeEventListener('beforeunload', warn)
-  }, [dirty, imageBusy, save.isSuccess])
 
   function change<K extends keyof NewsEditorValues>(
     name: K,
@@ -56,19 +60,25 @@ export function useNewsEditor(row: News | null, onClose: () => void) {
     })
     save.reset()
   }
-  function close() {
+  async function requestClose() {
     if (busy) return
     if (
       dirty &&
-      !window.confirm(
-        'Tenés cambios sin guardar. ¿Querés salir del editor y descartarlos?',
-      )
+      !(await confirm({
+        title: '¿Salir sin guardar?',
+        message:
+          'Tenés cambios sin guardar. ¿Querés salir del editor y descartarlos?',
+        confirmLabel: 'Salir y descartar',
+        cancelLabel: 'Seguir editando',
+        tone: 'danger',
+      }))
     )
       return
+    clearDraft(draftKey)
     discardImages(null)
     onClose()
   }
-  function submit(event: FormEvent<HTMLFormElement>) {
+  async function requestSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
     if (busy) return
     const result = validateNewsEditor(values, row)
@@ -94,18 +104,32 @@ export function useNewsEditor(row: News | null, onClose: () => void) {
           : row?.is_published
             ? '¿Retirar esta noticia del sitio o de su programación y guardarla como borrador?'
             : null
-    if (confirmation && !window.confirm(confirmation)) return
+    if (confirmation && !(await confirm(confirmation))) return
     save.mutate(
       ['news', result.data, row?.id ?? null, row?.updated_at ?? null],
       {
         onSuccess: () => {
+          // Closing unmounts before the draft sync sees the saved state.
+          clearDraft(draftKey)
           discardImages(result.data.image_url)
           onClose()
         },
       },
     )
   }
+  function discardDraft() {
+    clearDraft(draftKey)
+    setDraftNotice(null)
+    setValues(initial)
+  }
+  const close = () => void requestClose()
+  const submit = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+    void requestSubmit(event)
+  }
   return {
+    draftNotice,
+    discardDraft,
     values,
     errors,
     dirty,

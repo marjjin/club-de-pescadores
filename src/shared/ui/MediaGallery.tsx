@@ -24,7 +24,7 @@ function Thumbnail({ item, large }: { item: GalleryItem; large: boolean }) {
         height={item.height}
         loading="lazy"
         decoding="async"
-        className="size-full object-cover transition-[scale] duration-300 group-hover:scale-105 motion-reduce:transition-none"
+        className="absolute inset-0 size-full object-cover transition-[scale] duration-300 group-hover:scale-105 motion-reduce:transition-none"
       />
       {item.kind === 'video' && (
         <span className="absolute inset-0 grid place-items-center bg-navy-950/15">
@@ -38,6 +38,21 @@ function Thumbnail({ item, large }: { item: GalleryItem; large: boolean }) {
     </>
   )
 }
+
+const MAX_TILES = 5
+// The caller gives the gallery a fixed height; tiles crop to fill it, so tall phone
+// photos never stretch the page and any count of files looks intentional.
+const layouts = [
+  { grid: 'grid-cols-1', first: '', rest: '' },
+  { grid: 'grid-cols-2', first: '', rest: '' },
+  { grid: 'grid-cols-3 grid-rows-2', first: 'col-span-2 row-span-2', rest: '' },
+  { grid: 'grid-cols-2 grid-rows-2', first: '', rest: '' },
+  {
+    grid: 'grid-cols-3 grid-rows-2 sm:grid-cols-4',
+    first: 'row-span-2 sm:col-span-2',
+    rest: '',
+  },
+]
 
 /** Grid of photos and videos; videos load only when opened, from their poster. */
 export function MediaGallery({
@@ -72,26 +87,37 @@ export function MediaGallery({
     if (event.key === 'ArrowRight') go(1)
   }
   if (!items.length) return null
+  const visible = items.slice(0, MAX_TILES)
+  const extra = items.length - visible.length
+  const layout = layouts[Math.min(visible.length, MAX_TILES) - 1] ?? layouts[0]!
   return (
     <>
       <ul
         aria-label={label}
-        className={`grid gap-2 sm:gap-3 ${items.length === 1 ? '' : 'grid-cols-2 sm:grid-cols-4'}`}
+        className={`grid h-full gap-2 sm:gap-3 ${layout.grid}`}
       >
-        {items.map((item, position) => {
-          const large = position === 0 && items.length > 1
+        {visible.map((item, position) => {
+          const hidden = position === visible.length - 1 ? extra : 0
           return (
             <li
               key={item.src}
-              className={`min-w-0 ${large ? 'col-span-2 row-span-2' : ''}`}
+              className={`min-w-0 ${position === 0 ? layout.first : layout.rest}`}
             >
               <button
                 type="button"
                 onClick={() => open(position)}
-                aria-label={`${item.kind === 'video' ? 'Reproducir video' : 'Ampliar foto'} ${position + 1} de ${items.length}: ${item.alt}`}
-                className={`group relative block w-full cursor-zoom-in overflow-hidden rounded-xl bg-mist-50 focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-sun-400 ${items.length === 1 ? 'aspect-video' : 'aspect-square'}`}
+                aria-label={`${item.kind === 'video' ? 'Reproducir video' : 'Ampliar foto'} ${position + 1} de ${items.length}: ${item.alt}${hidden ? `. Hay ${hidden} más` : ''}`}
+                className="group relative block size-full cursor-zoom-in overflow-hidden rounded-xl bg-mist-50 focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-sun-400"
               >
-                <Thumbnail item={item} large={large || items.length === 1} />
+                <Thumbnail item={item} large={position === 0} />
+                {hidden > 0 && (
+                  <span
+                    aria-hidden="true"
+                    className="absolute inset-0 grid place-items-center bg-navy-950/60 text-2xl font-extrabold text-white"
+                  >
+                    +{hidden}
+                  </span>
+                )}
               </button>
             </li>
           )

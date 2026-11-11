@@ -1,5 +1,11 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import type { FormEvent } from 'react'
+import { useConfirm } from './useConfirm'
+import {
+  clearDraft,
+  useDraftSync,
+  useRestoredDraft,
+} from '@/shared/hooks/useDraft'
 import { useContentActions } from './useAdminActions'
 import {
   eventFieldOrder,
@@ -10,23 +16,21 @@ import type { EventEditorErrors, EventEditorValues } from '../event-editor'
 import type { ClubEvent } from '../schemas/admin'
 
 export function useEventEditor(row: ClubEvent | null, onClose: () => void) {
+  const confirm = useConfirm()
   const [initial] = useState(() => initialEventValues(row))
-  const [values, setValues] = useState(initial)
+  // Drafts survive reloads; they only restore onto the same version of the record.
+  const draftKey = `event:${row?.id ?? 'new'}`
+  const version = row?.updated_at ?? null
+  const restored = useRestoredDraft(draftKey, version, initial)
+  const [draftNotice, setDraftNotice] = useState(restored?.savedAt ?? null)
+  const [values, setValues] = useState(restored?.values ?? initial)
   const [errors, setErrors] = useState<EventEditorErrors>({})
   const { save } = useContentActions()
   const dirty = (Object.keys(initial) as (keyof EventEditorValues)[]).some(
     (key) => values[key] !== initial[key],
   )
-  useEffect(() => {
-    if (!dirty || save.isSuccess) return
-    const warn = (event: BeforeUnloadEvent) => {
-      event.preventDefault()
-      event.returnValue = ''
-    }
-    window.addEventListener('beforeunload', warn)
-    return () => window.removeEventListener('beforeunload', warn)
-  }, [dirty, save.isSuccess])
 
+  useDraftSync(draftKey, version, values, dirty && !save.isSuccess)
   function change<K extends keyof EventEditorValues>(
     name: K,
     value: EventEditorValues[K],
@@ -39,18 +43,24 @@ export function useEventEditor(row: ClubEvent | null, onClose: () => void) {
     })
     save.reset()
   }
-  function close() {
+  async function requestClose() {
     if (save.isPending) return
     if (
       dirty &&
-      !window.confirm(
-        'Tenés cambios sin guardar. ¿Querés salir del editor y descartarlos?',
-      )
+      !(await confirm({
+        title: '¿Salir sin guardar?',
+        message:
+          'Tenés cambios sin guardar. ¿Querés salir del editor y descartarlos?',
+        confirmLabel: 'Salir y descartar',
+        cancelLabel: 'Seguir editando',
+        tone: 'danger',
+      }))
     )
       return
+    clearDraft(draftKey)
     onClose()
   }
-  function submit(event: FormEvent<HTMLFormElement>) {
+  async function requestSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
     if (save.isPending) return
     const result = validateEventEditor(values)
@@ -70,11 +80,37 @@ export function useEventEditor(row: ClubEvent | null, onClose: () => void) {
       : row?.is_published
         ? '¿Retirar este evento del sitio y guardarlo como borrador?'
         : null
-    if (confirmation && !window.confirm(confirmation)) return
+    if (confirmation && !(await confirm(confirmation))) return
     save.mutate(
       ['events', result.data, row?.id ?? null, row?.updated_at ?? null],
-      { onSuccess: onClose },
+      {
+        onSuccess: () => {
+          // Closing unmounts before the draft sync sees the saved state.
+          clearDraft(draftKey)
+          onClose()
+        },
+      },
     )
   }
-  return { values, errors, dirty, save, change, close, submit }
+  function discardDraft() {
+    clearDraft(draftKey)
+    setDraftNotice(null)
+    setValues(initial)
+  }
+  const close = () => void requestClose()
+  const submit = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+    void requestSubmit(event)
+  }
+  return {
+    draftNotice,
+    discardDraft,
+    values,
+    errors,
+    dirty,
+    save,
+    change,
+    close,
+    submit,
+  }
 }

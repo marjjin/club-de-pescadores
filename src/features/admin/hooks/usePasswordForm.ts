@@ -1,6 +1,5 @@
 import { useState } from 'react'
 import type { FormEvent } from 'react'
-import { useBeforeUnload } from '@/shared/hooks/useBeforeUnload'
 import { useAuthActions } from './useAdminActions'
 import { validatePasswordChange } from '../account-forms'
 import type { PasswordFormErrors } from '../account-forms'
@@ -11,7 +10,6 @@ export function usePasswordForm(onSaved?: () => void) {
   const [visible, setVisible] = useState({ password: false, confirm: false })
   const [errors, setErrors] = useState<PasswordFormErrors>({})
   const dirty = Boolean(values.password || values.confirm)
-  useBeforeUnload(dirty && !request.isSuccess)
   function change(name: keyof typeof values, value: string) {
     setValues((previous) => ({ ...previous, [name]: value }))
     setErrors((previous) => {

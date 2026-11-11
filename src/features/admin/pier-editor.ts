@@ -1,4 +1,11 @@
 import { formatRiverDate } from '@/features/river'
+import {
+  conditionGroups,
+  conditionSegments,
+  hasCondition,
+  samePhrase,
+} from '@/features/pier'
+import type { ConditionGroup } from '@/features/pier'
 import type { UploadedMedia } from './api/media'
 import { mediaListSchema } from './schemas/media'
 import { pierInputSchema } from './schemas/pier'
@@ -55,45 +62,16 @@ export function validatePierReport(
   return { success: true as const, data: parsed.data }
 }
 
-/** Quick phrases staff tap instead of typing; one choice per group. */
-export const conditionGroups = [
-  {
-    id: 'pesca',
-    label: 'Pesca',
-    options: ['Se puede pescar', 'No se puede pescar'],
-  },
-  {
-    id: 'camalotes',
-    label: 'Camalotes',
-    options: ['Sin camalotes', 'Pocos camalotes', 'Muchos camalotes'],
-  },
-  { id: 'viento', label: 'Viento', options: ['Poco viento', 'Viento fuerte'] },
-  { id: 'pique', label: 'Pique', options: ['Buen pique', 'Poco pique'] },
-] as const
-export type ConditionGroup = (typeof conditionGroups)[number]
-
-// Whole-phrase comparison: "no se puede pescar" must not match "se puede pescar".
-const segments = (text: string) =>
-  text
-    .split(/\s*[,.;]\s*/)
-    .map((part) => part.trim())
-    .filter(Boolean)
-const same = (left: string, right: string) =>
-  left.localeCompare(right, 'es', { sensitivity: 'base' }) === 0
-
-export const hasCondition = (text: string, phrase: string) =>
-  segments(text).some((part) => same(part, phrase))
-
 /** Selects a phrase in its group (replacing the other options) or clears it if already chosen. */
 export function toggleCondition(
   text: string,
   group: ConditionGroup,
   phrase: string,
 ) {
-  const parts = segments(text)
-  const selected = parts.some((part) => same(part, phrase))
+  const parts = conditionSegments(text)
+  const selected = parts.some((part) => samePhrase(part, phrase))
   const kept = parts.filter(
-    (part) => !group.options.some((option) => same(part, option)),
+    (part) => !group.options.some((option) => samePhrase(part, option)),
   )
   const next = selected ? kept : [...kept, phrase]
   return next
@@ -104,3 +82,23 @@ export function toggleCondition(
     )
     .join(', ')
 }
+
+export const cmToMetres = (cm: number) =>
+  (cm / 100).toFixed(2).replace('.', ',')
+
+/** Difference against the last report, so staff notice an unchanged or odd height. */
+export function heightChange(current: number | null, previous?: number) {
+  if (current === null || previous === undefined) return null
+  const delta = current - previous
+  if (delta === 0) return { label: 'Igual que el último parte', delta }
+  const cm = Math.abs(delta)
+  const amount = cm >= 100 ? `${cmToMetres(cm)} m` : `${cm} cm`
+  return { label: `${delta > 0 ? 'Subió' : 'Bajó'} ${amount}`, delta }
+}
+
+export const selectedConditions = (text: string) =>
+  conditionGroups.flatMap((group) =>
+    group.options.filter((option) => hasCondition(text, option)),
+  )
+
+export { conditionGroups, hasCondition }
