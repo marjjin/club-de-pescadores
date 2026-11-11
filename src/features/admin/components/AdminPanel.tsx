@@ -7,7 +7,8 @@ import { LoginScreen } from './LoginScreen'
 import { MfaScreen } from './MfaScreen'
 import { PasswordForm } from './PasswordForm'
 import { AdminWorkspace } from './AdminWorkspace'
-import { Feedback, Loading, secondaryClass } from './ui'
+import { AdminShellSkeleton } from '@/shared/ui/AdminShellSkeleton'
+import { Feedback, secondaryClass } from './ui'
 
 export function AdminPanel() {
   const session = useAdminSession()
@@ -26,12 +27,7 @@ export function AdminPanel() {
       document.title = previousTitle
     }
   }, [])
-  if (session.isPending)
-    return (
-      <AccessFrame>
-        <Loading />
-      </AccessFrame>
-    )
+  if (session.isPending) return <AdminShellSkeleton />
   if (session.isError)
     return (
       <AccessFrame>
