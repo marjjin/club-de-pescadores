@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import {
   initialRiverValues,
   riverLocalDateToInstant,
@@ -58,6 +58,27 @@ describe('river measurements', () => {
       validateRiverValues({ ...values, measured_at: '2999-01-01T10:30' })
         .success,
     ).toBe(false)
+  })
+  it('pre-fills the measurement date with the current Argentina time, not the stored one', () => {
+    vi.useFakeTimers()
+    vi.setSystemTime(new Date('2026-11-11T14:05:30Z'))
+    try {
+      const values = initialRiverValues({
+        id: 1,
+        height_cm: 234,
+        measured_at: '2026-11-09T01:19:00+00:00',
+        station: 'Estación de prueba',
+        source: 'Fuente de prueba',
+        note: null,
+        is_published: true,
+        created_at: '2026-11-09T01:20:00+00:00',
+        updated_at: '2026-11-09T01:20:00+00:00',
+      })
+      expect(values.measured_at).toBe('2026-11-11T11:05')
+      expect(values.height).toBe('2,34')
+    } finally {
+      vi.useRealTimers()
+    }
   })
   it('marks old readings after 24 hours without assigning safety levels', () => {
     const measured = '2026-01-01T00:00:00Z'

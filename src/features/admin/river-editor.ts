@@ -32,9 +32,8 @@ export function initialRiverValues(row: AdminRiverReading | null): RiverValues {
     height: row ? (row.height_cm / 100).toFixed(2).replace('.', ',') : '',
     station: row?.station ?? '',
     source: row?.source ?? '',
-    measured_at: new Date(
-      new Date(row?.measured_at ?? Date.now()).getTime() - 3 * 60 * 60 * 1000,
-    )
+    // Each save is a new reading; reusing the stored date made fresh heights look stale.
+    measured_at: new Date(Date.now() - 3 * 60 * 60 * 1000)
       .toISOString()
       .slice(0, 16),
     is_published: row?.is_published ?? false,

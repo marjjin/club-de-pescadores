@@ -11,7 +11,7 @@ const fields = {
   },
   measured_at: {
     label: 'Fecha y hora de medición',
-    help: 'Hora de Argentina (UTC−3). Indicá cuándo se midió, no cuándo se carga.',
+    help: 'Hora de Argentina (UTC−3). Se completa con la hora actual; cambiala si la medición es de otro momento.',
     max: undefined,
     type: 'datetime-local',
   },
