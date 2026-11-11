@@ -54,3 +54,53 @@ export function validatePierReport(
     }
   return { success: true as const, data: parsed.data }
 }
+
+/** Quick phrases staff tap instead of typing; one choice per group. */
+export const conditionGroups = [
+  {
+    id: 'pesca',
+    label: 'Pesca',
+    options: ['Se puede pescar', 'No se puede pescar'],
+  },
+  {
+    id: 'camalotes',
+    label: 'Camalotes',
+    options: ['Sin camalotes', 'Pocos camalotes', 'Muchos camalotes'],
+  },
+  { id: 'viento', label: 'Viento', options: ['Poco viento', 'Viento fuerte'] },
+  { id: 'pique', label: 'Pique', options: ['Buen pique', 'Poco pique'] },
+] as const
+export type ConditionGroup = (typeof conditionGroups)[number]
+
+// Whole-phrase comparison: "no se puede pescar" must not match "se puede pescar".
+const segments = (text: string) =>
+  text
+    .split(/\s*[,.;]\s*/)
+    .map((part) => part.trim())
+    .filter(Boolean)
+const same = (left: string, right: string) =>
+  left.localeCompare(right, 'es', { sensitivity: 'base' }) === 0
+
+export const hasCondition = (text: string, phrase: string) =>
+  segments(text).some((part) => same(part, phrase))
+
+/** Selects a phrase in its group (replacing the other options) or clears it if already chosen. */
+export function toggleCondition(
+  text: string,
+  group: ConditionGroup,
+  phrase: string,
+) {
+  const parts = segments(text)
+  const selected = parts.some((part) => same(part, phrase))
+  const kept = parts.filter(
+    (part) => !group.options.some((option) => same(part, option)),
+  )
+  const next = selected ? kept : [...kept, phrase]
+  return next
+    .map((part, index) =>
+      index === 0
+        ? part.charAt(0).toLocaleUpperCase('es') + part.slice(1)
+        : part.charAt(0).toLocaleLowerCase('es') + part.slice(1),
+    )
+    .join(', ')
+}

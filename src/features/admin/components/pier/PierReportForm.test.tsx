@@ -100,3 +100,20 @@ it('removes uploaded files from storage when the report is discarded', async () 
   expect(media.removeClubMedia).toHaveBeenCalledWith([uploaded.path])
   expect(screen.queryByText('Principal')).toBeNull()
 })
+
+it('fills the conditions with one quick choice per group', () => {
+  mount()
+  const text = () =>
+    screen.getByLabelText<HTMLTextAreaElement>('¿Cómo está el muelle?').value
+  fireEvent.click(screen.getByRole('button', { name: 'Se puede pescar' }))
+  fireEvent.click(screen.getByRole('button', { name: 'Muchos camalotes' }))
+  expect(text()).toBe('Se puede pescar, muchos camalotes')
+  fireEvent.click(screen.getByRole('button', { name: 'No se puede pescar' }))
+  expect(text()).toBe('Muchos camalotes, no se puede pescar')
+  expect(
+    screen
+      .getByRole('button', { name: 'No se puede pescar' })
+      .getAttribute('aria-pressed'),
+  ).toBe('true')
+  expect(screen.queryByRole('button', { name: /Agua clara/ })).toBeNull()
+})

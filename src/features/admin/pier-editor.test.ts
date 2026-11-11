@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest'
-import { riverHeightToCm, validatePierReport } from './pier-editor'
+import {
+  conditionGroups,
+  hasCondition,
+  riverHeightToCm,
+  toggleCondition,
+  validatePierReport,
+} from './pier-editor'
 import type { UploadedMedia } from './api/media'
 
 const owner = '10000000-0000-4000-8000-000000000010'
@@ -70,5 +76,30 @@ describe('pier report form', () => {
     expect(result.errors.height).toContain('metros')
     expect(result.errors.conditions).toContain('600')
     expect(result.errors.media).toContain('3 videos')
+  })
+})
+
+describe('quick condition phrases', () => {
+  const [pesca, camalotes] = conditionGroups
+  it('keeps one choice per group and never confuses opposite phrases', () => {
+    let text = toggleCondition('', pesca, 'Se puede pescar')
+    expect(text).toBe('Se puede pescar')
+    text = toggleCondition(text, camalotes, 'Pocos camalotes')
+    expect(text).toBe('Se puede pescar, pocos camalotes')
+    text = toggleCondition(text, pesca, 'No se puede pescar')
+    expect(text).toBe('Pocos camalotes, no se puede pescar')
+    expect(hasCondition(text, 'Se puede pescar')).toBe(false)
+    expect(hasCondition(text, 'No se puede pescar')).toBe(true)
+  })
+  it('clears a chosen phrase and preserves what staff typed', () => {
+    const text = toggleCondition(
+      'Mucha gente en el muelle',
+      pesca,
+      'Se puede pescar',
+    )
+    expect(text).toBe('Mucha gente en el muelle, se puede pescar')
+    expect(toggleCondition(text, pesca, 'Se puede pescar')).toBe(
+      'Mucha gente en el muelle',
+    )
   })
 })

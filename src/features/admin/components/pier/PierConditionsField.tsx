@@ -1,16 +1,11 @@
-import { Plus } from 'lucide-react'
-import { MAX_CONDITIONS } from '../../pier-editor'
+import { Check } from 'lucide-react'
+import {
+  conditionGroups,
+  hasCondition,
+  MAX_CONDITIONS,
+  toggleCondition,
+} from '../../pier-editor'
 import { inputClass } from '../ui'
-
-// Generic river conditions only; staff complete the specifics in their own words.
-const suggestions = [
-  'Agua clara',
-  'Agua turbia',
-  'Poco viento',
-  'Viento fuerte',
-  'Buen pique',
-  'Poco pique',
-]
 
 export function PierConditionsField({
   id,
@@ -23,30 +18,40 @@ export function PierConditionsField({
   error: string | undefined
   onChange: (value: string) => void
 }) {
-  const add = (phrase: string) => {
-    const text = value.trim()
-    const next = text
-      ? `${text.replace(/[.,]$/, '')}, ${phrase.toLowerCase()}`
-      : phrase
-    if (next.length <= MAX_CONDITIONS) onChange(next)
-  }
   return (
     <div>
-      <ul aria-label="Frases rápidas" className="mb-3 flex flex-wrap gap-2">
-        {suggestions.map((phrase) => (
-          <li key={phrase}>
-            <button
-              type="button"
-              onClick={() => add(phrase)}
-              disabled={value.toLowerCase().includes(phrase.toLowerCase())}
-              className="inline-flex min-h-10 items-center gap-1 rounded-full border border-navy-900/15 bg-white px-3 text-xs font-bold text-navy-900 transition-colors hover:border-river-600/50 hover:bg-mist-50 disabled:border-river-600/30 disabled:bg-river-600/5 disabled:text-river-600"
-            >
-              <Plus size={13} aria-hidden="true" />
-              {phrase}
-            </button>
-          </li>
+      <div className="mb-4 grid gap-3">
+        {conditionGroups.map((group) => (
+          <div
+            key={group.id}
+            role="group"
+            aria-label={group.label}
+            className="flex min-w-0 flex-wrap items-center gap-2"
+          >
+            <span className="w-20 shrink-0 text-xs font-bold text-ink-600">
+              {group.label}
+            </span>
+            {group.options.map((phrase) => {
+              const selected = hasCondition(value, phrase)
+              return (
+                <button
+                  key={phrase}
+                  type="button"
+                  aria-pressed={selected}
+                  onClick={() => {
+                    const next = toggleCondition(value, group, phrase)
+                    if (next.length <= MAX_CONDITIONS) onChange(next)
+                  }}
+                  className={`inline-flex min-h-10 items-center gap-1.5 rounded-full border px-3.5 text-xs font-bold transition-colors ${selected ? 'border-navy-900 bg-navy-900 text-white' : 'border-navy-900/15 bg-white text-navy-900 hover:border-river-600/50 hover:bg-mist-50'}`}
+                >
+                  {selected && <Check size={13} aria-hidden="true" />}
+                  {phrase}
+                </button>
+              )
+            })}
+          </div>
         ))}
-      </ul>
+      </div>
       <label htmlFor={id} className="sr-only">
         ¿Cómo está el muelle?
       </label>
@@ -57,7 +62,7 @@ export function PierConditionsField({
         value={value}
         onChange={(event) => onChange(event.target.value)}
         maxLength={MAX_CONDITIONS}
-        placeholder="Contá lo que vean los pescadores: el agua, el viento, el pique…"
+        placeholder="Elegí las opciones de arriba o contalo con tus palabras…"
         aria-invalid={Boolean(error)}
         aria-describedby={`${id}-count${error ? ` ${id}-error` : ''}`}
         className={`${inputClass} aria-invalid:border-red-500`}
