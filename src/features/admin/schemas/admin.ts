@@ -3,6 +3,7 @@ import { z } from '@/shared/lib/validation'
 export const contextSchema = z.object({
   active: z.boolean(),
   general: z.boolean(),
+  pier: z.boolean().default(false),
   aal2: z.boolean(),
 })
 const identity = {

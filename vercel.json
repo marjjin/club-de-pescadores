@@ -19,7 +19,7 @@
         },
         {
           "key": "Content-Security-Policy",
-          "value": "default-src 'self'; script-src 'self' 'sha256-os/TWVa4UAdF5m5vEvtDMkENnX6oUR3dDPg6C5ciUUc='; style-src 'self' 'unsafe-inline'; img-src 'self' https: data:; font-src 'self'; connect-src 'self' https://rjzmcwfwfxtktuleqzgf.supabase.co; object-src 'none'; base-uri 'self'; frame-ancestors 'none'; form-action 'none'; upgrade-insecure-requests"
+          "value": "default-src 'self'; script-src 'self' 'sha256-os/TWVa4UAdF5m5vEvtDMkENnX6oUR3dDPg6C5ciUUc='; style-src 'self' 'unsafe-inline'; img-src 'self' https: data:; media-src 'self' blob: https://rjzmcwfwfxtktuleqzgf.supabase.co; font-src 'self'; connect-src 'self' https://rjzmcwfwfxtktuleqzgf.supabase.co; object-src 'none'; base-uri 'self'; frame-ancestors 'none'; form-action 'none'; upgrade-insecure-requests"
         },
         {
           "key": "X-Content-Type-Options",

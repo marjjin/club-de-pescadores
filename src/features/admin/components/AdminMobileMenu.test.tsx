@@ -74,7 +74,7 @@ function Harness() {
 }
 function mount() {
   return render(
-    <MemoryRouter initialEntries={['/admin/rio']}>
+    <MemoryRouter initialEntries={['/admin/muelle']}>
       <Harness />
     </MemoryRouter>,
   )
@@ -99,7 +99,7 @@ it('starts closed and opens a labelled drawer with the active section and a focu
   )
   expect(
     within(menu)
-      .getByRole('link', { name: 'Altura del río' })
+      .getByRole('link', { name: 'Parte del muelle' })
       .getAttribute('aria-current'),
   ).toBe('page')
 })
@@ -147,10 +147,10 @@ it('keeps the drawer open when its content is clicked and closes on section navi
 it('closes even when the selected section is already active', () => {
   mount()
   fireEvent.click(
-    within(openMenu()).getByRole('link', { name: 'Altura del río' }),
+    within(openMenu()).getByRole('link', { name: 'Parte del muelle' }),
   )
   expect(screen.queryByRole('dialog')).toBeNull()
-  expect(screen.getByTestId('path').textContent).toBe('/admin/rio')
+  expect(screen.getByTestId('path').textContent).toBe('/admin/muelle')
 })
 
 it('closes on route changes and does not reopen when navigating back', () => {
@@ -159,7 +159,7 @@ it('closes on route changes and does not reopen when navigating back', () => {
   fireEvent.click(screen.getByRole('button', { name: 'Cambiar ruta' }))
   expect(screen.queryByRole('dialog')).toBeNull()
   fireEvent.click(screen.getByRole('button', { name: 'Volver' }))
-  expect(screen.getByTestId('path').textContent).toBe('/admin/rio')
+  expect(screen.getByTestId('path').textContent).toBe('/admin/muelle')
   expect(screen.queryByRole('dialog')).toBeNull()
 })
 

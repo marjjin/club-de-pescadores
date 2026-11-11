@@ -7,6 +7,7 @@ import { LoginScreen } from './LoginScreen'
 import { MfaScreen } from './MfaScreen'
 import { PasswordForm } from './PasswordForm'
 import { AdminWorkspace } from './AdminWorkspace'
+import { PierWorkspace } from './pier/PierWorkspace'
 import { AdminShellSkeleton } from '@/shared/ui/AdminShellSkeleton'
 import { Feedback, secondaryClass } from './ui'
 
@@ -80,6 +81,14 @@ export function AdminPanel() {
       </AccessFrame>
     )
   if (!session.data.aal2) return <MfaScreen factorId={session.data.factorId} />
+  if (!session.data.general && session.data.pier)
+    return (
+      <PierWorkspace
+        key={session.data.id}
+        userId={session.data.id}
+        email={session.data.email}
+      />
+    )
   if (!session.data.general)
     return (
       <AccessFrame>
