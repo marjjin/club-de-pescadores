@@ -65,11 +65,18 @@ export function MediaTile({
           <span className="sr-only">Video</span>
         </span>
       )}
-      {first && media && (
-        <span className="absolute bottom-2 left-2 rounded-full bg-sun-400 px-2 py-0.5 text-[11px] font-bold text-navy-950">
-          Principal
-        </span>
-      )}
+      <div className="pointer-events-none absolute top-2 left-2 flex flex-col items-start gap-1">
+        {first && media && (
+          <span className="rounded-full bg-sun-400 px-2 py-0.5 text-[11px] font-bold text-navy-950">
+            Principal
+          </span>
+        )}
+        {draft.summary && (
+          <span className="rounded-full bg-navy-950/70 px-2 py-0.5 text-[11px] font-semibold text-white backdrop-blur-sm">
+            {draft.summary}
+          </span>
+        )}
+      </div>
       <button
         type="button"
         disabled={disabled}

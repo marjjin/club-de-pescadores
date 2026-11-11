@@ -1,4 +1,11 @@
 import { formatRiverDate } from '@/features/river'
+import {
+  conditionGroups,
+  conditionSegments,
+  hasCondition,
+  samePhrase,
+} from '@/features/pier'
+import type { ConditionGroup } from '@/features/pier'
 import type { UploadedMedia } from './api/media'
 import { mediaListSchema } from './schemas/media'
 import { pierInputSchema } from './schemas/pier'
@@ -54,3 +61,44 @@ export function validatePierReport(
     }
   return { success: true as const, data: parsed.data }
 }
+
+/** Selects a phrase in its group (replacing the other options) or clears it if already chosen. */
+export function toggleCondition(
+  text: string,
+  group: ConditionGroup,
+  phrase: string,
+) {
+  const parts = conditionSegments(text)
+  const selected = parts.some((part) => samePhrase(part, phrase))
+  const kept = parts.filter(
+    (part) => !group.options.some((option) => samePhrase(part, option)),
+  )
+  const next = selected ? kept : [...kept, phrase]
+  return next
+    .map((part, index) =>
+      index === 0
+        ? part.charAt(0).toLocaleUpperCase('es') + part.slice(1)
+        : part.charAt(0).toLocaleLowerCase('es') + part.slice(1),
+    )
+    .join(', ')
+}
+
+export const cmToMetres = (cm: number) =>
+  (cm / 100).toFixed(2).replace('.', ',')
+
+/** Difference against the last report, so staff notice an unchanged or odd height. */
+export function heightChange(current: number | null, previous?: number) {
+  if (current === null || previous === undefined) return null
+  const delta = current - previous
+  if (delta === 0) return { label: 'Igual que el último parte', delta }
+  const cm = Math.abs(delta)
+  const amount = cm >= 100 ? `${cmToMetres(cm)} m` : `${cm} cm`
+  return { label: `${delta > 0 ? 'Subió' : 'Bajó'} ${amount}`, delta }
+}
+
+export const selectedConditions = (text: string) =>
+  conditionGroups.flatMap((group) =>
+    group.options.filter((option) => hasCondition(text, option)),
+  )
+
+export { conditionGroups, hasCondition }

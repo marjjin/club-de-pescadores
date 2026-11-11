@@ -1,4 +1,5 @@
 import { getAdminSupabase } from '@/lib/supabase/admin-client'
+import { randomUuid } from '@/shared/lib/random-id'
 import { optimizeImage } from '../image-optimizer'
 import { readVideo, videoExtension, VIDEO_TYPES } from '../video-metadata'
 import type { MediaInput } from '../schemas/media'
@@ -18,7 +19,7 @@ export const clubMediaUrl = (path: string) =>
   getAdminSupabase().storage.from(bucket).getPublicUrl(path).data.publicUrl
 
 async function put(owner: string, blob: Blob, extension: string) {
-  const path = `${owner}/${crypto.randomUUID()}.${extension}`
+  const path = `${owner}/${randomUuid()}.${extension}`
   const { error } = await getAdminSupabase()
     .storage.from(bucket)
     .upload(path, blob, {
@@ -30,7 +31,21 @@ async function put(owner: string, blob: Blob, extension: string) {
   return path
 }
 
-export async function uploadClubMedia(file: File): Promise<UploadedMedia> {
+/** What actually reached storage, shown to staff so the optimization is visible. */
+export type UploadResult = {
+  media: UploadedMedia
+  bytes: number
+  format: string
+}
+const format = (type: string) =>
+  ({
+    'image/webp': 'WebP',
+    'image/jpeg': 'JPEG',
+    'video/quicktime': 'MOV',
+    'video/webm': 'WebM',
+  })[type] ?? 'MP4'
+
+export async function uploadClubMedia(file: File): Promise<UploadResult> {
   const user = await getAdminSupabase().auth.getUser()
   if (user.error || !user.data.user) throw adminError(user.error)
   const owner = user.data.user.id
@@ -44,11 +59,15 @@ export async function uploadClubMedia(file: File): Promise<UploadedMedia> {
     try {
       const path = await put(owner, file, videoExtension(file.type))
       return {
-        kind: 'video',
-        path,
-        poster_path: posterPath,
-        width: video.width,
-        height: video.height,
+        media: {
+          kind: 'video',
+          path,
+          poster_path: posterPath,
+          width: video.width,
+          height: video.height,
+        },
+        bytes: file.size,
+        format: format(file.type),
       }
     } catch (error) {
       await removeClubMedia([posterPath])
@@ -61,7 +80,11 @@ export async function uploadClubMedia(file: File): Promise<UploadedMedia> {
     image.blob,
     image.blob.type === 'image/webp' ? 'webp' : 'jpg',
   )
-  return { kind: 'image', path, width: image.width, height: image.height }
+  return {
+    media: { kind: 'image', path, width: image.width, height: image.height },
+    bytes: image.blob.size,
+    format: format(image.blob.type),
+  }
 }
 
 /**

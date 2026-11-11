@@ -12,6 +12,8 @@ if (typeof window !== 'undefined') {
 afterEach(() => {
   cleanup()
   vi.unstubAllGlobals()
+  // Form drafts live in localStorage; never let one test restore another's draft.
+  if (typeof window !== 'undefined') window.localStorage.clear()
   vi.unstubAllEnvs()
 })
 

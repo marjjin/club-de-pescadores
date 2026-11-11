@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Plus, ShieldCheck } from 'lucide-react'
 import { useAdminList } from '../hooks/useAdminData'
 import { useRoleActions } from '../hooks/useAdminActions'
+import { useConfirm } from '../hooks/useConfirm'
 import type { Role } from '../schemas/admin'
 import { CatalogToolbar } from './CatalogToolbar'
 import { CatalogListSkeleton } from './CatalogListSkeleton'
@@ -13,6 +14,7 @@ import { Feedback, Pagination, primaryClass, SectionHeading } from './ui'
 export function RolesSection({ userId }: { userId: string }) {
   const list = useAdminList('roles', userId)
   const { remove } = useRoleActions()
+  const confirm = useConfirm()
   const [editing, setEditing] = useState<Role | 'new' | null>(null)
   const [search, setSearch] = useState('')
   const [notice, setNotice] = useState<string | null>(null)
@@ -124,14 +126,17 @@ export function RolesSection({ userId }: { userId: string }) {
                     setEditing(role)
                   }}
                   onRemove={() => {
-                    if (
-                      !window.confirm(
-                        `¿Eliminar el rol «${role.name}»? Solo se puede eliminar si no tiene usuarios asignados.`,
-                      )
-                    )
-                      return
-                    setNotice(null)
-                    remove.mutate(role)
+                    void confirm({
+                      title: `¿Eliminar el rol «${role.name}»?`,
+                      message:
+                        'Solo se puede eliminar si no tiene usuarios asignados.',
+                      confirmLabel: 'Eliminar rol',
+                      tone: 'danger',
+                    }).then((accepted) => {
+                      if (!accepted) return
+                      setNotice(null)
+                      remove.mutate(role)
+                    })
                   }}
                 />
               ))}

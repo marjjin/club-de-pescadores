@@ -178,7 +178,8 @@ it('keeps permission changes after an error and protects discarding them', async
   expect(close).not.toHaveBeenCalled()
   const event = new Event('beforeunload', { cancelable: true })
   window.dispatchEvent(event)
-  expect(event.defaultPrevented).toBe(true)
+  // Unsaved work is kept as a draft instead of blocking the reload natively.
+  expect(event.defaultPrevented).toBe(false)
 })
 
 it('blocks duplicate writes and closing while saving', async () => {

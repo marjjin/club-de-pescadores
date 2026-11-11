@@ -3,6 +3,7 @@ import { requestSignal } from '@/lib/supabase/request'
 import { contextSchema } from '../schemas/admin'
 import { adminError, parseAdminResponse } from './errors'
 import { z } from '@/shared/lib/validation'
+import { clearAllDrafts } from '@/shared/lib/drafts'
 
 export async function getAdminSession(signal?: AbortSignal) {
   const client = getAdminSupabase()
@@ -51,6 +52,8 @@ export async function signIn(email: string, password: string) {
     )
 }
 export async function signOut(others = false) {
+  // Leaving this device: unsent drafts must not stay for the next person.
+  if (!others) clearAllDrafts()
   const { error } = await getAdminSupabase().auth.signOut({
     scope: others ? 'others' : 'global',
   })

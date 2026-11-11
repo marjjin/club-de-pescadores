@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from '@testing-library/react'
+import { fireEvent, render, screen, within } from '@testing-library/react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { beforeAll, expect, it } from 'vitest'
 import { mockResponse } from '@/test/content-api'
@@ -9,7 +9,7 @@ const report = {
   id: '40000000-0000-4000-8000-000000000000',
   height_cm: 330,
   measured_at: '2026-11-11T13:30:00+00:00',
-  conditions: 'Agua clara, poco viento.',
+  conditions: 'Se puede pescar, muchos camalotes, agua del color del mate.',
   created_at: '2026-11-11T13:30:00+00:00',
   media_items: [
     {
@@ -56,7 +56,14 @@ it('shows the latest report with its height, conditions and gallery', async () =
   mockResponse([report])
   mount()
   expect(await screen.findByText('3,30 m')).toBeTruthy()
-  expect(screen.getByText('Agua clara, poco viento.')).toBeTruthy()
+  expect(screen.getByText('Se puede pescar')).toBeTruthy()
+  // Quick phrases become chips; the staff's own words stay as a note.
+  expect(
+    within(screen.getByRole('list', { name: 'Condiciones' })).getByText(
+      'Muchos camalotes',
+    ),
+  ).toBeTruthy()
+  expect(screen.getByText('Agua del color del mate')).toBeTruthy()
   const video = screen.getByRole('button', {
     name: 'Reproducir video 2 de 2: Video del muelle',
   })

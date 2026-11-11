@@ -1,0 +1,7 @@
+# Prettier enforces LF; without this, Windows checkouts (core.autocrlf) rewrite
+# files as CRLF and format checks fail on unchanged code.
+* text=auto eol=lf
+*.webp binary
+*.png binary
+*.jpg binary
+*.ico binary

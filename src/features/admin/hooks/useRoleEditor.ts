@@ -1,5 +1,6 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import type { FormEvent } from 'react'
+import { useConfirm } from './useConfirm'
 import type { Role } from '../schemas/admin'
 import {
   groupRolePermissions,
@@ -17,6 +18,7 @@ export function useRoleEditor(
   onClose: () => void,
   onSaved: (name: string) => void,
 ) {
+  const confirm = useConfirm()
   const permissions = usePermissions(userId)
   const { save } = useRoleActions()
   const [name, setName] = useState(role?.name ?? '')
@@ -28,15 +30,6 @@ export function useRoleEditor(
     name !== (role?.name ?? '') ||
     [...selected].sort().join(',') !==
       [...(role?.permissions ?? [])].sort().join(',')
-  useEffect(() => {
-    if (!dirty || save.isSuccess) return
-    const warn = (event: BeforeUnloadEvent) => {
-      event.preventDefault()
-      event.returnValue = ''
-    }
-    window.addEventListener('beforeunload', warn)
-    return () => window.removeEventListener('beforeunload', warn)
-  }, [dirty, save.isSuccess])
   function changeName(value: string) {
     setName(value)
     setErrors((previous) => {
@@ -61,19 +54,23 @@ export function useRoleEditor(
   function toggleGroup(group: PermissionGroup) {
     changePermissions(selectPermissionGroup(selected, group))
   }
-  function close() {
+  async function requestClose() {
     if (save.isPending) return
     if (
       dirty &&
       !save.isSuccess &&
-      !window.confirm(
-        'Tenés cambios sin guardar. ¿Querés salir y descartarlos?',
-      )
+      !(await confirm({
+        title: '¿Salir sin guardar?',
+        message: 'Tenés cambios sin guardar. ¿Querés salir y descartarlos?',
+        confirmLabel: 'Salir y descartar',
+        cancelLabel: 'Seguir editando',
+        tone: 'danger',
+      }))
     )
       return
     onClose()
   }
-  function submit(event: FormEvent<HTMLFormElement>) {
+  async function requestSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
     if (
       save.isPending ||
@@ -97,10 +94,15 @@ export function useRoleEditor(
     const message = role
       ? `¿Guardar los permisos de «${result.data.name}»? Los cambios afectarán a todas las cuentas que tengan este rol.`
       : `¿Crear el rol «${result.data.name}» con ${selected.length} ${selected.length === 1 ? 'permiso' : 'permisos'}?`
-    if (!window.confirm(message)) return
+    if (!(await confirm(message))) return
     save.mutate([result.data.name, result.data.permissions, role], {
       onSuccess: () => onSaved(result.data.name),
     })
+  }
+  const close = () => void requestClose()
+  const submit = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+    void requestSubmit(event)
   }
   return {
     name,

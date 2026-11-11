@@ -7,11 +7,21 @@ import { LoginScreen } from './LoginScreen'
 import { MfaScreen } from './MfaScreen'
 import { PasswordForm } from './PasswordForm'
 import { AdminWorkspace } from './AdminWorkspace'
+import { ConfirmProvider } from './ConfirmProvider'
 import { PierWorkspace } from './pier/PierWorkspace'
 import { AdminShellSkeleton } from '@/shared/ui/AdminShellSkeleton'
 import { Feedback, secondaryClass } from './ui'
 
+// Every panel screen shares one club-styled confirmation dialog.
 export function AdminPanel() {
+  return (
+    <ConfirmProvider>
+      <AdminPanelContent />
+    </ConfirmProvider>
+  )
+}
+
+function AdminPanelContent() {
   const session = useAdminSession()
   const { logout } = useAuthActions()
   const location = useLocation()
