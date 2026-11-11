@@ -100,6 +100,48 @@ export type Database = {
         }
         Relationships: []
       }
+      media_items: {
+        Row: {
+          id: string
+          news_id: string | null
+          pier_report_id: string | null
+          position: number
+          kind: string
+          path: string
+          poster_path: string | null
+          width: number
+          height: number
+          alt: string
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          news_id?: string | null
+          pier_report_id?: string | null
+          position: number
+          kind: string
+          path: string
+          poster_path?: string | null
+          width: number
+          height: number
+          alt: string
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          news_id?: string | null
+          pier_report_id?: string | null
+          position?: number
+          kind?: string
+          path?: string
+          poster_path?: string | null
+          width?: number
+          height?: number
+          alt?: string
+          created_at?: string
+        }
+        Relationships: []
+      }
       news: {
         Row: {
           id: string
@@ -149,6 +191,39 @@ export type Database = {
         Row: { id: string; label: string; reserved: boolean }
         Insert: { id: string; label: string; reserved?: boolean }
         Update: { id?: string; label?: string; reserved?: boolean }
+        Relationships: []
+      }
+      pier_reports: {
+        Row: {
+          id: string
+          height_cm: number
+          measured_at: string
+          conditions: string | null
+          is_published: boolean
+          created_by: string
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          height_cm: number
+          measured_at: string
+          conditions?: string | null
+          is_published?: boolean
+          created_by: string
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          height_cm?: number
+          measured_at?: string
+          conditions?: string | null
+          is_published?: boolean
+          created_by?: string
+          created_at?: string
+          updated_at?: string
+        }
         Relationships: []
       }
       pool_rates: {
@@ -310,6 +385,7 @@ export type Database = {
         Returns: Json
       }
       admin_permissions: { Args: Record<never, never>; Returns: Json }
+      admin_prune_club_media: { Args: Record<never, never>; Returns: string[] }
       admin_save_content: {
         Args: {
           p_kind: string | null
@@ -346,11 +422,22 @@ export type Database = {
         Returns: string[]
       }
       bootstrap_admin: { Args: { p_email: string | null }; Returns: string }
+      can_manage_media: { Args: Record<never, never>; Returns: boolean }
+      club_media_in_use: { Args: { p_name: string | null }; Returns: boolean }
       has_permission: {
         Args: { p_permission: string | null }
         Returns: boolean
       }
       news_image_in_use: { Args: { p_name: string | null }; Returns: boolean }
+      pier_publish_report: { Args: { p_data: Json | null }; Returns: Json }
+      pier_recent_reports: {
+        Args: { p_before?: string | null; p_id?: string | null }
+        Returns: Json
+      }
+      pier_set_report_published: {
+        Args: { p_id: string | null; p_published: boolean | null }
+        Returns: undefined
+      }
     }
     Enums: Record<never, never>
     CompositeTypes: Record<never, never>

@@ -75,7 +75,7 @@ it('rejects claims-based privilege escalation and requires a live active role pl
   expect(
     (await run(root, 'select public.admin_context() as context')).rows[0]
       .context,
-  ).toEqual({ active: true, general: true, aal2: true })
+  ).toEqual({ active: true, general: true, pier: true, aal2: true })
 })
 
 it('denies direct writes, bootstrap access and reserved role assignment to browser accounts', async () => {
