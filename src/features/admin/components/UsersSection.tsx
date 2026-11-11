@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { AlertCircle, SearchX, UserRoundPlus, UsersRound } from 'lucide-react'
 import { useAdminList } from '../hooks/useAdminData'
+import { useAccess } from '../hooks/useAccess'
 import type { Account } from '../schemas/admin'
 import { UserEditor } from './UserEditor'
 import { CatalogListSkeleton } from './CatalogListSkeleton'
@@ -17,6 +18,8 @@ import {
 export function UsersSection({ userId }: { userId: string }) {
   const list = useAdminList('users', userId)
   const [editing, setEditing] = useState<Account | 'new' | null>(null)
+  // Viewing the team and changing access are separate permissions.
+  const manage = useAccess().can('usuarios.gestionar')
   const [search, setSearch] = useState('')
   const accounts = list.rows.filter((row): row is Account => 'email' in row)
   const failed = list.query.isError && !accounts.length
@@ -40,14 +43,16 @@ export function UsersSection({ userId }: { userId: string }) {
         title="Usuarios"
         description="Invitá al equipo y revisá quién tiene acceso. Los roles definen qué puede hacer cada persona."
         action={
-          <button
-            type="button"
-            className={primaryClass}
-            onClick={() => setEditing('new')}
-          >
-            <UserRoundPlus size={17} aria-hidden="true" />
-            Invitar usuario
-          </button>
+          manage && (
+            <button
+              type="button"
+              className={primaryClass}
+              onClick={() => setEditing('new')}
+            >
+              <UserRoundPlus size={17} aria-hidden="true" />
+              Invitar usuario
+            </button>
+          )
         }
       />
       <section
@@ -119,15 +124,17 @@ export function UsersSection({ userId }: { userId: string }) {
                   ? 'Probá con otras primeras letras del correo o volvé al inicio del listado.'
                   : 'Invitá a las personas que van a administrar el club y asignales sus roles.'}
               </p>
-              <button
-                type="button"
-                className={`${secondaryClass} mt-5`}
-                onClick={() => (filtered ? apply('') : setEditing('new'))}
-              >
-                {filtered
-                  ? 'Ver todos los usuarios'
-                  : 'Invitar al primer usuario'}
-              </button>
+              {(filtered || manage) && (
+                <button
+                  type="button"
+                  className={`${secondaryClass} mt-5`}
+                  onClick={() => (filtered ? apply('') : setEditing('new'))}
+                >
+                  {filtered
+                    ? 'Ver todos los usuarios'
+                    : 'Invitar al primer usuario'}
+                </button>
+              )}
             </div>
           ) : (
             <ul className="divide-y divide-navy-900/10">
@@ -136,7 +143,7 @@ export function UsersSection({ userId }: { userId: string }) {
                   key={account.id}
                   account={account}
                   self={account.id === userId}
-                  onEdit={() => setEditing(account)}
+                  onEdit={manage ? () => setEditing(account) : undefined}
                 />
               ))}
             </ul>

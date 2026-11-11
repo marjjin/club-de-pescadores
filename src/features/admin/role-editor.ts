@@ -23,12 +23,17 @@ const modules: Record<string, { title: string; description: string }> = {
     title: 'Parte del muelle',
     description: 'Altura del río, condiciones y fotos o videos del día.',
   },
+  usuarios: {
+    title: 'Usuarios',
+    description: 'Altas, accesos y roles de las personas del equipo.',
+  },
   auditoria: {
     title: 'Auditoría',
     description: 'Consulta del historial de cambios y accesos.',
   },
 }
-const contentModules = ['noticias', 'eventos', 'tarifas']
+// Modules whose actions all require their "ver" permission (checked again in the database).
+const contentModules = ['noticias', 'eventos', 'tarifas', 'usuarios']
 export const permissionModuleTitle = (id: string) =>
   modules[id]?.title ?? `Otros permisos (${id})`
 export function groupRolePermissions(
@@ -48,8 +53,22 @@ export function groupRolePermissions(
     group.permissions.push(permission)
     groups.set(id, group)
   }
-  const order = [...contentModules, 'muelle', 'auditoria']
-  const actions = ['ver', 'editar', 'publicar', 'archivar', 'eliminar']
+  const order = [
+    'noticias',
+    'eventos',
+    'tarifas',
+    'muelle',
+    'usuarios',
+    'auditoria',
+  ]
+  const actions = [
+    'ver',
+    'editar',
+    'publicar',
+    'archivar',
+    'eliminar',
+    'gestionar',
+  ]
   const actionOrder = (id: string) => {
     const position = actions.indexOf(id.split('.')[1] ?? '')
     return position < 0 ? 99 : position
@@ -103,6 +122,10 @@ export function permissionDescription(id: string) {
     return 'Publicar el parte diario: actualiza la altura del río y suma fotos o videos. También permite retirar partes.'
   if (action === 'ver' && id.startsWith('auditoria.'))
     return 'Revisar quién hizo cada cambio, sin modificar el historial.'
+  if (id === 'usuarios.ver')
+    return 'Consultar quién integra el equipo, su estado y sus roles, sin modificarlos.'
+  if (id === 'usuarios.gestionar')
+    return 'Invitar personas, asignar roles y desactivar accesos. Solo puede dar roles con permisos que ya tiene, nunca el de Administrador general.'
   if (action === 'ver')
     return 'Consultar contenido, borradores y registros archivados.'
   if (action === 'editar')

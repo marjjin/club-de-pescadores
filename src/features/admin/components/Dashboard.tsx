@@ -2,9 +2,11 @@ import { Link } from 'react-router'
 import { useDashboard } from '../hooks/useAdminData'
 import { Feedback, Loading, Panel, SectionHeading } from './ui'
 import { DashboardContentLinks } from './DashboardContentLinks'
+import { useAccess } from '../hooks/useAccess'
 
 export function Dashboard({ userId }: { userId: string }) {
   const query = useDashboard(userId)
+  const { can } = useAccess()
   return (
     <>
       <SectionHeading
@@ -36,44 +38,49 @@ export function Dashboard({ userId }: { userId: string }) {
               ],
               ['Borradores de contenido', query.data.drafts, '/admin/noticias'],
               ['Usuarios activos', query.data.users, '/admin/usuarios'],
-            ].map(([label, value, href]) => (
-              <Link
-                key={String(label)}
-                to={String(href)}
-                className="rounded-xl focus-visible:outline-offset-4"
-              >
-                <Panel>
-                  <p className="text-sm text-ink-600">{label}</p>
-                  <p className="mt-4 text-4xl font-extrabold text-navy-900">
-                    {value}
-                  </p>
-                  <span className="mt-5 block text-sm font-bold text-river-600">
-                    Administrar →
-                  </span>
-                </Panel>
-              </Link>
-            ))}
+            ]
+              // null means the module is outside this person's permissions.
+              .filter(([, value]) => value !== null)
+              .map(([label, value, href]) => (
+                <Link
+                  key={String(label)}
+                  to={String(href)}
+                  className="rounded-xl focus-visible:outline-offset-4"
+                >
+                  <Panel>
+                    <p className="text-sm text-ink-600">{label}</p>
+                    <p className="mt-4 text-4xl font-extrabold text-navy-900">
+                      {value}
+                    </p>
+                    <span className="mt-5 block text-sm font-bold text-river-600">
+                      Administrar →
+                    </span>
+                  </Panel>
+                </Link>
+              ))}
           </div>
         )
       )}
-      <div className="mt-6">
-        <Panel>
-          <h2 className="text-lg font-bold">
-            Tu equipo, con los permisos adecuados
-          </h2>
-          <p className="mt-2 text-sm leading-relaxed text-ink-600">
-            Creá roles según las responsabilidades del club y asigná solo los
-            permisos necesarios. El registro de actividad te permite revisar
-            cada cambio.
-          </p>
-          <Link
-            to="/admin/roles"
-            className="mt-4 inline-block text-sm font-bold text-river-600"
-          >
-            Gestionar roles →
-          </Link>
-        </Panel>
-      </div>
+      {can('roles.gestionar') && (
+        <div className="mt-6">
+          <Panel>
+            <h2 className="text-lg font-bold">
+              Tu equipo, con los permisos adecuados
+            </h2>
+            <p className="mt-2 text-sm leading-relaxed text-ink-600">
+              Creá roles según las responsabilidades del club y asigná solo los
+              permisos necesarios. El registro de actividad te permite revisar
+              cada cambio.
+            </p>
+            <Link
+              to="/admin/roles"
+              className="mt-4 inline-block text-sm font-bold text-river-600"
+            >
+              Gestionar roles →
+            </Link>
+          </Panel>
+        </div>
+      )}
     </>
   )
 }
