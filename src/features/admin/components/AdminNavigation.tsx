@@ -7,6 +7,7 @@ import {
   LayoutDashboard,
   Newspaper,
   ShieldCheck,
+  Trophy,
   UserRound,
   Users,
   Waves,
@@ -40,6 +41,12 @@ const links = [
     label: 'Parte del muelle',
     icon: Camera,
     permission: sectionPermissions.muelle,
+  },
+  {
+    path: '/admin/torneos',
+    label: 'Torneos',
+    icon: Trophy,
+    permission: sectionPermissions.torneos,
   },
   {
     path: '/admin/usuarios',

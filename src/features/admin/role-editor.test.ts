@@ -86,3 +86,22 @@ it('names the pier module and explains what publishing a report does', () => {
     'actualiza la altura del río',
   )
 })
+
+it('groups tournament permissions under their own module with specific help', () => {
+  const tournamentCatalog = [
+    'torneos.puntos',
+    'torneos.ver',
+    'torneos.participantes',
+    'torneos.gestionar',
+  ].map((id) => ({ id, label: id, reserved: false }))
+  const [group] = groupRolePermissions(tournamentCatalog)
+  expect(group?.title).toBe('Torneos')
+  expect(group?.permissions.map((permission) => permission.id)).toEqual([
+    'torneos.ver',
+    'torneos.gestionar',
+    'torneos.participantes',
+    'torneos.puntos',
+  ])
+  for (const permission of tournamentCatalog)
+    expect(permissionDescription(permission.id)).not.toContain('catálogo')
+})

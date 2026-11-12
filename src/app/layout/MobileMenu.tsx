@@ -3,8 +3,8 @@ import { useEffect, useRef } from 'react'
 import type { RefObject } from 'react'
 import { useFocusTrap } from '@/shared/hooks/useFocusTrap'
 import { club } from '@/shared/config/club'
-import { navLinks } from '../config/navigation'
-import { button } from '@/shared/ui/button'
+import { useLocation } from 'react-router'
+import { currentNav, navLinks } from '../config/navigation'
 
 type Props = {
   id: string
@@ -32,6 +32,7 @@ export function MobileMenu({
   onDismiss,
   triggerRef,
 }: Props) {
+  const { pathname } = useLocation()
   const firstLinkRef = useRef<HTMLAnchorElement>(null)
   const panelRef = useRef<HTMLElement>(null)
   useFocusTrap(panelRef, triggerRef, isOpen)
@@ -100,7 +101,8 @@ export function MobileMenu({
                 ref={index === 0 ? firstLinkRef : undefined}
                 href={link.href}
                 onClick={onClose}
-                className="flex min-h-14 items-center justify-between font-display text-2xl tracking-wide uppercase transition-colors active:text-river-600"
+                aria-current={currentNav(link, pathname, null)}
+                className="flex min-h-14 items-center justify-between font-display text-2xl tracking-wide uppercase transition-colors active:text-river-600 aria-[current=page]:text-river-600"
               >
                 {link.label}
                 <ChevronRight
@@ -111,14 +113,6 @@ export function MobileMenu({
             </li>
           ))}
         </ul>
-        <div
-          style={delayFor(navLinks.length)}
-          className={`grid p-4 sm:px-6 ${itemMotion} ${reveal}`}
-        >
-          <a href="/#sumate" onClick={onClose} className={button.primary}>
-            Hacete socio
-          </a>
-        </div>
         <a
           href={club.whatsappUrl}
           className="flex min-h-12 items-center justify-center gap-2 bg-mist-50 px-4 font-semibold text-ink-600 hover:text-river-600"

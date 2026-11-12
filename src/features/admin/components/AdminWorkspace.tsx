@@ -13,6 +13,8 @@ import { UsersSection } from './UsersSection'
 import { AuditSection } from './AuditSection'
 import { AccountSection } from './AccountSection'
 import { PierSection } from './pier/PierSection'
+import { TournamentsSection } from './tournaments/TournamentsSection'
+import { TournamentWorkspace } from './tournaments/TournamentWorkspace'
 import { NewNewsRoute } from './news-editor/NewNewsRoute'
 import { Feedback, SectionHeading } from './ui'
 import { roleLabel } from '../user-access'
@@ -144,6 +146,20 @@ export function AdminWorkspace({
               element={gate(
                 sectionPermissions.muelle,
                 <PierSection userId={userId} />,
+              )}
+            />
+            <Route
+              path="torneos"
+              element={gate(
+                sectionPermissions.torneos,
+                <TournamentsSection userId={userId} />,
+              )}
+            />
+            <Route
+              path="torneos/:id"
+              element={gate(
+                sectionPermissions.torneos,
+                <TournamentWorkspace userId={userId} />,
               )}
             />
             <Route
