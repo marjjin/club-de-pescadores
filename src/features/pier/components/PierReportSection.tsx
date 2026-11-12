@@ -6,7 +6,10 @@ import {
 } from '@/features/river'
 import { formatRelative } from '@/shared/lib/dates'
 import { MediaGallery } from '@/shared/ui/MediaGallery'
+import { buttonClass } from '@/shared/ui/button'
+import { container, section } from '@/shared/ui/layout'
 import { SectionHeading } from '@/shared/ui/SectionHeading'
+import { StatusMessage } from '@/shared/ui/StatusMessage'
 import { readConditions } from '../conditions'
 import type { ConditionTone } from '../conditions'
 import { useLatestPierReport } from '../hooks/useLatestPierReport'
@@ -28,9 +31,9 @@ export function PierReportSection() {
     <section
       id="muelle"
       aria-label="Hoy en el muelle"
-      className="bg-mist-50 py-14 lg:py-20"
+      className={`bg-mist-50 ${section}`}
     >
-      <div className="mx-auto max-w-7xl px-4 sm:px-6">
+      <div className={container}>
         <SectionHeading
           title="Hoy en el muelle"
           description="El último parte del personal del club: altura del río, condiciones y fotos."
@@ -42,17 +45,23 @@ export function PierReportSection() {
             className="mt-8 h-96 rounded-2xl bg-white motion-safe:animate-pulse"
           />
         ) : !report || !conditions ? (
-          <div role="alert" className="mt-8 text-ink-600">
-            <p>No pudimos cargar el parte del muelle.</p>
-            <button
-              type="button"
-              onClick={() => {
-                void query.refetch()
-              }}
-              className="mt-2 min-h-11 font-bold text-river-600 hover:underline"
+          <div className="mt-8">
+            <StatusMessage
+              tone="error"
+              action={
+                <button
+                  type="button"
+                  onClick={() => {
+                    void query.refetch()
+                  }}
+                  className={buttonClass('outline', 'sm')}
+                >
+                  Reintentar
+                </button>
+              }
             >
-              Reintentar
-            </button>
+              <p>No pudimos cargar el parte del muelle.</p>
+            </StatusMessage>
           </div>
         ) : (
           <article className="mt-8 overflow-hidden rounded-2xl border border-navy-900/10 border-t-4 border-t-sun-400 bg-white shadow-card">

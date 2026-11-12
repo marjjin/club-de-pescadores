@@ -1,5 +1,6 @@
+import { PagerNav } from '@/shared/ui/PagerNav'
 import { QueryBoundary } from '@/shared/ui/QueryBoundary'
-import { button } from '@/shared/ui/button'
+import { Skeleton } from '@/shared/ui/Skeleton'
 import { useNewsPage } from '../hooks/useNewsPage'
 import { NewsList } from './NewsList'
 
@@ -10,36 +11,28 @@ export function NewsArchive() {
       <QueryBoundary
         query={{ ...query, data: query.data?.items }}
         emptyMessage="No hay más noticias publicadas."
+        loading={
+          <Skeleton
+            variant="card"
+            items={6}
+            className="md:grid-cols-2 lg:grid-cols-3"
+          />
+        }
       >
         {(items) => <NewsList items={items} />}
       </QueryBoundary>
-      <nav aria-label="Paginación de noticias" className="mt-8 flex gap-4">
-        <button
-          type="button"
-          disabled={!hasPrevious || query.isFetching}
-          onClick={previous}
-          className={`${button.primary} disabled:cursor-default disabled:opacity-40`}
-        >
-          Anterior
-        </button>
-        <button
-          type="button"
-          disabled={
-            !query.data?.nextCursor ||
-            query.isFetching ||
-            query.isPlaceholderData
-          }
-          onClick={next}
-          className={`${button.primary} disabled:cursor-default disabled:opacity-40`}
-        >
-          Siguiente
-        </button>
-      </nav>
-      {query.isFetching && (
-        <p role="status" className="mt-4">
-          Actualizando noticias…
-        </p>
-      )}
+      <PagerNav
+        label="Paginación de noticias"
+        canPrevious={hasPrevious && !query.isFetching}
+        canNext={
+          !!query.data?.nextCursor &&
+          !query.isFetching &&
+          !query.isPlaceholderData
+        }
+        onPrevious={previous}
+        onNext={next}
+        busyMessage={query.isFetching ? 'Actualizando noticias…' : undefined}
+      />
     </div>
   )
 }

@@ -13,18 +13,18 @@ export function RiverLevelBar() {
     <section
       id="altura-del-rio"
       aria-label="Altura del río"
-      className="border-b border-navy-900/5 bg-mist-50/60 px-4 py-1.5 sm:px-6"
+      className="bg-navy-950 px-4 py-2 sm:px-6"
     >
-      <div className="mx-auto flex max-w-7xl items-center gap-x-2 sm:flex-wrap sm:gap-x-3 gap-y-0.5 text-xs leading-5 text-ink-600">
+      <div className="mx-auto flex max-w-7xl items-center gap-x-2 sm:flex-wrap sm:gap-x-3 gap-y-0.5 text-xs leading-5 text-white/75">
         <h2 className="flex shrink-0 items-center gap-1.5 font-semibold">
-          <Waves size={14} aria-hidden="true" className="text-river-600" />
+          <Waves size={14} aria-hidden="true" className="text-sun-400" />
           Altura del río
         </h2>
         {query.isPending ? (
           <p role="status">Consultando última medición…</p>
         ) : reading ? (
           <>
-            <p className="font-bold tabular-nums text-navy-900">
+            <p className="font-extrabold tabular-nums text-white">
               {formatRiverHeight(reading.height_cm)}
             </p>
             {/* Mobile keeps only height and time so the bar stays one line. */}
@@ -44,7 +44,7 @@ export function RiverLevelBar() {
               Fuente: {reading.source}
             </p>
             {isRiverReadingOld(reading.measured_at, now) && (
-              <p className="inline-flex items-center gap-1 font-semibold text-amber-800">
+              <p className="inline-flex items-center gap-1 font-semibold text-sun-400">
                 <Clock3 size={13} aria-hidden="true" />
                 Medición de hace más de 24 h
               </p>
@@ -70,7 +70,7 @@ export function RiverLevelBar() {
             onClick={() => {
               void query.refetch()
             }}
-            className="min-h-6 font-bold text-river-600 hover:underline disabled:opacity-50"
+            className="min-h-6 rounded font-bold text-sun-400 underline-offset-2 hover:underline disabled:opacity-50"
           >
             Reintentar medición
           </button>

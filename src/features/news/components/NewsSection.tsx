@@ -1,26 +1,36 @@
+import { ArrowRight } from 'lucide-react'
 import { Link } from 'react-router'
+import { textLink } from '@/shared/ui/button'
+import { container, section } from '@/shared/ui/layout'
 import { QueryBoundary } from '@/shared/ui/QueryBoundary'
 import { SectionHeading } from '@/shared/ui/SectionHeading'
+import { Skeleton } from '@/shared/ui/Skeleton'
 import { useLatestNews } from '../hooks/useLatestNews'
 import { NewsList } from './NewsList'
 
 export function NewsSection() {
   const query = useLatestNews()
   return (
-    <section id="noticias" className="bg-mist-50 py-16 lg:py-24">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6">
-        <div className="flex flex-wrap items-end justify-between gap-3">
-          <SectionHeading title="Últimas noticias" />
-          <Link
-            to="/noticias"
-            className="font-semibold text-river-600 hover:underline"
+    <section id="noticias" className={`bg-mist-50 ${section}`}>
+      <div className={container}>
+        <SectionHeading
+          title="Últimas noticias"
+          action={
+            <Link to="/noticias" className={textLink}>
+              Ver todas las noticias
+              <ArrowRight size={16} aria-hidden="true" />
+            </Link>
+          }
+        />
+        <div className="mt-10">
+          <QueryBoundary
+            query={query}
+            emptyMessage="Todavía no hay noticias."
+            loading={
+              <Skeleton variant="card" lead className="md:grid-cols-2" />
+            }
           >
-            Ver todas las noticias
-          </Link>
-        </div>
-        <div className="mt-8">
-          <QueryBoundary query={query} emptyMessage="Todavía no hay noticias.">
-            {(items) => <NewsList items={items} />}
+            {(items) => <NewsList items={items} featured />}
           </QueryBoundary>
         </div>
       </div>

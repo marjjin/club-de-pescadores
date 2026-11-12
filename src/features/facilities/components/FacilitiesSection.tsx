@@ -1,10 +1,11 @@
+import { container, section } from '@/shared/ui/layout'
 import { SectionHeading } from '@/shared/ui/SectionHeading'
 import { facilities } from '../content'
 
 export function FacilitiesSection() {
   return (
-    <section id="instalaciones" className="py-16 lg:py-24">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6">
+    <section id="instalaciones" className={section}>
+      <div className={container}>
         <SectionHeading
           title="Un espacio pensado para los socios"
           description="Todo lo que necesitás para disfrutar del río, en familia o con amigos."
@@ -18,20 +19,25 @@ export function FacilitiesSection() {
           {facilities.map(({ name, description, imageUrl, imageAlt }) => (
             <li
               key={name}
-              className="group w-[78%] shrink-0 snap-start sm:w-auto"
+              className="group relative isolate w-[78%] shrink-0 snap-start overflow-hidden rounded-2xl bg-navy-950 shadow-card sm:w-auto"
             >
-              <div className="overflow-hidden rounded-md">
-                <img
-                  src={imageUrl}
-                  width="600"
-                  height="750"
-                  loading="lazy"
-                  alt={imageAlt}
-                  className="aspect-[4/5] w-full object-cover transition-[scale] duration-500 ease-out group-hover:scale-105 motion-reduce:transition-none"
-                />
+              <img
+                src={imageUrl}
+                width="600"
+                height="750"
+                loading="lazy"
+                alt={imageAlt}
+                className="aspect-[4/5] w-full object-cover transition-[scale] duration-500 ease-out group-hover:scale-105 motion-reduce:transition-none"
+              />
+              {/* Gradient only behind the caption, so the photo keeps its colour. */}
+              <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-navy-950/90 via-navy-950/60 to-transparent px-5 pt-16 pb-5 text-white">
+                <h3 className="font-display text-2xl tracking-wide uppercase">
+                  {name}
+                </h3>
+                <p className="mt-1 text-sm leading-5 text-white/85">
+                  {description}
+                </p>
               </div>
-              <h3 className="mt-4 text-lg font-bold">{name}</h3>
-              <p className="mt-1 text-ink-600">{description}</p>
             </li>
           ))}
         </ul>
