@@ -6,13 +6,17 @@
   --color-navy-800: #123c6d;
   --color-river-600: #0b6fc2;
   --color-river-500: #1289e6;
+  --color-sun-300: #f9d548;
   --color-sun-400: #f7c81e;
   --color-mist-50: #f4f8fc;
+  --color-mist-100: #e6eef7;
   --color-ink-600: #4a5b70;
   --font-sans: 'Nunito Sans Variable', ui-sans-serif, system-ui, sans-serif;
   --font-display: 'Anton', 'Arial Narrow', sans-serif;
   --font-script: 'Allura', cursive;
   --shadow-card: 0 1px 2px rgb(7 27 51 / 0.06), 0 8px 24px rgb(7 27 51 / 0.08);
+  --shadow-raised:
+    0 2px 4px rgb(7 27 51 / 0.06), 0 16px 40px rgb(7 27 51 / 0.14);
 }
 
 h1,
@@ -23,7 +27,8 @@ h3 {
 
 html {
   scroll-behavior: smooth;
-  scroll-padding-top: 6rem;
+  /* Header (4.5rem) + breathing room, so anchored section titles are not hidden. */
+  scroll-padding-top: 5.5rem;
 }
 
 body {
@@ -33,9 +38,21 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
+/*
+ * Navy inner ring + yellow outer ring: the yellow alone is 1.6:1 on white
+ * (fails WCAG 1.4.11), the navy alone vanishes on dark bands. Together they
+ * stay visible on every background the site uses.
+ */
 :focus-visible {
   outline: 3px solid var(--color-sun-400);
   outline-offset: 2px;
+  box-shadow: 0 0 0 2px var(--color-navy-950);
+}
+
+/* Landmarks like <main tabindex="-1"> only take focus programmatically (skip link); a ring around the whole page is noise. */
+[tabindex='-1']:focus-visible {
+  outline: none;
+  box-shadow: none;
 }
 
 @media (prefers-reduced-motion: reduce) {

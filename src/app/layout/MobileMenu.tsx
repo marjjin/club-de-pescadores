@@ -75,7 +75,7 @@ export function MobileMenu({
       <div
         aria-hidden="true"
         onClick={onDismiss}
-        className={`fixed inset-x-0 top-20 bottom-0 bg-navy-950/60 lg:hidden ${motion} ${
+        className={`fixed inset-x-0 top-18 bottom-0 bg-navy-950/60 lg:hidden ${motion} ${
           isOpen ? 'visible opacity-100' : 'invisible opacity-0'
         }`}
       />
@@ -83,7 +83,7 @@ export function MobileMenu({
         ref={panelRef}
         id={id}
         aria-label="Principal móvil"
-        className={`absolute inset-x-0 top-full max-h-[calc(100dvh-5rem)] overflow-x-hidden overflow-y-auto border-t border-navy-900/10 bg-white shadow-xl lg:hidden ${motion} ${
+        className={`absolute inset-x-0 top-full max-h-[calc(100dvh-4.5rem)] overflow-x-hidden overflow-y-auto border-t border-navy-900/10 bg-white shadow-xl lg:hidden ${motion} ${
           isOpen
             ? 'visible translate-y-0 opacity-100'
             : 'invisible -translate-y-3 opacity-0'
@@ -100,7 +100,7 @@ export function MobileMenu({
                 ref={index === 0 ? firstLinkRef : undefined}
                 href={link.href}
                 onClick={onClose}
-                className="flex min-h-14 items-center justify-between text-lg font-bold transition-colors active:text-river-600"
+                className="flex min-h-14 items-center justify-between font-display text-2xl tracking-wide uppercase transition-colors active:text-river-600"
               >
                 {link.label}
                 <ChevronRight
@@ -121,7 +121,7 @@ export function MobileMenu({
         </div>
         <a
           href={club.whatsappUrl}
-          className="flex min-h-12 items-center justify-center gap-2 bg-mist-50 px-4 font-semibold text-ink-600"
+          className="flex min-h-12 items-center justify-center gap-2 bg-mist-50 px-4 font-semibold text-ink-600 hover:text-river-600"
         >
           <Phone aria-hidden="true" className="size-4" />
           {club.phone}

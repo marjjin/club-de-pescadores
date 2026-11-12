@@ -5,6 +5,8 @@ export const contextSchema = z.object({
   general: z.boolean(),
   pier: z.boolean().default(false),
   permissions: z.array(z.string()).default([]),
+  // Names of the caller's own roles; databases before this field omit it.
+  roles: z.array(z.string().max(80)).max(10).default([]),
   aal2: z.boolean(),
 })
 const identity = {

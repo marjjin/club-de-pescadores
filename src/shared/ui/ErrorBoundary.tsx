@@ -1,4 +1,5 @@
 import { Component } from 'react'
+import { button } from './button'
 import type { ReactNode } from 'react'
 
 type Props = { children: ReactNode }
@@ -16,16 +17,16 @@ export class ErrorBoundary extends Component<Props, State> {
       return (
         <div
           role="alert"
-          className="grid justify-items-center gap-4 p-8 text-center"
+          className="grid min-h-[50vh] content-center justify-items-center gap-5 p-8 text-center"
         >
-          <p className="text-lg">
+          <p className="max-w-md text-lg text-navy-900">
             Ocurrió un problema al cargar la página. Revisá tu conexión e
             intentá nuevamente.
           </p>
           <button
             type="button"
             onClick={() => window.location.reload()}
-            className="min-h-12 rounded-md bg-navy-900 px-6 font-bold text-white hover:bg-navy-800"
+            className={button.secondary}
           >
             Recargar página
           </button>

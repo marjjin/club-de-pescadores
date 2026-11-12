@@ -3,8 +3,15 @@ import { PasswordForm } from './PasswordForm'
 import { EmailForm } from './EmailForm'
 import { SessionSecurity } from './account/SessionSecurity'
 import { SectionHeading } from './ui'
+import { AccountRoles } from './account/AccountRoles'
 
-export function AccountSection({ email }: { email: string }) {
+export function AccountSection({
+  email,
+  roles = [],
+}: {
+  email: string
+  roles?: readonly string[]
+}) {
   return (
     <>
       <SectionHeading
@@ -29,6 +36,7 @@ export function AccountSection({ email }: { email: string }) {
             <p className="mt-1 text-base font-extrabold wrap-anywhere">
               {email}
             </p>
+            <AccountRoles roles={roles} />
           </div>
         </div>
         <nav

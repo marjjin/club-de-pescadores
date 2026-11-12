@@ -1,7 +1,8 @@
+import { PagerNav } from '@/shared/ui/PagerNav'
 import { QueryBoundary } from '@/shared/ui/QueryBoundary'
-import { button } from '@/shared/ui/button'
+import { Skeleton } from '@/shared/ui/Skeleton'
 import { useEventsPage } from '../hooks/useEventsPage'
-import { EventsList } from './EventsList'
+import { EventsList, eventsGrid } from './EventsList'
 
 export function EventsArchive() {
   const { query, hasPrevious, previous, next } = useEventsPage()
@@ -10,36 +11,22 @@ export function EventsArchive() {
       <QueryBoundary
         query={{ ...query, data: query.data?.items }}
         emptyMessage="No hay más eventos programados."
+        loading={<Skeleton variant="row" items={6} className={eventsGrid} />}
       >
         {(items) => <EventsList items={items} />}
       </QueryBoundary>
-      <nav aria-label="Paginación de eventos" className="mt-8 flex gap-4">
-        <button
-          type="button"
-          disabled={!hasPrevious || query.isFetching}
-          onClick={previous}
-          className={`${button.primary} disabled:cursor-default disabled:opacity-40`}
-        >
-          Anterior
-        </button>
-        <button
-          type="button"
-          disabled={
-            !query.data?.nextCursor ||
-            query.isFetching ||
-            query.isPlaceholderData
-          }
-          onClick={next}
-          className={`${button.primary} disabled:cursor-default disabled:opacity-40`}
-        >
-          Siguiente
-        </button>
-      </nav>
-      {query.isFetching && (
-        <p role="status" className="mt-4">
-          Actualizando eventos…
-        </p>
-      )}
+      <PagerNav
+        label="Paginación de eventos"
+        canPrevious={hasPrevious && !query.isFetching}
+        canNext={
+          !!query.data?.nextCursor &&
+          !query.isFetching &&
+          !query.isPlaceholderData
+        }
+        onPrevious={previous}
+        onNext={next}
+        busyMessage={query.isFetching ? 'Actualizando eventos…' : undefined}
+      />
     </div>
   )
 }
