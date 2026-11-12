@@ -46,7 +46,7 @@ html = html.replace(
   `<meta property="og:url" content="${siteUrl}/"><meta property="og:image" content="${siteUrl}/og-image.webp"><meta name="twitter:card" content="summary_large_image"><script type="application/ld+json">${structured}</script></head>`,
 )
 await writeFile('dist/index.html', html)
-const paths = ['', '/noticias', '/eventos']
+const paths = ['', '/noticias', '/eventos', '/torneos']
 await writeFile(
   'dist/sitemap.xml',
   `<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">${paths.map((route) => `<url><loc>${siteUrl}${route || '/'}</loc></url>`).join('')}</urlset>\n`,

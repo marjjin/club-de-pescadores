@@ -23,6 +23,10 @@ const modules: Record<string, { title: string; description: string }> = {
     title: 'Parte del muelle',
     description: 'Altura del río, condiciones y fotos o videos del día.',
   },
+  torneos: {
+    title: 'Torneos',
+    description: 'Torneos de pesca, participantes y tabla de posiciones.',
+  },
   usuarios: {
     title: 'Usuarios',
     description: 'Altas, accesos y roles de las personas del equipo.',
@@ -33,7 +37,7 @@ const modules: Record<string, { title: string; description: string }> = {
   },
 }
 // Modules whose actions all require their "ver" permission (checked again in the database).
-const contentModules = ['noticias', 'eventos', 'tarifas', 'usuarios']
+const contentModules = ['noticias', 'eventos', 'tarifas', 'usuarios', 'torneos']
 export const permissionModuleTitle = (id: string) =>
   modules[id]?.title ?? `Otros permisos (${id})`
 export function groupRolePermissions(
@@ -58,6 +62,7 @@ export function groupRolePermissions(
     'eventos',
     'tarifas',
     'muelle',
+    'torneos',
     'usuarios',
     'auditoria',
   ]
@@ -68,6 +73,8 @@ export function groupRolePermissions(
     'archivar',
     'eliminar',
     'gestionar',
+    'participantes',
+    'puntos',
   ]
   const actionOrder = (id: string) => {
     const position = actions.indexOf(id.split('.')[1] ?? '')
@@ -120,6 +127,14 @@ export function permissionDescription(id: string) {
   const action = id.split('.')[1]
   if (id === 'muelle.publicar')
     return 'Publicar el parte diario: actualiza la altura del río y suma fotos o videos. También permite retirar partes.'
+  if (id === 'torneos.ver')
+    return 'Consultar los torneos, sus participantes y la tabla, incluidos los borradores.'
+  if (id === 'torneos.gestionar')
+    return 'Crear y editar torneos, publicarlos en el sitio, finalizarlos y archivarlos.'
+  if (id === 'torneos.participantes')
+    return 'Registrar participantes con su consentimiento, corregir nombres y quitarlos de la tabla.'
+  if (id === 'torneos.puntos')
+    return 'Sumar o restar puntos a los participantes mientras el torneo está abierto.'
   if (action === 'ver' && id.startsWith('auditoria.'))
     return 'Revisar quién hizo cada cambio, sin modificar el historial.'
   if (id === 'usuarios.ver')

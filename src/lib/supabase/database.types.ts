@@ -340,6 +340,108 @@ export type Database = {
         }
         Relationships: []
       }
+      tournament_participants: {
+        Row: {
+          id: string
+          tournament_id: string
+          display_name: string
+          consent_at: string
+          points: number
+          deleted_at: string | null
+          created_by: string
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          tournament_id: string
+          display_name: string
+          consent_at: string
+          points?: number
+          deleted_at?: string | null
+          created_by: string
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          tournament_id?: string
+          display_name?: string
+          consent_at?: string
+          points?: number
+          deleted_at?: string | null
+          created_by?: string
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      tournament_scores: {
+        Row: {
+          id: string
+          tournament_id: string
+          participant_id: string
+          points: number
+          reason: string | null
+          created_by: string
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          tournament_id: string
+          participant_id: string
+          points: number
+          reason?: string | null
+          created_by: string
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          tournament_id?: string
+          participant_id?: string
+          points?: number
+          reason?: string | null
+          created_by?: string
+          created_at?: string
+        }
+        Relationships: []
+      }
+      tournaments: {
+        Row: {
+          id: string
+          name: string
+          place: string | null
+          starts_on: string
+          ends_on: string | null
+          status: string
+          created_by: string
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          name: string
+          place?: string | null
+          starts_on: string
+          ends_on?: string | null
+          status?: string
+          created_by: string
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          name?: string
+          place?: string | null
+          starts_on?: string
+          ends_on?: string | null
+          status?: string
+          created_by?: string
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: { user_id: string; role_id: string }
         Insert: { user_id: string; role_id: string }
@@ -436,6 +538,66 @@ export type Database = {
       }
       pier_set_report_published: {
         Args: { p_id: string | null; p_published: boolean | null }
+        Returns: undefined
+      }
+      tournament_add_participant: {
+        Args: {
+          p_tournament: string | null
+          p_name: string | null
+          p_consent: boolean | null
+        }
+        Returns: string
+      }
+      tournament_add_points: {
+        Args: {
+          p_participant: string | null
+          p_points: number | null
+          p_reason?: string | null
+        }
+        Returns: number
+      }
+      tournament_admin_get: { Args: { p_id: string | null }; Returns: Json }
+      tournament_admin_list: {
+        Args: { p_before?: string | null; p_id?: string | null }
+        Returns: Json
+      }
+      tournament_admin_participants: {
+        Args: {
+          p_tournament: string | null
+          p_search?: string | null
+          p_points?: number | null
+          p_name?: string | null
+          p_id?: string | null
+        }
+        Returns: Json
+      }
+      tournament_leaderboard: {
+        Args: {
+          p_tournament: string | null
+          p_points?: number | null
+          p_name?: string | null
+          p_id?: string | null
+        }
+        Returns: Json
+      }
+      tournament_remove_participant: {
+        Args: { p_id: string | null }
+        Returns: undefined
+      }
+      tournament_rename_participant: {
+        Args: { p_id: string | null; p_name: string | null }
+        Returns: undefined
+      }
+      tournament_save: {
+        Args: {
+          p_data: Json | null
+          p_id?: string | null
+          p_version?: string | null
+        }
+        Returns: string
+      }
+      tournament_set_status: {
+        Args: { p_id: string | null; p_status: string | null }
         Returns: undefined
       }
     }

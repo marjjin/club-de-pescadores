@@ -27,6 +27,7 @@ export const sectionPermissions = {
   eventos: 'eventos.ver',
   tarifas: 'tarifas.ver',
   muelle: 'muelle.publicar',
+  torneos: 'torneos.ver',
   usuarios: 'usuarios.ver',
   roles: 'roles.gestionar',
   actividad: 'auditoria.ver',

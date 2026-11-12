@@ -1,12 +1,9 @@
 import { useRef, useState } from 'react'
 import logo192 from '@/shared/assets/images/logo-192.webp'
-import { navLinks } from '../config/navigation'
-import { useActiveSection } from '@/shared/hooks/useActiveSection'
 import { useScrolled } from '@/shared/hooks/useScrolled'
 import { container } from '@/shared/ui/layout'
+import { DesktopNav } from './DesktopNav'
 import { MobileMenu } from './MobileMenu'
-
-const sectionIds = navLinks.map((link) => link.href.split('#')[1] ?? '')
 
 const bar =
   'absolute left-0 h-0.5 w-full rounded-full bg-current transition-all duration-300 ease-out motion-reduce:transition-none'
@@ -14,7 +11,6 @@ const bar =
 export function Header() {
   const [isOpen, setIsOpen] = useState(false)
   const toggleRef = useRef<HTMLButtonElement>(null)
-  const activeId = useActiveSection(sectionIds)
   const scrolled = useScrolled()
 
   const close = () => setIsOpen(false)
@@ -47,32 +43,7 @@ export function Header() {
             </span>
           </span>
         </a>
-        <nav aria-label="Principal" className="ml-auto hidden lg:block">
-          <ul className="flex gap-7 text-[0.9375rem] font-semibold">
-            {navLinks.map((link) => {
-              const isActive = link.href === `/#${activeId}`
-              return (
-                <li key={link.href}>
-                  <a
-                    href={link.href}
-                    aria-current={isActive ? 'location' : undefined}
-                    className={`relative inline-flex min-h-11 items-center transition-colors hover:text-river-600 ${
-                      isActive ? 'text-river-600' : ''
-                    }`}
-                  >
-                    {link.label}
-                    <span
-                      aria-hidden="true"
-                      className={`absolute inset-x-0 bottom-1.5 h-0.5 origin-left rounded-full bg-sun-400 transition-[scale] duration-300 motion-reduce:transition-none ${
-                        isActive ? 'scale-x-100' : 'scale-x-0'
-                      }`}
-                    />
-                  </a>
-                </li>
-              )
-            })}
-          </ul>
-        </nav>
+        <DesktopNav />
         <button
           ref={toggleRef}
           type="button"
