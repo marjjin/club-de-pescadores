@@ -46,7 +46,7 @@ En el Dashboard de Supabase:
 1. **Authentication → URL Configuration:** Site URL `https://club-de-pescadores.vercel.app`. Permitir `https://club-de-pescadores.vercel.app/admin/establecer-clave` y `https://club-de-pescadores.vercel.app/admin/cuenta` como Redirect URLs. Para pruebas locales, agregar las URL equivalentes del puerto usado por Vite.
 2. Deshabilitar el registro público de nuevas cuentas y las cuentas anónimas; los administradores se crean por invitación del propietario o del panel.
 3. Habilitar MFA por aplicación autenticadora (TOTP). El panel y las funciones de base de datos exigen AAL2 para operaciones administrativas.
-4. Configurar SMTP real, remitente autorizado y entrega de correos de invitación y recuperación. El correo ficticio retirado del sitio no sirve como remitente. El servicio de correo de prueba de Supabase no sustituye un SMTP de producción para invitar al equipo.
+4. Configurar Resend como SMTP real con el remitente `no-responder@clubdepescadores.com` y las plantillas de `supabase/templates/`, según [0016](decisions/0016-resend-auth-email.md). El servicio de correo de prueba de Supabase no sustituye un SMTP de producción para invitar al equipo.
 5. Configurar límites de autenticación, contraseña mínima de doce caracteres y protección de contraseñas filtradas cuando el plan lo permita. El frontend usa Auth directamente y sus límites de servidor. CAPTCHA no está integrado en esta versión: no activar un desafío obligatorio en Auth sin integrar también su widget y token en el formulario.
 6. Mantener **Secure email change** habilitado en el proveedor Email: el usuario confirma el cambio desde el correo actual y el nuevo. Revisar las plantillas y la entrega de ambos mensajes antes de habilitar este flujo en producción.
 

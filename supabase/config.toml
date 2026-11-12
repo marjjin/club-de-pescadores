@@ -2,3 +2,30 @@
 # The handler verifies the bearer JWT with Auth and the live permission RPC.
 # Supports projects with asymmetric signing keys instead of the legacy gateway check.
 verify_jwt = false
+
+[auth]
+# Email links land on the public domain. The vercel.app URLs stay allowed so links
+# already sent and the preview address keep working.
+site_url = "https://www.clubdepescadores.com"
+additional_redirect_urls = [
+  "https://www.clubdepescadores.com",
+  "https://www.clubdepescadores.com/admin/establecer-clave",
+  "https://www.clubdepescadores.com/admin/cuenta",
+  "https://club-de-pescadores.vercel.app",
+  "https://club-de-pescadores.vercel.app/admin/establecer-clave",
+  "https://club-de-pescadores.vercel.app/admin/cuenta",
+]
+
+# Auth emails use the club's templates. In production they are sent through Resend
+# (SMTP configured in the dashboard; see docs/decisions/0016-resend-auth-email.md).
+[auth.email.template.invite]
+subject = "Te invitaron al panel del Club de Pescadores"
+content_path = "./supabase/templates/invite.html"
+
+[auth.email.template.recovery]
+subject = "Restablecé tu contraseña del panel del club"
+content_path = "./supabase/templates/recovery.html"
+
+[auth.email.template.email_change]
+subject = "Confirmá el cambio de correo del panel del club"
+content_path = "./supabase/templates/email_change.html"
