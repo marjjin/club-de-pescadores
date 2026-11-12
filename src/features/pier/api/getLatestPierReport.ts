@@ -1,5 +1,6 @@
 import { z } from '@/shared/lib/validation'
 import { getSupabase } from '@/lib/supabase/connection'
+import { publicStorageUrl } from '@/lib/supabase/client'
 import { requestSignal } from '@/lib/supabase/request'
 import { pierRowSchema } from '../schemas/pier'
 import type { PierReport } from '../types'
@@ -24,8 +25,7 @@ export async function getLatestPierReport(
     .throwOnError()
   const row = z.array(pierRowSchema).max(1).parse(data)[0]
   if (!row) return null
-  const url = (path: string) =>
-    client.storage.from('club-media').getPublicUrl(path).data.publicUrl
+  const url = (path: string) => publicStorageUrl('club-media', path)
   return {
     id: row.id,
     heightCm: row.height_cm,
