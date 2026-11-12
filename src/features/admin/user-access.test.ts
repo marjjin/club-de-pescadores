@@ -1,6 +1,6 @@
 import { expect, it } from 'vitest'
 import { accessRoles } from '@/test/admin-access'
-import { userAccessChanged, validateUserAccess } from './user-access'
+import { roleLabel, userAccessChanged, validateUserAccess } from './user-access'
 
 it('validates invitations with a trimmed email and between one and ten UUID roles', () => {
   const values = {
@@ -42,4 +42,11 @@ it('treats role order as unchanged while detecting real access changes', () => {
   expect(
     userAccessChanged(values, { ...values, roles: values.roles.slice(0, 1) }),
   ).toBe(true)
+})
+
+it('labels the header with the person roles or a fallback when none arrive', () => {
+  expect(roleLabel(['Editor', 'Muelle'], 'Equipo del club')).toBe(
+    'Editor · Muelle',
+  )
+  expect(roleLabel([], 'Equipo del club')).toBe('Equipo del club')
 })

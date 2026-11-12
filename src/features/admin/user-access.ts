@@ -33,3 +33,8 @@ export function userAccessChanged(
     [...initial.roles].sort().join(',') !== [...values.roles].sort().join(',')
   )
 }
+
+/** Header caption for the signed-in person: their role names, or a generic fallback. */
+export function roleLabel(roles: readonly string[], fallback: string) {
+  return roles.length ? roles.join(' · ') : fallback
+}

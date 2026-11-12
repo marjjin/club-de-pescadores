@@ -58,6 +58,7 @@ const session = {
   general: true,
   pier: true,
   permissions: [] as string[],
+  roles: [] as string[],
   aal2: true,
   factorId: null,
 }
@@ -378,6 +379,24 @@ it('shows a custom role only the sections it was given', async () => {
     await screen.findByRole('heading', { level: 1, name: 'Usuarios' }),
   ).toBeTruthy()
   expect(screen.queryByRole('button', { name: 'Invitar usuario' })).toBeNull()
+})
+
+it('shows the signed-in person their own roles in the header and account', async () => {
+  vi.mocked(auth.getAdminSession).mockResolvedValue({
+    ...session,
+    general: false,
+    pier: false,
+    permissions: ['noticias.ver'],
+    roles: ['Comisión de prensa', 'Tesorería'],
+  })
+  mount(<AdminPanel />, '/admin/cuenta')
+  expect(await screen.findByText('Comisión de prensa · Tesorería')).toBeTruthy()
+  const list = screen.getByRole('list', { name: 'Tus roles' })
+  expect(
+    within(list)
+      .getAllByRole('listitem')
+      .map((item) => item.textContent),
+  ).toEqual(['Comisión de prensa', 'Tesorería'])
 })
 
 it('blocks a typed URL to a section outside the role', async () => {

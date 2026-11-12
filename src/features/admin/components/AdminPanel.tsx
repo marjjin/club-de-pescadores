@@ -102,6 +102,7 @@ function AdminPanelContent() {
         key={session.data.id}
         userId={session.data.id}
         email={session.data.email}
+        roles={session.data.roles}
       />
     )
   if (!session.data.general && !session.data.permissions.length)
@@ -132,6 +133,7 @@ function AdminPanelContent() {
         key={session.data.id}
         userId={session.data.id}
         email={session.data.email}
+        roles={session.data.roles}
       />
     </AccessContext.Provider>
   )

@@ -5,6 +5,7 @@ import { useAuthActions } from '../../hooks/useAdminActions'
 import { AccountSection } from '../AccountSection'
 import { Feedback } from '../ui'
 import { PierSection } from './PierSection'
+import { roleLabel } from '../../user-access'
 
 const tab = ({ isActive }: { isActive: boolean }) =>
   `inline-flex min-h-11 items-center rounded-lg px-3 text-sm font-bold ${isActive ? 'bg-mist-50 text-navy-900' : 'text-ink-600 hover:bg-mist-50'}`
@@ -13,9 +14,11 @@ const tab = ({ isActive }: { isActive: boolean }) =>
 export function PierWorkspace({
   userId,
   email,
+  roles,
 }: {
   userId: string
   email: string
+  roles: readonly string[]
 }) {
   const { logout } = useAuthActions()
   return (
@@ -25,7 +28,7 @@ export function PierWorkspace({
           <img src={logo} alt="" width="40" height="40" className="shrink-0" />
           <div className="min-w-0 flex-1">
             <p className="text-[10px] font-bold tracking-wider text-ink-600 uppercase sm:text-xs">
-              Personal del muelle
+              {roleLabel(roles, 'Personal del muelle')}
             </p>
             <p className="mt-0.5 truncate text-xs font-semibold sm:text-sm">
               {email}
@@ -60,7 +63,10 @@ export function PierWorkspace({
       >
         <Feedback error={logout.error} />
         <Routes>
-          <Route path="cuenta" element={<AccountSection email={email} />} />
+          <Route
+            path="cuenta"
+            element={<AccountSection email={email} roles={roles} />}
+          />
           <Route path="*" element={<PierSection userId={userId} />} />
         </Routes>
       </main>

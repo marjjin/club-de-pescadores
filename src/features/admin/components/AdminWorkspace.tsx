@@ -15,14 +15,17 @@ import { AccountSection } from './AccountSection'
 import { PierSection } from './pier/PierSection'
 import { NewNewsRoute } from './news-editor/NewNewsRoute'
 import { Feedback, SectionHeading } from './ui'
+import { roleLabel } from '../user-access'
 import { sectionPermissions, useAccess } from '../hooks/useAccess'
 
 export function AdminWorkspace({
   userId,
   email,
+  roles,
 }: {
   userId: string
   email: string
+  roles: readonly string[]
 }) {
   const { logout } = useAuthActions()
   const { open, triggerRef, dialogRef, show, close, onClosed } =
@@ -73,7 +76,10 @@ export function AdminWorkspace({
           </button>
           <div className="min-w-0 flex-1">
             <p className="text-[10px] font-bold tracking-wider text-ink-600 uppercase sm:text-xs">
-              {general ? 'Administrador general' : 'Equipo del club'}
+              {roleLabel(
+                roles,
+                general ? 'Administrador general' : 'Equipo del club',
+              )}
             </p>
             <p className="mt-1 truncate text-xs font-semibold sm:text-sm">
               {email}
@@ -154,7 +160,10 @@ export function AdminWorkspace({
                 <AuditSection userId={userId} />,
               )}
             />
-            <Route path="cuenta" element={<AccountSection email={email} />} />
+            <Route
+              path="cuenta"
+              element={<AccountSection email={email} roles={roles} />}
+            />
             <Route
               path="*"
               element={
