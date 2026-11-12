@@ -17,6 +17,7 @@ export type Database = {
           active: boolean
           created_at: string
           updated_at: string
+          deleted_at: string | null
         }
         Insert: {
           id: string
@@ -24,6 +25,7 @@ export type Database = {
           active?: boolean
           created_at?: string
           updated_at?: string
+          deleted_at?: string | null
         }
         Update: {
           id?: string
@@ -31,6 +33,7 @@ export type Database = {
           active?: boolean
           created_at?: string
           updated_at?: string
+          deleted_at?: string | null
         }
         Relationships: []
       }
@@ -488,6 +491,10 @@ export type Database = {
       }
       admin_permissions: { Args: Record<never, never>; Returns: Json }
       admin_prune_club_media: { Args: Record<never, never>; Returns: string[] }
+      admin_remove_user: {
+        Args: { p_id: string | null; p_version: string | null }
+        Returns: undefined
+      }
       admin_save_content: {
         Args: {
           p_kind: string | null

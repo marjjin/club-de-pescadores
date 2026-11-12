@@ -154,3 +154,11 @@ export function saveUser(account: Account, roles: string[], active: boolean) {
     version: account.updated_at,
   })
 }
+/** Removes someone from the team: access and roles go, their history stays. */
+export function removeUser(account: Account) {
+  return manageUser({
+    action: 'remove',
+    id: account.id,
+    version: account.updated_at,
+  })
+}

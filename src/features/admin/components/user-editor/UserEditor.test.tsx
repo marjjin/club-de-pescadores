@@ -17,11 +17,13 @@ vi.mock('../../api/data', () => ({
   listAdmin: vi.fn(),
   inviteUser: vi.fn(),
   saveUser: vi.fn(),
+  removeUser: vi.fn(),
 }))
 beforeEach(() => {
   vi.mocked(data.listAdmin).mockResolvedValue(accessRoles.slice(0, 2))
   vi.mocked(data.inviteUser).mockResolvedValue(null)
   vi.mocked(data.saveUser).mockResolvedValue(null)
+  vi.mocked(data.removeUser).mockResolvedValue(null)
 })
 function mount(account: Account | null = null, userId = accessViewer) {
   const close = vi.fn()
@@ -228,4 +230,25 @@ it('blocks duplicate submissions while the request is pending and preserves serv
   expect(
     screen.getByText('La cuenta ya existe. Se actualizó su acceso.'),
   ).toBeTruthy()
+})
+
+it('removes another user from the team only after a danger confirmation', async () => {
+  const account = accessAccount
+  const confirm = vi.spyOn(window, 'confirm').mockReturnValueOnce(false)
+  const close = mount(account)
+  const button = screen.getByRole('button', { name: 'Quitar del equipo' })
+  fireEvent.click(button)
+  await waitFor(() => expect(confirm).toHaveBeenCalledTimes(1))
+  expect(data.removeUser).not.toHaveBeenCalled()
+  confirm.mockReturnValueOnce(true)
+  fireEvent.click(button)
+  await waitFor(() => expect(data.removeUser).toHaveBeenCalledTimes(1))
+  expect(vi.mocked(data.removeUser).mock.calls[0]?.[0]).toBe(account)
+  await waitFor(() => expect(close).toHaveBeenCalled())
+  confirm.mockRestore()
+})
+
+it('does not offer removing your own account', () => {
+  mount({ ...accessAccount, id: accessViewer })
+  expect(screen.queryByRole('button', { name: 'Quitar del equipo' })).toBeNull()
 })

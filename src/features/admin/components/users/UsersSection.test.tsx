@@ -10,6 +10,7 @@ vi.mock('../../api/data', () => ({
   listAdmin: vi.fn(),
   inviteUser: vi.fn(),
   saveUser: vi.fn(),
+  removeUser: vi.fn(),
 }))
 const accounts = [
   accessAccount,

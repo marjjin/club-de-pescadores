@@ -70,6 +70,46 @@ export function createUserHandler(config, request = fetch) {
       } catch {
         return reply({ error: 'Solicitud inválida.' }, 400)
       }
+      if (body?.action === 'remove') {
+        if (
+          !uuid.test(body.id ?? '') ||
+          typeof body.version !== 'string' ||
+          !Number.isFinite(Date.parse(body.version))
+        )
+          return reply({ error: 'Datos de usuario inválidos.' }, 400)
+        if (body.id === identity.data.id)
+          return reply(
+            { error: 'Otro administrador debe quitar tu acceso.' },
+            403,
+          )
+        // The database removes access first, under the caller's own permissions.
+        const removed = await call('/rest/v1/rpc/admin_remove_user', {
+          p_id: body.id,
+          p_version: body.version,
+        })
+        if (!removed.ok)
+          return reply(
+            {
+              error:
+                'No se pudo quitar al usuario. Actualizá el listado: puede haber cambiado o ser el último administrador general.',
+            },
+            409,
+          )
+        // Then block sign-in so no new session can be opened or refreshed.
+        const auth = await call(
+          `/auth/v1/admin/users/${body.id}`,
+          { ban_duration: '876000h' },
+          true,
+          'PUT',
+        )
+        if (!auth.ok)
+          return reply({
+            ok: true,
+            warning:
+              'El usuario ya no tiene acceso al panel, pero no se pudo bloquear su ingreso. Revisá la cuenta en Supabase Auth.',
+          })
+        return reply({ ok: true })
+      }
       if (
         !body ||
         !['invite', 'update'].includes(body.action) ||
@@ -170,6 +210,19 @@ export function createUserHandler(config, request = fetch) {
           })
       }
       if (recoverExisting) {
+        // Someone removed earlier is banned in Auth; a new invitation lifts that block.
+        const unban = await call(
+          `/auth/v1/admin/users/${userId}`,
+          { ban_duration: 'none' },
+          true,
+          'PUT',
+        )
+        if (!unban.ok)
+          return reply({
+            ok: true,
+            warning:
+              'El acceso quedó asignado, pero no se pudo desbloquear el ingreso. Revisá la cuenta en Supabase Auth.',
+          })
         const recovery = await call(
           `/auth/v1/recover?redirect_to=${encodeURIComponent(`${config.siteUrl}/admin/establecer-clave`)}`,
           { email: body.email.trim() },

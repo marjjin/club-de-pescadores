@@ -27,6 +27,7 @@ function transport({
   saveOk = true,
   limit = true,
   existing = false,
+  removeOk = true,
 } = {}) {
   return vi.fn((url) => {
     let value = null
@@ -39,6 +40,7 @@ function transport({
     else if (url.includes('/auth/v1/invite?')) value = { id: invited }
     else if (url.includes('/auth/v1/admin/users/')) status = banOk ? 200 : 500
     else if (url.endsWith('/admin_save_user')) status = saveOk ? 200 : 403
+    else if (url.endsWith('/admin_remove_user')) status = removeOk ? 200 : 409
     return Promise.resolve(new Response(JSON.stringify(value), { status }))
   })
 }
@@ -181,5 +183,61 @@ describe('administrative user function', () => {
       ).status,
     ).toBe(403)
     expect(request).toHaveBeenCalledTimes(2)
+  })
+  it('removes a user in the database before banning sign-in', async () => {
+    const request = transport()
+    const response = await createUserHandler(
+      config,
+      request,
+    )(req({ action: 'remove', id: invited, version: '2026-11-08T00:00:00Z' }))
+    expect(await response.json()).toEqual({ ok: true })
+    const calls = request.mock.calls.map(([url, init]) => [url, init])
+    const removeIndex = calls.findIndex(([url]) =>
+      url.endsWith('/admin_remove_user'),
+    )
+    const banIndex = calls.findIndex(([url]) =>
+      url.includes('/auth/v1/admin/users/'),
+    )
+    expect(removeIndex).toBeGreaterThan(-1)
+    expect(removeIndex).toBeLessThan(banIndex)
+    // The database call runs with the caller's JWT, never with the service key.
+    expect(calls[removeIndex][1].headers.Authorization).toBe(
+      'Bearer user-fixture',
+    )
+    expect(JSON.parse(calls[banIndex][1].body)).toEqual({
+      ban_duration: '876000h',
+    })
+  })
+  it('never bans when the database refuses the removal, nor removes yourself', async () => {
+    const refused = transport({ removeOk: false })
+    const response = await createUserHandler(
+      config,
+      refused,
+    )(req({ action: 'remove', id: invited, version: '2026-11-08T00:00:00Z' }))
+    expect(response.status).toBe(409)
+    expect(
+      refused.mock.calls.some(([url]) => url.includes('/auth/v1/admin/users/')),
+    ).toBe(false)
+    const self = transport()
+    expect(
+      (
+        await createUserHandler(
+          config,
+          self,
+        )(req({ action: 'remove', id: root, version: '2026-11-08T00:00:00Z' }))
+      ).status,
+    ).toBe(403)
+    expect(self).toHaveBeenCalledTimes(2)
+  })
+  it('lifts the sign-in block when re-inviting a removed account', async () => {
+    const request = transport({ existing: true })
+    await createUserHandler(
+      config,
+      request,
+    )(req({ action: 'invite', email: 'back@example.test', roles: [role] }))
+    const unban = request.mock.calls.find(([url]) =>
+      url.includes('/auth/v1/admin/users/'),
+    )
+    expect(JSON.parse(unban[1].body)).toEqual({ ban_duration: 'none' })
   })
 })

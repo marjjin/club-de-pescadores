@@ -37,6 +37,7 @@ vi.mock('../api/data', () => ({
   deleteRole: vi.fn(),
   inviteUser: vi.fn(),
   saveUser: vi.fn(),
+  removeUser: vi.fn(),
 }))
 vi.mock('../api/pier', () => ({
   listPierReports: vi.fn(),

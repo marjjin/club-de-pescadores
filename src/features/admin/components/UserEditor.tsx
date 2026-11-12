@@ -7,6 +7,7 @@ import { RolePicker } from './user-editor/RolePicker'
 import { UserAccessFields } from './user-editor/UserAccessFields'
 import { UserAccessSummary } from './user-editor/UserAccessSummary'
 import { UserAccessSuccess } from './user-editor/UserAccessSuccess'
+import { RemoveUser } from './user-editor/RemoveUser'
 
 export function UserEditor({
   account,
@@ -154,6 +155,9 @@ export function UserEditor({
             </div>
           </div>
         </form>
+      )}
+      {account && !editor.self && !operation.isSuccess && (
+        <RemoveUser account={account} disabled={busy} onRemoved={onClose} />
       )}
     </>
   )
