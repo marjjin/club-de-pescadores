@@ -688,6 +688,7 @@ export type Database = {
         Returns: boolean
       }
       news_image_in_use: { Args: { p_name: string | null }; Returns: boolean }
+      pier_delete_report: { Args: { p_id: string | null }; Returns: string[] }
       pier_publish_report: { Args: { p_data: Json | null }; Returns: Json }
       pier_recent_reports: {
         Args: { p_before?: string | null; p_id?: string | null }

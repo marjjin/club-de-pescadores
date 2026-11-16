@@ -8,6 +8,7 @@ import { riverLevelKey } from '@/features/river'
 import { pierKeys } from '@/features/pier'
 import { pruneClubMedia } from '../api/media'
 import {
+  deletePierReport,
   listPierReports,
   publishPierReport,
   setPierReportPublished,
@@ -37,6 +38,13 @@ function useRefreshPier(userId: string) {
 export function usePublishPier(userId: string) {
   const refresh = useRefreshPier(userId)
   return useMutation({ mutationFn: publishPierReport, onSuccess: refresh })
+}
+export function useDeletePier(userId: string) {
+  const refresh = useRefreshPier(userId)
+  return useMutation({
+    mutationFn: (id: string) => deletePierReport(id),
+    onSuccess: refresh,
+  })
 }
 export function useTogglePier(userId: string) {
   const refresh = useRefreshPier(userId)
