@@ -1,8 +1,12 @@
-import { Eye, EyeOff, Images, UserRound } from 'lucide-react'
+import { Eye, EyeOff, Images, Trash2, UserRound } from 'lucide-react'
 import { formatRiverDate, formatRiverHeight } from '@/features/river'
 import { formatRelative } from '@/shared/lib/dates'
 import { useConfirm } from '../../hooks/useConfirm'
-import { usePierReports, useTogglePier } from '../../hooks/usePier'
+import {
+  useDeletePier,
+  usePierReports,
+  useTogglePier,
+} from '../../hooks/usePier'
 import type { PierReport } from '../../schemas/pier'
 import { Feedback, secondaryClass } from '../ui'
 
@@ -28,6 +32,7 @@ function Status({ report, live }: { report: PierReport; live: boolean }) {
 export function PierHistory({ userId }: { userId: string }) {
   const query = usePierReports(userId)
   const toggle = useTogglePier(userId)
+  const remove = useDeletePier(userId)
   const confirm = useConfirm()
   const reports = query.data?.pages.flat() ?? []
   const liveId = reports.find((report) => report.is_published)?.id
@@ -41,7 +46,11 @@ export function PierHistory({ userId }: { userId: string }) {
       </h2>
       <div className="px-5 empty:hidden">
         <Feedback
-          error={toggle.error ?? (reports.length ? null : query.error)}
+          error={
+            toggle.error ??
+            remove.error ??
+            (reports.length ? null : query.error)
+          }
         />
       </div>
       {query.isPending ? (
@@ -104,44 +113,68 @@ export function PierHistory({ userId }: { userId: string }) {
                     </span>
                   )}
                 </p>
-                <button
-                  type="button"
-                  className="inline-flex min-h-10 items-center gap-1.5 rounded-lg px-2 text-xs font-bold text-river-600 hover:bg-mist-50 disabled:opacity-50"
-                  disabled={toggle.isPending}
-                  onClick={() => {
-                    void confirm(
-                      report.is_published
-                        ? {
-                            title: '¿Retirar este parte del sitio?',
-                            message:
-                              'Deja de verse en el inicio. Podés volver a mostrarlo cuando quieras.',
-                            confirmLabel: 'Retirar del sitio',
-                            tone: 'danger',
-                          }
-                        : {
-                            title: '¿Volver a mostrar este parte?',
-                            message:
-                              'Si es el más reciente, aparecerá en el inicio del sitio.',
-                            confirmLabel: 'Volver a mostrar',
-                          },
-                    ).then((accepted) => {
-                      if (accepted)
-                        toggle.mutate({
-                          id: report.id,
-                          published: !report.is_published,
-                        })
-                    })
-                  }}
-                >
-                  {report.is_published ? (
-                    <EyeOff size={14} aria-hidden="true" />
-                  ) : (
-                    <Eye size={14} aria-hidden="true" />
-                  )}
-                  {report.is_published
-                    ? 'Retirar del sitio'
-                    : 'Volver a mostrar'}
-                </button>
+                <span className="flex flex-wrap items-center gap-1">
+                  <button
+                    type="button"
+                    className="inline-flex min-h-10 items-center gap-1.5 rounded-lg px-2 text-xs font-bold text-river-600 hover:bg-mist-50 disabled:opacity-50"
+                    disabled={toggle.isPending}
+                    onClick={() => {
+                      void confirm(
+                        report.is_published
+                          ? {
+                              title: '¿Retirar este parte del sitio?',
+                              message:
+                                'Deja de verse en el inicio. Podés volver a mostrarlo cuando quieras.',
+                              confirmLabel: 'Retirar del sitio',
+                              tone: 'danger',
+                            }
+                          : {
+                              title: '¿Volver a mostrar este parte?',
+                              message:
+                                'Si es el más reciente, aparecerá en el inicio del sitio.',
+                              confirmLabel: 'Volver a mostrar',
+                            },
+                      ).then((accepted) => {
+                        if (accepted)
+                          toggle.mutate({
+                            id: report.id,
+                            published: !report.is_published,
+                          })
+                      })
+                    }}
+                  >
+                    {report.is_published ? (
+                      <EyeOff size={14} aria-hidden="true" />
+                    ) : (
+                      <Eye size={14} aria-hidden="true" />
+                    )}
+                    {report.is_published
+                      ? 'Retirar del sitio'
+                      : 'Volver a mostrar'}
+                  </button>
+                  <button
+                    type="button"
+                    aria-label={`Borrar el parte de ${formatRiverHeight(report.height_cm)} del ${formatRiverDate(report.measured_at)}`}
+                    className="inline-flex min-h-10 items-center gap-1.5 rounded-lg px-2 text-xs font-bold text-red-700 hover:bg-red-50 disabled:opacity-50"
+                    disabled={remove.isPending}
+                    onClick={() => {
+                      void confirm({
+                        title: '¿Borrar este parte?',
+                        message:
+                          report.id === liveId
+                            ? 'Se borran la medición, el texto y sus fotos o videos. Es el que se ve en el sitio: la altura del río vuelve al parte publicado anterior. No se puede deshacer.'
+                            : 'Se borran la medición, el texto y sus fotos o videos. No se puede deshacer.',
+                        confirmLabel: 'Borrar parte',
+                        tone: 'danger',
+                      }).then((accepted) => {
+                        if (accepted) remove.mutate(report.id)
+                      })
+                    }}
+                  >
+                    <Trash2 size={14} aria-hidden="true" />
+                    Borrar
+                  </button>
+                </span>
               </div>
             </li>
           ))}
