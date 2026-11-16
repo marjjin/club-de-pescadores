@@ -46,6 +46,26 @@ it('focuses an invalid name and exposes only assignable permissions as controls'
   expect(data.saveRole).not.toHaveBeenCalled()
 })
 
+it('keeps retired pool and gate modules out of the permission picker', async () => {
+  vi.mocked(data.getPermissions).mockResolvedValue([
+    ...rolePermissionCatalog,
+    { id: 'pileta.controlar', label: 'Control de pileta', reserved: false },
+    { id: 'porteria.ver', label: 'Portería', reserved: false },
+  ])
+  mount()
+  await screen.findByRole('checkbox', { name: 'Ver noticias' })
+  expect(
+    screen.queryByRole('checkbox', { name: /control de pileta|portería/i }),
+  ).toBeNull()
+  expect(
+    screen.queryByRole('group', {
+      name: /otros permisos \((pileta|porter[ií]a)\)/i,
+    }),
+  ).toBeNull()
+  expect(screen.getByRole('checkbox', { name: 'Ver tarifas' })).toBeTruthy()
+  expect(screen.getByRole('group', { name: /Tarifas de pileta/ })).toBeTruthy()
+})
+
 it('includes read permission for dependent actions and clears only their module when read is removed', async () => {
   const confirm = vi.spyOn(window, 'confirm').mockReturnValue(true)
   mount()

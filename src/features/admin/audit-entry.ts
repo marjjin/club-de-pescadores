@@ -63,6 +63,18 @@ export function auditPresentation(entry: Audit): {
       )
   }
   if (operation === 'update' && before && after) {
+    // A deleted panel user keeps an anonymous row; the e-mail lives only in the snapshot.
+    if (
+      table === 'admin_accounts' &&
+      before.deleted_at == null &&
+      after.deleted_at != null
+    )
+      return {
+        kind: 'deleted',
+        label: 'Usuario eliminado',
+        resource,
+        title: typeof before.email === 'string' ? before.email : resource,
+      }
     if (before.deleted_at == null && after.deleted_at != null)
       return result('archived', 'Archivado')
     if (before.deleted_at != null && after.deleted_at == null)

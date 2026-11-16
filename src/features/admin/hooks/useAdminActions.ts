@@ -61,5 +61,8 @@ export function useUserActions() {
     save: useAdminAction((args: Parameters<typeof data.saveUser>) =>
       data.saveUser(...args),
     ),
+    remove: useAdminAction((account: Parameters<typeof data.deleteUser>[0]) =>
+      data.deleteUser(account),
+    ),
   }
 }

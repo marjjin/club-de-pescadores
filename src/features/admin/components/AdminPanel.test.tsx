@@ -242,6 +242,24 @@ it('renders the general workspace for an authorized MFA session', async () => {
     'href',
     expect.stringContaining('/admin/roles'),
   )
+  expect(screen.getByRole('link', { name: 'Tarifas de pileta' })).toBeTruthy()
+  expect(screen.getByText('Tarifas publicadas sin vencer')).toBeTruthy()
+})
+it('keeps season and pool pricing management available', async () => {
+  vi.mocked(auth.getAdminSession).mockResolvedValue(session)
+  vi.mocked(data.listAdmin).mockResolvedValue([])
+  mount(<AdminPanel />, '/admin/tarifas')
+  expect(
+    await screen.findByRole('heading', { level: 1, name: 'Tarifas de pileta' }),
+  ).toBeTruthy()
+  expect(data.listAdmin).toHaveBeenCalledWith(
+    'pool_rates',
+    { cursor: null, state: 'all', search: '' },
+    expect.anything(),
+  )
+  expect(
+    screen.queryByRole('heading', { name: 'Sección no encontrada' }),
+  ).toBeNull()
 })
 it('does not send mismatched passwords to Auth', async () => {
   mount(<PasswordForm />)

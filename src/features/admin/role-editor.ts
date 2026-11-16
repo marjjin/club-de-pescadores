@@ -38,6 +38,10 @@ const modules: Record<string, { title: string; description: string }> = {
 }
 // Modules whose actions all require their "ver" permission (checked again in the database).
 const contentModules = ['noticias', 'eventos', 'tarifas', 'usuarios', 'torneos']
+const retiredModules = new Set(['pileta', 'porteria', 'portería'])
+const isAssignablePermission = (permission: RolePermission) =>
+  !permission.reserved &&
+  !retiredModules.has(permission.id.split('.')[0]?.toLowerCase() ?? '')
 export const permissionModuleTitle = (id: string) =>
   modules[id]?.title ?? `Otros permisos (${id})`
 export function groupRolePermissions(
@@ -45,7 +49,7 @@ export function groupRolePermissions(
 ): PermissionGroup[] {
   const groups = new Map<string, PermissionGroup>()
   for (const permission of catalog) {
-    if (permission.reserved) continue
+    if (!isAssignablePermission(permission)) continue
     const id = permission.id.split('.')[0] ?? permission.id
     const group = groups.get(id) ?? {
       id,
@@ -95,7 +99,9 @@ export function toggleRolePermission(
   id: string,
   catalog: RolePermission[],
 ) {
-  const permission = catalog.find((entry) => entry.id === id && !entry.reserved)
+  const permission = catalog.find(
+    (entry) => entry.id === id && isAssignablePermission(entry),
+  )
   if (!permission) return selected
   const prefix = id.split('.')[0] ?? ''
   if (selected.includes(id)) {
@@ -178,7 +184,8 @@ export function validateRoleEditor(
     permissions.some(
       (id) =>
         !catalog.some(
-          (permission) => permission.id === id && !permission.reserved,
+          (permission) =>
+            permission.id === id && isAssignablePermission(permission),
         ),
     )
   )

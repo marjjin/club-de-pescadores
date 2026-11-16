@@ -25,7 +25,9 @@ export function useUserEditor(
   const [errors, setErrors] = useState<UserAccessErrors>({})
   const self = account?.id === userId
   const dirty = userAccessChanged(initial, values)
-  const busy = operation.isPending
+  const removal = actions.remove
+  const done = operation.isSuccess || removal.isSuccess
+  const busy = operation.isPending || removal.isPending
   const roles = list.rows.filter((row): row is Role => 'is_system' in row)
   function change<K extends keyof UserAccessValues>(
     name: K,
@@ -39,6 +41,7 @@ export function useUserEditor(
       return next
     })
     operation.reset()
+    removal.reset()
   }
   function toggleRole(id: string) {
     if (values.roles.includes(id))
@@ -52,7 +55,7 @@ export function useUserEditor(
     if (busy) return
     if (
       dirty &&
-      !operation.isSuccess &&
+      !done &&
       !(await confirm({
         title: '¿Salir sin guardar?',
         message: 'Tenés cambios sin guardar. ¿Querés salir y descartarlos?',
@@ -66,13 +69,7 @@ export function useUserEditor(
   }
   async function requestSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
-    if (
-      busy ||
-      self ||
-      operation.isSuccess ||
-      list.query.isPending ||
-      list.query.isError
-    )
+    if (busy || self || done || list.query.isPending || list.query.isError)
       return
     const result = validateUserAccess(values)
     if (!result.success) {
@@ -95,7 +92,24 @@ export function useUserEditor(
       actions.save.mutate([account, result.data.roles, result.data.active])
     else actions.invite.mutate([result.data.email, result.data.roles])
   }
+  async function requestRemove() {
+    if (!account || busy || self || done) return
+    operation.reset()
+    if (
+      !(await confirm({
+        title: `¿Eliminar a ${account.email}?`,
+        message:
+          'Se borra su cuenta de ingreso y pierde el acceso al panel de inmediato. Lo que cargó y el historial de auditoría se conservan. Esta acción no se puede deshacer: para volver a darle acceso tendrás que invitarlo de nuevo.',
+        confirmLabel: 'Eliminar usuario',
+        cancelLabel: 'Conservar usuario',
+        tone: 'danger',
+      }))
+    )
+      return
+    removal.mutate(account)
+  }
   const close = () => void requestClose()
+  const remove = () => void requestRemove()
   const submit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
     void requestSubmit(event)
@@ -109,7 +123,9 @@ export function useUserEditor(
     busy,
     self,
     operation,
+    removal,
     change,
+    remove,
     toggleRole,
     close,
     submit,

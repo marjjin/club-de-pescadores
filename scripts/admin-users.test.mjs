@@ -1,6 +1,9 @@
 // @vitest-environment node
 import { describe, expect, it, vi } from 'vitest'
-import { createUserHandler } from '../supabase/functions/admin-users/handler.mjs'
+import {
+  createUserHandler,
+  parseOrigins,
+} from '../supabase/functions/admin-users/handler.mjs'
 
 const root = '10000000-0000-4000-8000-000000000010'
 const invited = '10000000-0000-4000-8000-000000000012'
@@ -21,14 +24,18 @@ const req = (
     headers: { authorization, origin, 'Content-Type': 'application/json' },
     body: JSON.stringify(body),
   })
+const remove = () =>
+  req({ action: 'delete', id: invited, version: '2026-11-08T00:00:00Z' })
 function transport({
   allowed = true,
   banOk = true,
   saveOk = true,
   limit = true,
   existing = false,
+  deleteOk = true,
+  authDeleteStatus = 200,
 } = {}) {
-  return vi.fn((url) => {
+  return vi.fn((url, options) => {
     let value = null
     let status = 200
     if (url.endsWith('/auth/v1/user')) value = { id: root }
@@ -37,7 +44,10 @@ function transport({
     else if (url.endsWith('/admin_invitation_target'))
       value = { existing_id: existing ? invited : null, registered: false }
     else if (url.includes('/auth/v1/invite?')) value = { id: invited }
-    else if (url.includes('/auth/v1/admin/users/')) status = banOk ? 200 : 500
+    else if (url.includes('/auth/v1/admin/users/'))
+      status =
+        options.method === 'DELETE' ? authDeleteStatus : banOk ? 200 : 500
+    else if (url.endsWith('/admin_delete_user')) status = deleteOk ? 200 : 409
     else if (url.endsWith('/admin_save_user')) status = saveOk ? 200 : 403
     return Promise.resolve(new Response(JSON.stringify(value), { status }))
   })
@@ -181,5 +191,99 @@ describe('administrative user function', () => {
       ).status,
     ).toBe(403)
     expect(request).toHaveBeenCalledTimes(2)
+  })
+  it('deletes the Auth account only after the database revokes access', async () => {
+    const request = transport()
+    const response = await createUserHandler(config, request)(remove())
+    expect(await response.json()).toEqual({ ok: true })
+    const urls = request.mock.calls.map(([url]) => url)
+    const rpc = urls.findIndex((url) => url.endsWith('/admin_delete_user'))
+    const auth = urls.findIndex((url) =>
+      url.endsWith(`/auth/v1/admin/users/${invited}`),
+    )
+    expect(rpc).toBeGreaterThan(-1)
+    expect(rpc).toBeLessThan(auth)
+    expect(request.mock.calls[rpc][1].headers.Authorization).toBe(
+      'Bearer user-fixture',
+    )
+    expect(JSON.parse(request.mock.calls[rpc][1].body)).toEqual({
+      p_id: invited,
+      p_version: '2026-11-08T00:00:00Z',
+    })
+    expect(request.mock.calls[auth][1]).toMatchObject({
+      method: 'DELETE',
+      headers: { apikey: config.serviceKey },
+    })
+  })
+  it('never deletes the Auth account when the database rejects the deletion', async () => {
+    const request = transport({ deleteOk: false })
+    const response = await createUserHandler(config, request)(remove())
+    expect(response.status).toBe(409)
+    expect(
+      request.mock.calls.some(([url]) => url.includes('/auth/v1/admin/users/')),
+    ).toBe(false)
+  })
+  it('reports a partial deletion and accepts an Auth account that is already gone', async () => {
+    const failed = await createUserHandler(
+      config,
+      transport({ authDeleteStatus: 500 }),
+    )(remove())
+    expect(await failed.json()).toMatchObject({
+      ok: true,
+      warning: expect.stringContaining('Supabase Auth'),
+    })
+    const gone = await createUserHandler(
+      config,
+      transport({ authDeleteStatus: 404 }),
+    )(remove())
+    expect(await gone.json()).toEqual({ ok: true })
+  })
+  it('rejects self-deletion and malformed deletions before invoking a mutation', async () => {
+    for (const body of [
+      { action: 'delete', id: root, version: '2026-11-08T00:00:00Z' },
+      { action: 'delete', id: invited, version: 'ayer' },
+      { action: 'delete', id: 'x', version: '2026-11-08T00:00:00Z' },
+    ]) {
+      const request = transport()
+      const response = await createUserHandler(config, request)(req(body))
+      expect([400, 403]).toContain(response.status)
+      expect(request).toHaveBeenCalledTimes(2)
+    }
+  })
+  it('accepts configured development origins without changing e-mail links', async () => {
+    const dev = {
+      ...config,
+      devOrigins: ' http://localhost:5174 , *, http://evil.example/x ',
+    }
+    const request = transport()
+    const response = await createUserHandler(
+      dev,
+      request,
+    )(
+      req(
+        { action: 'invite', email: 'new@example.test', roles: [role] },
+        'Bearer user-fixture',
+        'http://localhost:5174',
+      ),
+    )
+    expect(response.headers.get('access-control-allow-origin')).toBe(
+      'http://localhost:5174',
+    )
+    const invitation = request.mock.calls.find(([url]) =>
+      url.includes('/auth/v1/invite?'),
+    )
+    expect(new URL(invitation[0]).searchParams.get('redirect_to')).toBe(
+      'https://club.example/admin/establecer-clave',
+    )
+    for (const origin of ['http://localhost:5173', 'http://evil.example'])
+      expect(
+        (await createUserHandler(dev, request)(req({}, 'Bearer x', origin)))
+          .status,
+      ).toBe(403)
+    expect(
+      parseOrigins(
+        'http://localhost:5173,https://a.example/,ftp://b.example,localhost:5174',
+      ),
+    ).toEqual(['http://localhost:5173'])
   })
 })

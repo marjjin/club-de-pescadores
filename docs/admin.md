@@ -2,6 +2,8 @@
 
 El código del panel está implementado en `/admin`. La matriz fue aprobada el 8 de noviembre de 2026. Los paneles de otros perfiles quedan fuera de esta etapa.
 
+El 16 de noviembre el propietario pidió retirar los roles operativos de control de pileta y portería de Roles y de los selectores de Usuarios, conservando expresamente la sección de temporada y tarifas. La migración `202611160001_retire_pool_gate_roles.sql` actualiza el catálogo remoto sin borrar asignaciones. Ver [la decisión de alcance](decisions/0016-retire-pool-gate-roles.md).
+
 La versión local no crea automáticamente tablas en Supabase, no publica el frontend y no crea una cuenta con contraseña predeterminada. El propietario debe completar la instalación con un acceso autorizado al proyecto. Nunca poner una clave de servicio en Vercel/Vite ni compartir contraseñas por el chat.
 
 ## Funciones
@@ -62,6 +64,14 @@ supabase functions deploy admin-users --project-ref rjzmcwfwfxtktuleqzgf
 ```
 
 Los secretos estándar `SUPABASE_URL`, `SUPABASE_ANON_KEY` y `SUPABASE_SERVICE_ROLE_KEY` los proporciona el entorno de Edge Functions. No copiarlos al frontend. `ADMIN_SITE_URL` fija el origen permitido y el destino de los correos; no se acepta una URL de retorno del navegador.
+
+Para usar Usuarios desde el entorno local contra este mismo proyecto, se puede agregar el secreto opcional `ADMIN_DEV_ORIGINS` con orígenes exactos separados por comas:
+
+```bash
+supabase secrets set ADMIN_DEV_ORIGINS=http://localhost:5173,http://localhost:5174
+```
+
+Solo amplía CORS: los correos siguen apuntando a `ADMIN_SITE_URL` y cada llamada exige igual una sesión de administrador con MFA. Se ignoran comodines, rutas y entradas inválidas. Para cerrar el acceso local, borrar el secreto con `supabase secrets unset ADMIN_DEV_ORIGINS`.
 
 `supabase/config.toml` desactiva el verificador JWT antiguo de la puerta de entrada para esta función. **No significa acceso anónimo:** el handler exige Bearer, verifica el token contra Auth y consulta `has_permission('usuarios.gestionar')` con el JWT del solicitante antes de usar la clave de servicio. La asignación final vuelve a validar permisos dentro de la transacción de base de datos.
 

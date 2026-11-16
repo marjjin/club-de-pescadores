@@ -32,6 +32,22 @@ it('identifies actual archive, restore and access changes while preserving the r
       after_data: { active: false },
     }).label,
   ).toBe('Acceso desactivado')
+  expect(
+    auditPresentation({
+      ...auditUpdated,
+      action: 'admin_accounts.update',
+      before_data: { email: 'baja@example.test', active: true },
+      after_data: {
+        email: null,
+        active: false,
+        deleted_at: '2026-11-16T12:00:00Z',
+      },
+    }),
+  ).toMatchObject({
+    kind: 'deleted',
+    label: 'Usuario eliminado',
+    title: 'baja@example.test',
+  })
 })
 it('describes assignments and missing actors without inventing account names', () => {
   expect(

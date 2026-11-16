@@ -17,11 +17,13 @@ vi.mock('../../api/data', () => ({
   listAdmin: vi.fn(),
   inviteUser: vi.fn(),
   saveUser: vi.fn(),
+  deleteUser: vi.fn(),
 }))
 beforeEach(() => {
   vi.mocked(data.listAdmin).mockResolvedValue(accessRoles.slice(0, 2))
   vi.mocked(data.inviteUser).mockResolvedValue(null)
   vi.mocked(data.saveUser).mockResolvedValue(null)
+  vi.mocked(data.deleteUser).mockResolvedValue(null)
 })
 function mount(account: Account | null = null, userId = accessViewer) {
   const close = vi.fn()
@@ -155,6 +157,24 @@ it('blocks edits to the current administrator even if the form is submitted dire
   expect(data.saveUser).not.toHaveBeenCalled()
 })
 
+it('preserves an existing retired assignment omitted by the server role catalog', async () => {
+  vi.spyOn(window, 'confirm').mockReturnValue(true)
+  const retiredId = '20000000-0000-4000-8000-000000000099'
+  const account = {
+    ...accessAccount,
+    roles: [...accessAccount.roles, retiredId],
+  }
+  mount(account)
+  await screen.findByRole('checkbox', { name: 'Administrador general' })
+  expect(
+    screen.queryByRole('checkbox', { name: /pileta|portería/i }),
+  ).toBeNull()
+  fireEvent.click(screen.getByRole('radio', { name: 'Acceso desactivado' }))
+  fireEvent.click(screen.getByRole('button', { name: 'Guardar acceso' }))
+  await screen.findByRole('heading', { name: 'Acceso actualizado' })
+  expect(data.saveUser).toHaveBeenCalledWith(account, account.roles, false)
+})
+
 it('preserves changes after an error and protects leaving the form', async () => {
   const confirm = vi.spyOn(window, 'confirm').mockReturnValue(true)
   vi.mocked(data.inviteUser).mockRejectedValueOnce(
@@ -228,4 +248,43 @@ it('blocks duplicate submissions while the request is pending and preserves serv
   expect(
     screen.getByText('La cuenta ya existe. Se actualizó su acceso.'),
   ).toBeTruthy()
+})
+
+it('deletes another account only after an explicit confirmation', async () => {
+  const confirm = vi.spyOn(window, 'confirm').mockReturnValue(false)
+  mount(accessAccount)
+  await screen.findByRole('checkbox', { name: 'Administrador general' })
+  fireEvent.click(screen.getByRole('button', { name: 'Eliminar usuario' }))
+  await waitFor(() => expect(confirm).toHaveBeenCalledOnce())
+  expect(confirm.mock.calls[0]?.[0]).toContain(accessAccount.email)
+  expect(data.deleteUser).not.toHaveBeenCalled()
+  confirm.mockReturnValue(true)
+  fireEvent.click(screen.getByRole('button', { name: 'Eliminar usuario' }))
+  await screen.findByRole('heading', { name: 'Usuario eliminado' })
+  expect(data.deleteUser).toHaveBeenCalledWith(accessAccount)
+})
+
+it('shows deletion errors and partial deletions without losing the account', async () => {
+  vi.spyOn(window, 'confirm').mockReturnValue(true)
+  vi.mocked(data.deleteUser).mockRejectedValueOnce(
+    new Error('No se pudo eliminar el usuario.'),
+  )
+  mount(accessAccount)
+  await screen.findByRole('checkbox', { name: 'Administrador general' })
+  fireEvent.click(screen.getByRole('button', { name: 'Eliminar usuario' }))
+  expect((await screen.findByRole('alert')).textContent).toBe(
+    'No se pudo eliminar el usuario.',
+  )
+  vi.mocked(data.deleteUser).mockResolvedValueOnce(
+    'Eliminala desde Supabase Auth.',
+  )
+  fireEvent.click(screen.getByRole('button', { name: 'Eliminar usuario' }))
+  await screen.findByRole('heading', { name: 'Solicitud procesada' })
+  expect(screen.getByText('Eliminala desde Supabase Auth.')).toBeTruthy()
+})
+
+it('never offers deleting the current administrator', async () => {
+  mount(accessAccount, accessAccount.id)
+  await screen.findByRole('checkbox', { name: 'Administrador general' })
+  expect(screen.queryByRole('button', { name: 'Eliminar usuario' })).toBeNull()
 })
