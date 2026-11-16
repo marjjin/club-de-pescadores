@@ -1,1 +1,7 @@
 export { FacilitiesSection } from './components/FacilitiesSection'
+export { FacilityCard } from './components/FacilityCard'
+export { defaultImages } from './content'
+export { facilitiesKey } from './hooks/useFacilities'
+export { MAX_FACILITIES, facilityImagePath } from './schemas/facilities'
+export { DEFAULT_IMAGES } from './types'
+export type { DefaultImage } from './types'

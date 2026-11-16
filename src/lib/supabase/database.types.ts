@@ -103,6 +103,66 @@ export type Database = {
         }
         Relationships: []
       }
+      facilities: {
+        Row: {
+          id: string
+          position: number
+          name: string
+          description: string
+          image_path: string | null
+          default_image: string | null
+          image_alt: string
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          position: number
+          name: string
+          description: string
+          image_path?: string | null
+          default_image?: string | null
+          image_alt: string
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          position?: number
+          name?: string
+          description?: string
+          image_path?: string | null
+          default_image?: string | null
+          image_alt?: string
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      facility_sections: {
+        Row: {
+          id: number
+          title: string
+          description: string
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: number
+          title: string
+          description: string
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: number
+          title?: string
+          description?: string
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       media_items: {
         Row: {
           id: string
@@ -478,6 +538,7 @@ export type Database = {
         Args: { p_id: string | null; p_version: string | null }
         Returns: undefined
       }
+      admin_get_facilities: { Args: Record<never, never>; Returns: Json }
       admin_get_river_level: { Args: Record<never, never>; Returns: Json }
       admin_invitation_target: {
         Args: { p_email: string | null; p_roles: string[] | null }
@@ -502,6 +563,10 @@ export type Database = {
           p_id?: string | null
           p_version?: string | null
         }
+        Returns: Json
+      }
+      admin_save_facilities: {
+        Args: { p_data: Json | null; p_version: string | null }
         Returns: Json
       }
       admin_save_river_level: {

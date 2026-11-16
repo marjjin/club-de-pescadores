@@ -12,6 +12,7 @@ La versión local no crea automáticamente tablas en Supabase, no publica el fro
 - Resumen con agregaciones reales de contenido y usuarios.
 - Noticias, eventos y tarifas: crear, editar, publicar, programar noticias, archivar y restaurar como borrador. Confirmación de publicación y archivado; detección de edición concurrente.
 - Noticias: vista previa, URL HTTPS o carga de imágenes JPG/PNG/WebP optimizadas. Tamaño máximo 5 MB, nombres aleatorios y escritura restringida por permisos en Storage.
+- Instalaciones: título y bajada de la sección del inicio y hasta ocho tarjetas con foto, título, descripción y texto alternativo. Agregar, quitar y reordenar; se publica todo junto, con confirmación y control de edición concurrente. Permisos `instalaciones.ver` e `instalaciones.editar`. Ver [la decisión](decisions/0018-editable-facilities.md).
 - Usuarios: invitación, múltiples roles, activación y desactivación. El administrador no modifica su propio acceso. No se puede dejar el sistema sin administrador general activo mediante las operaciones del panel.
 - Roles personalizados con permisos de contenido y auditoría. Gestión de accesos reservada al rol general protegido. Los otros roles pueden configurar su cuenta, pero no entran al panel general.
 - Auditoría de cambios en contenido, roles y asignaciones. Consulta paginada por fecha, filtro por sección y comparación del estado anterior/posterior. Sin edición ni borrado desde el panel.
@@ -59,7 +60,7 @@ Los enlaces de invitación y recuperación usan el flujo de sesión de Supabase 
 La función está en `supabase/functions/admin-users/`. Usando la CLI autenticada y vinculada al proyecto:
 
 ```bash
-supabase secrets set ADMIN_SITE_URL=https://club-de-pescadores.vercel.app
+supabase secrets set ADMIN_SITE_URL=https://www.clubdepescadores.com
 supabase functions deploy admin-users --project-ref rjzmcwfwfxtktuleqzgf
 ```
 
@@ -68,7 +69,7 @@ Los secretos estándar `SUPABASE_URL`, `SUPABASE_ANON_KEY` y `SUPABASE_SERVICE_R
 Para usar Usuarios desde el entorno local contra este mismo proyecto, se puede agregar el secreto opcional `ADMIN_DEV_ORIGINS` con orígenes exactos separados por comas:
 
 ```bash
-supabase secrets set ADMIN_DEV_ORIGINS=http://localhost:5173,http://localhost:5174
+supabase secrets set ADMIN_DEV_ORIGINS=https://club-de-pescadores.vercel.app,http://localhost:5173,http://localhost:5174
 ```
 
 Solo amplía CORS: los correos siguen apuntando a `ADMIN_SITE_URL` y cada llamada exige igual una sesión de administrador con MFA. Se ignoran comodines, rutas y entradas inválidas. Para cerrar el acceso local, borrar el secreto con `supabase secrets unset ADMIN_DEV_ORIGINS`.
