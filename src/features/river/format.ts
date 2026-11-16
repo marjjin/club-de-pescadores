@@ -17,3 +17,19 @@ export const formatRiverDate = (instant: string) =>
   measurementDate.format(new Date(instant))
 export const isRiverReadingOld = (instant: string, now = Date.now()) =>
   now - new Date(instant).getTime() > 24 * 60 * 60 * 1000
+const shortDate = new Intl.DateTimeFormat('es-AR', {
+  day: '2-digit',
+  month: '2-digit',
+  hour: '2-digit',
+  minute: '2-digit',
+  hourCycle: 'h23',
+  timeZone: 'America/Argentina/Buenos_Aires',
+})
+/** "11/11 13:30": fits the bar on a phone next to the height. */
+export function formatRiverShortDate(instant: string) {
+  // Without a year, ICU drops the leading zeros ("1/1"), so build it from its parts.
+  const parts = shortDate.formatToParts(new Date(instant))
+  const part = (type: Intl.DateTimeFormatPartTypes) =>
+    (parts.find((entry) => entry.type === type)?.value ?? '').padStart(2, '0')
+  return `${part('day')}/${part('month')} ${part('hour')}:${part('minute')}`
+}
