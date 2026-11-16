@@ -154,3 +154,10 @@ export function saveUser(account: Account, roles: string[], active: boolean) {
     version: account.updated_at,
   })
 }
+export function deleteUser(account: Account) {
+  return manageUser({
+    action: 'delete',
+    id: account.id,
+    version: account.updated_at,
+  })
+}

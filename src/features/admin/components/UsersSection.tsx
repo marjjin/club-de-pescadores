@@ -167,8 +167,9 @@ export function UsersSection({ userId }: { userId: string }) {
           )}
       </section>
       <p className="mt-4 text-center text-xs leading-5 text-ink-600">
-        Desactivar una cuenta bloquea su acceso al panel y conserva sus datos.
-        Tu propio acceso lo debe modificar otro administrador general.
+        Desactivar una cuenta bloquea su acceso al panel y conserva sus datos;
+        eliminarla borra su cuenta de ingreso. Tu propio acceso lo debe
+        modificar otro administrador general.
       </p>
     </>
   )

@@ -13,24 +13,27 @@ export type Database = {
       admin_accounts: {
         Row: {
           id: string
-          email: string
+          email: string | null
           active: boolean
           created_at: string
           updated_at: string
+          deleted_at: string | null
         }
         Insert: {
           id: string
-          email: string
+          email?: string | null
           active?: boolean
           created_at?: string
           updated_at?: string
+          deleted_at?: string | null
         }
         Update: {
           id?: string
-          email?: string
+          email?: string | null
           active?: boolean
           created_at?: string
           updated_at?: string
+          deleted_at?: string | null
         }
         Relationships: []
       }
@@ -468,6 +471,10 @@ export type Database = {
         Returns: string
       }
       admin_delete_role: {
+        Args: { p_id: string | null; p_version: string | null }
+        Returns: undefined
+      }
+      admin_delete_user: {
         Args: { p_id: string | null; p_version: string | null }
         Returns: undefined
       }

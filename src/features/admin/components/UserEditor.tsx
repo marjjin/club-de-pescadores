@@ -7,6 +7,7 @@ import { RolePicker } from './user-editor/RolePicker'
 import { UserAccessFields } from './user-editor/UserAccessFields'
 import { UserAccessSummary } from './user-editor/UserAccessSummary'
 import { UserAccessSuccess } from './user-editor/UserAccessSuccess'
+import { UserDeleteSection } from './user-editor/UserDeleteSection'
 
 export function UserEditor({
   account,
@@ -52,7 +53,15 @@ export function UserEditor({
             : 'Ingresá el correo y elegí los roles. La persona recibirá un enlace para configurar su cuenta.'}
         </p>
       </header>
-      {operation.isSuccess ? (
+      {editor.removal.isSuccess && account ? (
+        <UserAccessSuccess
+          editing
+          deleted
+          email={account.email}
+          warning={editor.removal.data}
+          onClose={editor.close}
+        />
+      ) : operation.isSuccess ? (
         <UserAccessSuccess
           editing={Boolean(account)}
           email={values.email.trim()}
@@ -60,100 +69,110 @@ export function UserEditor({
           onClose={editor.close}
         />
       ) : (
-        <form
-          noValidate
-          onSubmit={editor.submit}
-          aria-busy={busy}
-          className="min-w-0"
-        >
-          {editor.self && (
-            <p
-              role="alert"
-              className="mb-5 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900"
-            >
-              Otro administrador general debe modificar tu acceso. Podés
-              gestionar tu correo y contraseña desde Mi cuenta.
-            </p>
-          )}
-          <fieldset disabled={busy || editor.self} className="min-w-0">
-            <legend className="sr-only">Datos y roles del usuario</legend>
-            <div className="grid min-w-0 items-start gap-6 xl:grid-cols-[minmax(0,1fr)_minmax(0,20rem)]">
-              <div className="grid min-w-0 gap-5">
-                <UserAccessFields
-                  values={values}
-                  editing={Boolean(account)}
-                  error={errors.email}
-                  onEmail={(email) => editor.change('email', email)}
-                  onActive={(active) => editor.change('active', active)}
-                />
-                <RolePicker
-                  list={editor.list}
-                  roles={editor.roles}
-                  selected={values.roles}
-                  error={errors.roles}
-                  onToggle={editor.toggleRole}
-                />
-              </div>
-              <UserAccessSummary values={values} editing={Boolean(account)} />
-            </div>
-          </fieldset>
-          <div className="sticky bottom-0 z-10 mt-6 rounded-xl border border-navy-900/10 bg-white/95 p-4 shadow-card backdrop-blur-sm">
-            {Object.keys(errors).length > 0 && (
+        <>
+          <form
+            noValidate
+            onSubmit={editor.submit}
+            aria-busy={busy}
+            className="min-w-0"
+          >
+            {editor.self && (
               <p
                 role="alert"
-                className="mb-3 text-sm font-semibold text-red-700"
+                className="mb-5 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900"
               >
-                Revisá los campos marcados antes de continuar.
+                Otro administrador general debe modificar tu acceso. Podés
+                gestionar tu correo y contraseña desde Mi cuenta.
               </p>
             )}
-            <Feedback error={operation.error} />
-            <div className="mt-2 flex flex-wrap items-center justify-between gap-4">
-              <p className="text-xs text-ink-600">
-                {editor.dirty
-                  ? 'Cambios sin guardar'
-                  : account
-                    ? 'Sin cambios pendientes'
-                    : 'Completá el correo y seleccioná al menos un rol'}
-              </p>
-              <div className="flex flex-wrap gap-2">
-                <button
-                  type="button"
-                  onClick={editor.close}
-                  disabled={busy}
-                  className={secondaryClass}
+            <fieldset disabled={busy || editor.self} className="min-w-0">
+              <legend className="sr-only">Datos y roles del usuario</legend>
+              <div className="grid min-w-0 items-start gap-6 xl:grid-cols-[minmax(0,1fr)_minmax(0,20rem)]">
+                <div className="grid min-w-0 gap-5">
+                  <UserAccessFields
+                    values={values}
+                    editing={Boolean(account)}
+                    error={errors.email}
+                    onEmail={(email) => editor.change('email', email)}
+                    onActive={(active) => editor.change('active', active)}
+                  />
+                  <RolePicker
+                    list={editor.list}
+                    roles={editor.roles}
+                    selected={values.roles}
+                    error={errors.roles}
+                    onToggle={editor.toggleRole}
+                  />
+                </div>
+                <UserAccessSummary values={values} editing={Boolean(account)} />
+              </div>
+            </fieldset>
+            <div className="sticky bottom-0 z-10 mt-6 rounded-xl border border-navy-900/10 bg-white/95 p-4 shadow-card backdrop-blur-sm">
+              {Object.keys(errors).length > 0 && (
+                <p
+                  role="alert"
+                  className="mb-3 text-sm font-semibold text-red-700"
                 >
-                  Cancelar
-                </button>
-                <button
-                  type="submit"
-                  disabled={
-                    busy ||
-                    editor.self ||
-                    editor.list.query.isPending ||
-                    editor.list.query.isError ||
-                    (Boolean(account) && !editor.dirty)
-                  }
-                  className={primaryClass}
-                >
-                  {busy ? (
-                    <LoaderCircle
-                      size={16}
-                      aria-hidden="true"
-                      className="motion-safe:animate-spin"
-                    />
-                  ) : (
-                    <Icon size={16} aria-hidden="true" />
-                  )}
-                  {busy
-                    ? 'Procesando…'
+                  Revisá los campos marcados antes de continuar.
+                </p>
+              )}
+              <Feedback error={operation.error} />
+              <div className="mt-2 flex flex-wrap items-center justify-between gap-4">
+                <p className="text-xs text-ink-600">
+                  {editor.dirty
+                    ? 'Cambios sin guardar'
                     : account
-                      ? 'Guardar acceso'
-                      : 'Enviar invitación'}
-                </button>
+                      ? 'Sin cambios pendientes'
+                      : 'Completá el correo y seleccioná al menos un rol'}
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  <button
+                    type="button"
+                    onClick={editor.close}
+                    disabled={busy}
+                    className={secondaryClass}
+                  >
+                    Cancelar
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={
+                      busy ||
+                      editor.self ||
+                      editor.list.query.isPending ||
+                      editor.list.query.isError ||
+                      (Boolean(account) && !editor.dirty)
+                    }
+                    className={primaryClass}
+                  >
+                    {busy ? (
+                      <LoaderCircle
+                        size={16}
+                        aria-hidden="true"
+                        className="motion-safe:animate-spin"
+                      />
+                    ) : (
+                      <Icon size={16} aria-hidden="true" />
+                    )}
+                    {busy
+                      ? 'Procesando…'
+                      : account
+                        ? 'Guardar acceso'
+                        : 'Enviar invitación'}
+                  </button>
+                </div>
               </div>
             </div>
-          </div>
-        </form>
+          </form>
+          {account && !editor.self && (
+            <UserDeleteSection
+              busy={busy}
+              pending={editor.removal.isPending}
+              error={editor.removal.error}
+              onDelete={editor.remove}
+            />
+          )}
+        </>
       )}
     </>
   )

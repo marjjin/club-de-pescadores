@@ -65,6 +65,14 @@ supabase functions deploy admin-users --project-ref rjzmcwfwfxtktuleqzgf
 
 Los secretos estándar `SUPABASE_URL`, `SUPABASE_ANON_KEY` y `SUPABASE_SERVICE_ROLE_KEY` los proporciona el entorno de Edge Functions. No copiarlos al frontend. `ADMIN_SITE_URL` fija el origen permitido y el destino de los correos; no se acepta una URL de retorno del navegador.
 
+Para usar Usuarios desde el entorno local contra este mismo proyecto, se puede agregar el secreto opcional `ADMIN_DEV_ORIGINS` con orígenes exactos separados por comas:
+
+```bash
+supabase secrets set ADMIN_DEV_ORIGINS=http://localhost:5173,http://localhost:5174
+```
+
+Solo amplía CORS: los correos siguen apuntando a `ADMIN_SITE_URL` y cada llamada exige igual una sesión de administrador con MFA. Se ignoran comodines, rutas y entradas inválidas. Para cerrar el acceso local, borrar el secreto con `supabase secrets unset ADMIN_DEV_ORIGINS`.
+
 `supabase/config.toml` desactiva el verificador JWT antiguo de la puerta de entrada para esta función. **No significa acceso anónimo:** el handler exige Bearer, verifica el token contra Auth y consulta `has_permission('usuarios.gestionar')` con el JWT del solicitante antes de usar la clave de servicio. La asignación final vuelve a validar permisos dentro de la transacción de base de datos.
 
 Desactivar un usuario primero revoca su acceso en Postgres; después se sincroniza el bloqueo en Auth. Si el segundo paso falla, la interfaz informa la sincronización pendiente y el acceso a los datos administrativos permanece bloqueado. El propietario debe corregir el bloqueo desde Auth. Un token de acceso ya emitido puede seguir existiendo hasta su vencimiento; no permite eludir la comprobación de cuenta activa.

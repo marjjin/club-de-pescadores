@@ -1,7 +1,28 @@
 const uuid =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
 
+// Exact origins only ("http://localhost:5173"); paths, wildcards and invalid
+// entries are ignored so a typo can never open the function to every site.
+export function parseOrigins(value) {
+  return (value ?? '')
+    .split(',')
+    .map((entry) => entry.trim())
+    .filter((entry) => {
+      try {
+        const url = new URL(entry)
+        return (
+          ['http:', 'https:'].includes(url.protocol) && url.origin === entry
+        )
+      } catch {
+        return false
+      }
+    })
+}
+
 export function createUserHandler(config, request = fetch) {
+  // Development origins only widen CORS: e-mail links always use siteUrl and
+  // every call still needs an administrator session with MFA.
+  const allowed = new Set([config.siteUrl, ...parseOrigins(config.devOrigins)])
   return async (req) => {
     const headers = {
       'Content-Type': 'application/json',
@@ -9,8 +30,8 @@ export function createUserHandler(config, request = fetch) {
       Vary: 'Origin',
     }
     const origin = req.headers.get('origin')
-    if (origin === config.siteUrl) {
-      headers['Access-Control-Allow-Origin'] = config.siteUrl
+    if (origin && config.siteUrl && allowed.has(origin)) {
+      headers['Access-Control-Allow-Origin'] = origin
       headers['Access-Control-Allow-Headers'] =
         'authorization, apikey, content-type, x-client-info'
       headers['Access-Control-Allow-Methods'] = 'POST, OPTIONS'
@@ -69,6 +90,46 @@ export function createUserHandler(config, request = fetch) {
         body = JSON.parse(raw)
       } catch {
         return reply({ error: 'Solicitud inválida.' }, 400)
+      }
+      if (body?.action === 'delete') {
+        if (
+          !uuid.test(body.id ?? '') ||
+          typeof body.version !== 'string' ||
+          !Number.isFinite(Date.parse(body.version))
+        )
+          return reply({ error: 'Datos de usuario inválidos.' }, 400)
+        if (body.id === identity.data.id)
+          return reply(
+            { error: 'Otro administrador debe eliminar tu acceso.' },
+            403,
+          )
+        // The database revokes access first (permissions, version, last general
+        // administrator); only then is the Auth account removed.
+        const removed = await call('/rest/v1/rpc/admin_delete_user', {
+          p_id: body.id,
+          p_version: body.version,
+        })
+        if (!removed.ok)
+          return reply(
+            {
+              error:
+                'No se pudo eliminar el usuario. Actualizá el listado y revisá que puedas gestionar sus roles.',
+            },
+            409,
+          )
+        const auth = await call(
+          `/auth/v1/admin/users/${body.id}`,
+          undefined,
+          true,
+          'DELETE',
+        )
+        if (!auth.ok && auth.status !== 404)
+          return reply({
+            ok: true,
+            warning:
+              'El usuario ya no tiene acceso al panel, pero no se pudo borrar su cuenta de ingreso. Eliminala desde Supabase Auth.',
+          })
+        return reply({ ok: true })
       }
       if (
         !body ||

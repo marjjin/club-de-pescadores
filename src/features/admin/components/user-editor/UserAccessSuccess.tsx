@@ -4,11 +4,13 @@ import { Feedback, primaryClass } from '../ui'
 
 export function UserAccessSuccess({
   editing,
+  deleted = false,
   email,
   warning,
   onClose,
 }: {
   editing: boolean
+  deleted?: boolean
   email: string
   warning: string | null
   onClose: () => void
@@ -27,17 +29,21 @@ export function UserAccessSuccess({
       <h2 ref={heading} tabIndex={-1} className="mt-5 text-2xl font-extrabold">
         {warning
           ? 'Solicitud procesada'
-          : editing
-            ? 'Acceso actualizado'
-            : 'Invitación enviada'}
+          : deleted
+            ? 'Usuario eliminado'
+            : editing
+              ? 'Acceso actualizado'
+              : 'Invitación enviada'}
       </h2>
       <p className="mt-3 text-sm font-bold wrap-anywhere">{email}</p>
       <p role="status" className="mt-3 text-sm leading-6 text-ink-600">
-        {editing
-          ? 'Los cambios de acceso ya se guardaron.'
-          : warning
-            ? 'Revisá la información de la solicitud antes de continuar.'
-            : 'La persona debe abrir el correo y completar la configuración de su cuenta.'}
+        {deleted
+          ? 'Ya no tiene acceso al panel. Lo que cargó y su historial de auditoría se conservan.'
+          : editing
+            ? 'Los cambios de acceso ya se guardaron.'
+            : warning
+              ? 'Revisá la información de la solicitud antes de continuar.'
+              : 'La persona debe abrir el correo y completar la configuración de su cuenta.'}
       </p>
       {warning && (
         <div className="mt-5 text-left">
