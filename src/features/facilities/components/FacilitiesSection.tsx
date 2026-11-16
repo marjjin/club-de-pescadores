@@ -1,46 +1,56 @@
 import { container, section } from '@/shared/ui/layout'
 import { SectionHeading } from '@/shared/ui/SectionHeading'
-import { facilities } from '../content'
+import { defaultFacilities } from '../content'
+import { useFacilities } from '../hooks/useFacilities'
+import { FacilityCard } from './FacilityCard'
+
+// En móvil es un carrusel: cuatro fotos altas apiladas alargan demasiado la página.
+const listClass =
+  '-mx-4 mt-10 flex snap-x snap-mandatory scroll-px-4 gap-4 overflow-x-auto px-4 pb-2 [scrollbar-width:none] sm:mx-0 sm:grid sm:grid-cols-2 sm:gap-6 sm:overflow-visible sm:px-0 sm:pb-0 lg:grid-cols-4'
+const itemClass = 'w-[78%] shrink-0 snap-start sm:w-auto'
 
 export function FacilitiesSection() {
+  const query = useFacilities()
+  // A failed or empty read keeps the original content instead of an empty section.
+  const content = query.isPending ? null : (query.data ?? defaultFacilities)
   return (
-    <section id="instalaciones" className={section}>
+    <section id="instalaciones" className={section} aria-busy={query.isPending}>
       <div className={container}>
-        <SectionHeading
-          title="Un espacio pensado para los socios"
-          description="Todo lo que necesitás para disfrutar del río, en familia o con amigos."
-        />
-        {/* En móvil es un carrusel: cuatro fotos altas apiladas alargan demasiado la página. */}
-        <ul
-          tabIndex={0}
-          aria-label="Instalaciones del club"
-          className="-mx-4 mt-10 flex snap-x snap-mandatory scroll-px-4 gap-4 overflow-x-auto px-4 pb-2 [scrollbar-width:none] sm:mx-0 sm:grid sm:grid-cols-2 sm:gap-6 sm:overflow-visible sm:px-0 sm:pb-0 lg:grid-cols-4"
-        >
-          {facilities.map(({ name, description, imageUrl, imageAlt }) => (
-            <li
-              key={name}
-              className="group relative isolate w-[78%] shrink-0 snap-start overflow-hidden rounded-2xl bg-navy-950 shadow-card sm:w-auto"
+        {content ? (
+          <>
+            <SectionHeading
+              title={content.title}
+              description={content.description}
+            />
+            <ul
+              tabIndex={0}
+              aria-label="Instalaciones del club"
+              className={listClass}
             >
-              <img
-                src={imageUrl}
-                width="600"
-                height="750"
-                loading="lazy"
-                alt={imageAlt}
-                className="aspect-[4/5] w-full object-cover transition-[scale] duration-500 ease-out group-hover:scale-105 motion-reduce:transition-none"
-              />
-              {/* Gradient only behind the caption, so the photo keeps its colour. */}
-              <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-navy-950/90 via-navy-950/60 to-transparent px-5 pt-16 pb-5 text-white">
-                <h3 className="font-display text-2xl tracking-wide uppercase">
-                  {name}
-                </h3>
-                <p className="mt-1 text-sm leading-5 text-white/85">
-                  {description}
-                </p>
-              </div>
-            </li>
-          ))}
-        </ul>
+              {content.cards.map((facility) => (
+                <FacilityCard
+                  key={facility.id}
+                  facility={facility}
+                  className={itemClass}
+                />
+              ))}
+            </ul>
+          </>
+        ) : (
+          // Same footprint as the loaded section, so nothing shifts when it arrives.
+          <div role="status" aria-label="Cargando instalaciones">
+            <div className="h-9 w-72 max-w-full animate-pulse rounded bg-mist-50 motion-reduce:animate-none sm:h-12" />
+            <div className="mt-4 h-5 w-96 max-w-full animate-pulse rounded bg-mist-50 motion-reduce:animate-none" />
+            <ul aria-hidden="true" className={listClass}>
+              {defaultFacilities.cards.map((facility) => (
+                <li
+                  key={facility.id}
+                  className={`${itemClass} aspect-[4/5] animate-pulse rounded-2xl bg-mist-50 motion-reduce:animate-none`}
+                />
+              ))}
+            </ul>
+          </div>
+        )}
       </div>
     </section>
   )

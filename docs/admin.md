@@ -12,6 +12,7 @@ La versión local no crea automáticamente tablas en Supabase, no publica el fro
 - Resumen con agregaciones reales de contenido y usuarios.
 - Noticias, eventos y tarifas: crear, editar, publicar, programar noticias, archivar y restaurar como borrador. Confirmación de publicación y archivado; detección de edición concurrente.
 - Noticias: vista previa, URL HTTPS o carga de imágenes JPG/PNG/WebP optimizadas. Tamaño máximo 5 MB, nombres aleatorios y escritura restringida por permisos en Storage.
+- Instalaciones: título y bajada de la sección del inicio y hasta ocho tarjetas con foto, título, descripción y texto alternativo. Agregar, quitar y reordenar; se publica todo junto, con confirmación y control de edición concurrente. Permisos `instalaciones.ver` e `instalaciones.editar`. Ver [la decisión](decisions/0018-editable-facilities.md).
 - Usuarios: invitación, múltiples roles, activación y desactivación. El administrador no modifica su propio acceso. No se puede dejar el sistema sin administrador general activo mediante las operaciones del panel.
 - Roles personalizados con permisos de contenido y auditoría. Gestión de accesos reservada al rol general protegido. Los otros roles pueden configurar su cuenta, pero no entran al panel general.
 - Auditoría de cambios en contenido, roles y asignaciones. Consulta paginada por fecha, filtro por sección y comparación del estado anterior/posterior. Sin edición ni borrado desde el panel.

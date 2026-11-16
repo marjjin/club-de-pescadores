@@ -1,6 +1,7 @@
 import { Link, NavLink } from 'react-router'
 import {
   ArrowUpRight,
+  Building2,
   Camera,
   CalendarDays,
   History,
@@ -47,6 +48,12 @@ const links = [
     label: 'Torneos',
     icon: Trophy,
     permission: sectionPermissions.torneos,
+  },
+  {
+    path: '/admin/instalaciones',
+    label: 'Instalaciones',
+    icon: Building2,
+    permission: sectionPermissions.instalaciones,
   },
   {
     path: '/admin/usuarios',

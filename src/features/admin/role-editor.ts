@@ -27,6 +27,10 @@ const modules: Record<string, { title: string; description: string }> = {
     title: 'Torneos',
     description: 'Torneos de pesca, participantes y tabla de posiciones.',
   },
+  instalaciones: {
+    title: 'Instalaciones',
+    description: 'Fotos, títulos y descripciones de la sección del inicio.',
+  },
   usuarios: {
     title: 'Usuarios',
     description: 'Altas, accesos y roles de las personas del equipo.',
@@ -37,7 +41,14 @@ const modules: Record<string, { title: string; description: string }> = {
   },
 }
 // Modules whose actions all require their "ver" permission (checked again in the database).
-const contentModules = ['noticias', 'eventos', 'tarifas', 'usuarios', 'torneos']
+const contentModules = [
+  'noticias',
+  'eventos',
+  'tarifas',
+  'usuarios',
+  'torneos',
+  'instalaciones',
+]
 const retiredModules = new Set(['pileta', 'porteria', 'portería'])
 const isAssignablePermission = (permission: RolePermission) =>
   !permission.reserved &&
