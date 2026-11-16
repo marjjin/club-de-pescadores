@@ -1,0 +1,297 @@
+import {
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+  within,
+} from '@testing-library/react'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { MemoryRouter, Route, Routes } from 'react-router'
+import { beforeEach, expect, it, vi } from 'vitest'
+import * as api from '../../api/tournaments'
+import * as people from '../../api/anglers'
+import type {
+  AdminParticipant,
+  AdminTournament,
+} from '../../schemas/tournaments'
+import { TournamentWorkspace } from './TournamentWorkspace'
+import { TournamentsSection } from './TournamentsSection'
+
+vi.mock('../../api/tournaments', () => ({
+  listTournaments: vi.fn(),
+  getAdminTournament: vi.fn(),
+  saveTournament: vi.fn(),
+  setTournamentStatus: vi.fn(),
+  listParticipants: vi.fn(),
+  addParticipant: vi.fn(),
+  renameParticipant: vi.fn(),
+  removeParticipant: vi.fn(),
+  addPoints: vi.fn(),
+  changeParticipant: vi.fn(),
+  moveParticipant: vi.fn(),
+  listCategories: vi.fn(),
+  saveCategory: vi.fn(),
+  archiveCategory: vi.fn(),
+  deleteTournament: vi.fn(),
+}))
+vi.mock('../../api/anglers', () => ({
+  searchAnglers: vi.fn(),
+  getAngler: vi.fn(),
+  saveAngler: vi.fn(),
+}))
+
+const userId = '10000000-0000-4000-8000-000000000010'
+const senior = '80000000-0000-4000-8000-000000000001'
+const cadetes = '80000000-0000-4000-8000-000000000002'
+const person = {
+  id: '90000000-0000-4000-8000-000000000001',
+  first_name: 'Lucía',
+  last_name: 'Benítez',
+  updated_at: '2026-11-01T00:00:00Z',
+  dni: null,
+  dni_masked: '••••3456',
+}
+const tournament: AdminTournament = {
+  id: '60000000-0000-4000-8000-000000000001',
+  name: 'Torneo de Pesca',
+  place: 'Muelle del club',
+  starts_on: '2026-11-29',
+  ends_on: '2026-11-30',
+  start_time: '07:30',
+  status: 'published',
+  participants: 2,
+  categories: [
+    { id: cadetes, name: 'Cadetes', participants: 0 },
+    { id: senior, name: 'Senior', participants: 2 },
+  ],
+  created_at: '2026-11-01T00:00:00Z',
+  updated_at: '2026-11-01T00:00:00Z',
+}
+const participant = (
+  n: number,
+  name: string,
+  points: number,
+): AdminParticipant => ({
+  id: `70000000-0000-4000-8000-00000000000${n}`,
+  display_name: name,
+  points,
+  ranking: n,
+  updated_at: '2026-11-01T00:00:00Z',
+  category_id: senior,
+  angler_id: `90000000-0000-4000-8000-00000000001${n}`,
+  dni_masked: `••••000${n}`,
+})
+beforeEach(() => {
+  vi.mocked(api.listTournaments).mockResolvedValue([tournament])
+  vi.mocked(api.getAdminTournament).mockResolvedValue(tournament)
+  vi.mocked(api.listParticipants).mockResolvedValue([
+    participant(1, 'Juan P.', 12),
+    participant(2, 'Ana G.', 7),
+  ])
+  vi.mocked(api.addPoints).mockResolvedValue(12)
+  vi.mocked(api.listCategories).mockResolvedValue([
+    {
+      id: senior,
+      name: 'Senior',
+      archived_at: null,
+      updated_at: '2026-11-01T00:00:00Z',
+      tournaments: 1,
+    },
+  ])
+  vi.mocked(people.searchAnglers).mockResolvedValue([person])
+  vi.spyOn(window, 'confirm').mockReturnValue(true)
+})
+function mount(path: string) {
+  const client = new QueryClient({
+    defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
+  })
+  render(
+    <QueryClientProvider client={client}>
+      <MemoryRouter initialEntries={[path]}>
+        <Routes>
+          <Route
+            path="/admin/torneos"
+            element={<TournamentsSection userId={userId} />}
+          />
+          <Route
+            path="/admin/torneos/:id"
+            element={<TournamentWorkspace userId={userId} />}
+          />
+        </Routes>
+      </MemoryRouter>
+    </QueryClientProvider>,
+  )
+}
+
+it('lists tournaments with their dates, place, participants and next step', async () => {
+  mount('/admin/torneos')
+  const link = await screen.findByRole('link', {
+    name: 'Gestionar Torneo de Pesca',
+  })
+  expect(within(link).getByText('29 NOV 2026 al 30 NOV 2026')).toBeTruthy()
+  expect(within(link).getByText('Muelle del club')).toBeTruthy()
+  expect(within(link).getByText(/2 participantes/)).toBeTruthy()
+  expect(
+    within(link).getByText('Visible en el sitio · se pueden sumar puntos'),
+  ).toBeTruthy()
+})
+
+it('offers to create the first tournament and asks before discarding a draft', async () => {
+  vi.mocked(api.listTournaments).mockResolvedValue([])
+  mount('/admin/torneos')
+  fireEvent.click(
+    await screen.findByRole('button', { name: 'Crear el primer torneo' }),
+  )
+  expect(screen.getByRole('heading', { name: 'Nuevo torneo' })).toBeTruthy()
+  fireEvent.change(screen.getByLabelText('Fecha de inicio'), {
+    target: { value: '2026-12-05' },
+  })
+  expect(
+    screen.getByLabelText('Fecha de cierre (opcional)').getAttribute('min'),
+  ).toBe('2026-12-05')
+  const confirm = vi.spyOn(window, 'confirm').mockReturnValueOnce(false)
+  fireEvent.click(screen.getByRole('button', { name: 'Cancelar' }))
+  await waitFor(() => expect(confirm).toHaveBeenCalled())
+  expect(screen.getByRole('heading', { name: 'Nuevo torneo' })).toBeTruthy()
+  fireEvent.click(screen.getByRole('button', { name: 'Cancelar' }))
+  await waitFor(() =>
+    expect(screen.queryByRole('heading', { name: 'Nuevo torneo' })).toBeNull(),
+  )
+  expect(api.saveTournament).not.toHaveBeenCalled()
+})
+
+it('shows the stage of the tournament and who leads it', async () => {
+  mount(`/admin/torneos/${tournament.id}`)
+  const stages = await screen.findByRole('list', { name: 'Etapas del torneo' })
+  expect(
+    within(stages)
+      .getByText('Publicado')
+      .closest('li')
+      ?.getAttribute('aria-current'),
+  ).toBe('step')
+  expect(await screen.findByText(/Lidera/)).toBeTruthy()
+  expect(screen.getByText('Juan P.', { selector: 'strong' })).toBeTruthy()
+  expect(screen.getByLabelText('Puesto 1')).toBeTruthy()
+})
+
+it('adds points from a quick value and confirms it on the row', async () => {
+  mount(`/admin/torneos/${tournament.id}`)
+  fireEvent.click(
+    await screen.findByRole('button', { name: 'Sumar puntos a Ana G.' }),
+  )
+  const form = screen.getByRole('form', { name: 'Sumar puntos a Ana G.' })
+  fireEvent.click(within(form).getByRole('button', { name: '+5' }))
+  fireEvent.click(within(form).getByRole('button', { name: 'Sumar' }))
+  expect(await screen.findByText('+5 puntos cargados')).toBeTruthy()
+  expect(api.addPoints).toHaveBeenCalledWith(participant(2, 'Ana G.', 7).id, {
+    points: 5,
+    reason: '',
+  })
+  expect(
+    screen.queryByRole('form', { name: 'Sumar puntos a Ana G.' }),
+  ).toBeNull()
+})
+
+it('keeps the points form open with an error when the value is invalid', async () => {
+  mount(`/admin/torneos/${tournament.id}`)
+  fireEvent.click(
+    await screen.findByRole('button', { name: 'Sumar puntos a Juan P.' }),
+  )
+  const form = screen.getByRole('form', { name: 'Sumar puntos a Juan P.' })
+  fireEvent.click(within(form).getByRole('button', { name: 'Sumar' }))
+  expect(within(form).getByRole('alert').textContent).toBe(
+    'Ingresá un número entero.',
+  )
+  expect(api.addPoints).not.toHaveBeenCalled()
+})
+
+it('shows one table per category and registers a person from the registry', async () => {
+  mount(`/admin/torneos/${tournament.id}`)
+  const tabs = await screen.findByRole('group', { name: 'Categoría' })
+  fireEvent.click(within(tabs).getByRole('button', { name: /Senior/ }))
+  await waitFor(() =>
+    expect(api.listParticipants).toHaveBeenLastCalledWith(
+      tournament.id,
+      senior,
+      '',
+      null,
+      expect.anything(),
+    ),
+  )
+  fireEvent.change(screen.getByLabelText('Buscá a la persona'), {
+    target: { value: 'Luc' },
+  })
+  fireEvent.click(await screen.findByRole('button', { name: /Lucía Benítez/ }))
+  expect(screen.getByRole('combobox')).toHaveProperty('value', senior)
+  fireEvent.click(
+    screen.getByRole('button', { name: 'Registrar en el torneo' }),
+  )
+  expect((await screen.findByRole('alert')).textContent).toContain(
+    'aceptó aparecer',
+  )
+  fireEvent.click(screen.getByRole('checkbox', { name: /La persona aceptó/ }))
+  fireEvent.click(
+    screen.getByRole('button', { name: 'Registrar en el torneo' }),
+  )
+  await screen.findByText('Registraste a Lucía Benítez en Senior.')
+  expect(api.addParticipant).toHaveBeenCalledWith(tournament.id, {
+    category: senior,
+    angler: person.id,
+    consent: true,
+  })
+})
+
+it('changes the person of an entry, keeping its points, after consent', async () => {
+  mount(`/admin/torneos/${tournament.id}`)
+  fireEvent.click(
+    await screen.findByRole('button', { name: 'Cambiar la persona de Ana G.' }),
+  )
+  fireEvent.change(
+    screen.getByLabelText('¿Quién compitió en lugar de Ana G.?'),
+    {
+      target: { value: 'Luc' },
+    },
+  )
+  fireEvent.click(await screen.findByRole('button', { name: /Lucía Benítez/ }))
+  expect(screen.getByText(/7 puntos/)).toBeTruthy()
+  const submit = screen.getByRole('button', { name: 'Cambiar persona' })
+  expect(submit).toHaveProperty('disabled', true)
+  fireEvent.click(screen.getByRole('checkbox', { name: /La persona aceptó/ }))
+  fireEvent.click(submit)
+  expect(await screen.findByText('Ahora figura Lucía Benítez')).toBeTruthy()
+  expect(api.changeParticipant).toHaveBeenCalledWith(
+    participant(2, 'Ana G.', 7).id,
+    { angler: person.id, consent: true },
+  )
+})
+
+it('offers permanent deletion only for archived tournaments, after confirming', async () => {
+  mount(`/admin/torneos/${tournament.id}`)
+  await screen.findByRole('list', { name: 'Etapas del torneo' })
+  expect(
+    screen.queryByRole('button', { name: 'Eliminar definitivamente' }),
+  ).toBeNull()
+})
+
+it('deletes an archived tournament and returns to the list', async () => {
+  vi.mocked(api.getAdminTournament).mockResolvedValue({
+    ...tournament,
+    status: 'archived',
+  })
+  vi.mocked(api.deleteTournament).mockResolvedValue(undefined)
+  mount(`/admin/torneos/${tournament.id}`)
+  const confirm = vi.spyOn(window, 'confirm').mockReturnValueOnce(false)
+  fireEvent.click(
+    await screen.findByRole('button', { name: 'Eliminar definitivamente' }),
+  )
+  await waitFor(() => expect(confirm).toHaveBeenCalled())
+  expect(String(confirm.mock.calls[0]?.[0])).toContain('2 inscripciones')
+  expect(api.deleteTournament).not.toHaveBeenCalled()
+  fireEvent.click(
+    screen.getByRole('button', { name: 'Eliminar definitivamente' }),
+  )
+  await screen.findByRole('link', { name: 'Gestionar Torneo de Pesca' })
+  expect(api.deleteTournament).toHaveBeenCalledWith(
+    expect.objectContaining({ id: tournament.id }),
+  )
+})

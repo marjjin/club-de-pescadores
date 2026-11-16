@@ -9,6 +9,9 @@ import { tournamentKeys } from '@/features/tournaments'
 import {
   addParticipant,
   addPoints,
+  changeParticipant,
+  deleteTournament,
+  moveParticipant,
   getAdminTournament,
   listParticipants,
   listTournaments,
@@ -53,7 +56,11 @@ export function useAdminTournament(userId: string, id: string) {
 }
 
 /** Search waits 300 ms after typing; TanStack aborts the request it replaces. */
-export function useParticipants(userId: string, tournamentId: string) {
+export function useParticipants(
+  userId: string,
+  tournamentId: string,
+  category: string | null,
+) {
   const [search, setSearch] = useState('')
   const [applied, setApplied] = useState('')
   useEffect(() => {
@@ -61,9 +68,9 @@ export function useParticipants(userId: string, tournamentId: string) {
     return () => clearTimeout(timer)
   }, [search])
   const query = useInfiniteQuery({
-    queryKey: [...keys.participants(userId, tournamentId), applied],
+    queryKey: [...keys.participants(userId, tournamentId), category, applied],
     queryFn: ({ pageParam, signal }) =>
-      listParticipants(tournamentId, applied, pageParam, signal),
+      listParticipants(tournamentId, category, applied, pageParam, signal),
     initialPageParam: null as ParticipantCursor | null,
     getNextPageParam: (page) =>
       page.length === PARTICIPANTS_PAGE ? page.at(-1) : null,
@@ -109,17 +116,46 @@ export function useTournamentStatus(userId: string) {
   })
 }
 
+export function useDeleteTournament(userId: string) {
+  const refresh = useRefresh(userId)
+  return useMutation({
+    mutationFn: (tournament: Pick<AdminTournament, 'id' | 'updated_at'>) =>
+      deleteTournament(tournament),
+    onSuccess: refresh,
+  })
+}
+
 export function useParticipantActions(userId: string, tournamentId: string) {
   const refresh = useRefresh(userId, tournamentId)
   return {
     add: useMutation({
-      mutationFn: (input: { name: string; consent: boolean }) =>
-        addParticipant(tournamentId, input),
+      mutationFn: (input: {
+        category: string
+        angler: string
+        consent: boolean
+      }) => addParticipant(tournamentId, input),
       onSuccess: refresh,
     }),
     rename: useMutation({
       mutationFn: ({ id, name }: { id: string; name: string }) =>
         renameParticipant(id, name),
+      onSuccess: refresh,
+    }),
+    change: useMutation({
+      mutationFn: ({
+        id,
+        angler,
+        consent,
+      }: {
+        id: string
+        angler: string
+        consent: boolean
+      }) => changeParticipant(id, { angler, consent }),
+      onSuccess: refresh,
+    }),
+    move: useMutation({
+      mutationFn: ({ id, category }: { id: string; category: string }) =>
+        moveParticipant(id, category),
       onSuccess: refresh,
     }),
     remove: useMutation({

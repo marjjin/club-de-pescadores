@@ -52,7 +52,7 @@ const archive: Action = {
   confirm: {
     title: '¿Archivar el torneo?',
     message:
-      'Deja de verse en el sitio. Los participantes y los puntos se conservan y podés restaurarlo.',
+      'Deja de verse en el sitio. Los participantes y los puntos se conservan: podés restaurarlo o, ya archivado, eliminarlo definitivamente.',
     confirmLabel: 'Archivar',
     tone: 'danger',
   },

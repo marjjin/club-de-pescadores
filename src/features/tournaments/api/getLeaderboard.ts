@@ -2,7 +2,11 @@ import { z } from '@/shared/lib/validation'
 import { getSupabase } from '@/lib/supabase/connection'
 import { requestSignal } from '@/lib/supabase/request'
 import type { ListPage } from '@/shared/lib/pagination'
-import { standingCursorSchema, standingSchema } from '../schemas/tournament'
+import {
+  boardCategorySchema,
+  standingCursorSchema,
+  standingSchema,
+} from '../schemas/tournament'
 import type { StandingCursor } from '../schemas/tournament'
 import type { Standing } from '../types'
 
@@ -12,6 +16,7 @@ export const LEADERBOARD_PAGE = 50
 /** One page of the ranking. Positions are global, so ties share a place across pages. */
 export async function getLeaderboard(
   tournamentId: string,
+  category: string | null,
   cursor: StandingCursor | null,
   signal?: AbortSignal,
 ): Promise<ListPage<Standing, StandingCursor>> {
@@ -23,6 +28,7 @@ export async function getLeaderboard(
       p_points: after?.points ?? null,
       p_name: after?.name ?? null,
       p_id: after?.id ?? null,
+      p_category: category ? z.uuid().parse(category) : null,
     })
     .abortSignal(requestSignal(signal))
     .throwOnError()
@@ -40,4 +46,19 @@ export async function getLeaderboard(
         ? { points: last.points, name: last.display_name, id: last.id }
         : null,
   }
+}
+
+/** The categories of a visible tournament, each with its own table. */
+export async function getBoardCategories(
+  tournamentId: string,
+  signal?: AbortSignal,
+) {
+  signal?.throwIfAborted()
+  const { data } = await getSupabase()
+    .rpc('tournament_board_categories', {
+      p_tournament: z.uuid().parse(tournamentId),
+    })
+    .abortSignal(requestSignal(signal))
+    .throwOnError()
+  return z.array(boardCategorySchema).max(10).parse(data)
 }

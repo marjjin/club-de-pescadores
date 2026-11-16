@@ -1,10 +1,13 @@
+import { Link } from 'react-router'
 import {
+  ArrowRight,
   CalendarDays,
   FileText,
   MapPin,
   Pencil,
   RotateCcw,
   Trash2,
+  Trophy,
 } from 'lucide-react'
 import { contentStatus } from '../content-list'
 import { dateLabel } from '../form-utils'
@@ -27,6 +30,7 @@ export function ContentListItem({
 }) {
   const title = 'title' in row ? row.title : `${row.season} · ${row.period}`
   const status = contentStatus(row)
+  const tournament = ('tournament_id' in row && row.tournament_id) || null
   return (
     <article className="group flex flex-col gap-4 px-4 py-5 transition-colors hover:bg-mist-50/60 sm:flex-row sm:items-center sm:px-6">
       <div
@@ -62,12 +66,25 @@ export function ContentListItem({
             />
             {status.label}
           </span>
+          {tournament && (
+            <span className="inline-flex items-center gap-1 rounded-full bg-sun-400/25 px-2 py-0.5 text-[11px] font-bold text-navy-900">
+              <Trophy size={12} aria-hidden="true" />
+              Torneo
+            </span>
+          )}
           <span className="text-xs text-ink-600">
             Última edición {dateLabel(row.updated_at)}
           </span>
         </div>
         <h2 className="text-base leading-6 font-extrabold break-words">
-          {row.deleted_at ? (
+          {tournament ? (
+            <Link
+              to={`/admin/torneos/${tournament}`}
+              className="hover:text-river-600 hover:underline"
+            >
+              {title}
+            </Link>
+          ) : row.deleted_at ? (
             title
           ) : (
             <button
@@ -105,60 +122,79 @@ export function ContentListItem({
           </p>
         )}
       </div>
-      <div className="flex shrink-0 items-center gap-2 self-end sm:self-center">
-        {!row.deleted_at && (
-          <button
-            type="button"
+      {tournament ? (
+        // Its data, state and visibility follow the tournament, never this list.
+        <div className="flex shrink-0 flex-col items-end gap-1 self-end sm:self-center">
+          <Link
+            to={`/admin/torneos/${tournament}`}
             className={secondaryClass}
-            onClick={onEdit}
-            disabled={busy}
-            aria-label={`Editar «${title}»`}
+            aria-label={`Gestionar «${title}» en Torneos`}
           >
-            <Pencil size={14} aria-hidden="true" />
-            Editar
-          </button>
-        )}
-        <button
-          type="button"
-          className={
-            row.deleted_at
-              ? secondaryClass
-              : 'grid size-11 place-items-center rounded-lg text-ink-600 transition-colors hover:bg-red-50 hover:text-red-700 disabled:opacity-40'
-          }
-          disabled={busy}
-          onClick={onArchive}
-          aria-label={
-            row.deleted_at
-              ? `Restaurar «${title}»`
-              : `Enviar «${title}» a la papelera`
-          }
-          title={
-            row.deleted_at ? 'Restaurar como borrador' : 'Enviar a la papelera'
-          }
-        >
-          {row.deleted_at ? (
-            <>
-              <RotateCcw size={15} aria-hidden="true" />
-              Restaurar
-            </>
-          ) : (
-            <Trash2 size={17} aria-hidden="true" />
+            Gestionar en Torneos
+            <ArrowRight size={14} aria-hidden="true" />
+          </Link>
+          <span className="text-xs text-ink-600">
+            Se actualiza desde el torneo
+          </span>
+        </div>
+      ) : (
+        <div className="flex shrink-0 items-center gap-2 self-end sm:self-center">
+          {!row.deleted_at && (
+            <button
+              type="button"
+              className={secondaryClass}
+              onClick={onEdit}
+              disabled={busy}
+              aria-label={`Editar «${title}»`}
+            >
+              <Pencil size={14} aria-hidden="true" />
+              Editar
+            </button>
           )}
-        </button>
-        {row.deleted_at && onDelete && (
           <button
             type="button"
+            className={
+              row.deleted_at
+                ? secondaryClass
+                : 'grid size-11 place-items-center rounded-lg text-ink-600 transition-colors hover:bg-red-50 hover:text-red-700 disabled:opacity-40'
+            }
             disabled={busy}
-            onClick={onDelete}
-            aria-label={`Eliminar definitivamente «${title}»`}
-            title="Eliminar definitivamente, con su imagen"
-            className="inline-flex min-h-11 items-center gap-2 rounded-lg border border-red-200 px-3 text-sm font-bold text-red-700 transition-colors hover:bg-red-50 disabled:opacity-40"
+            onClick={onArchive}
+            aria-label={
+              row.deleted_at
+                ? `Restaurar «${title}»`
+                : `Enviar «${title}» a la papelera`
+            }
+            title={
+              row.deleted_at
+                ? 'Restaurar como borrador'
+                : 'Enviar a la papelera'
+            }
           >
-            <Trash2 size={15} aria-hidden="true" />
-            Eliminar
+            {row.deleted_at ? (
+              <>
+                <RotateCcw size={15} aria-hidden="true" />
+                Restaurar
+              </>
+            ) : (
+              <Trash2 size={17} aria-hidden="true" />
+            )}
           </button>
-        )}
-      </div>
+          {row.deleted_at && onDelete && (
+            <button
+              type="button"
+              disabled={busy}
+              onClick={onDelete}
+              aria-label={`Eliminar definitivamente «${title}»`}
+              title="Eliminar definitivamente, con su imagen"
+              className="inline-flex min-h-11 items-center gap-2 rounded-lg border border-red-200 px-3 text-sm font-bold text-red-700 transition-colors hover:bg-red-50 disabled:opacity-40"
+            >
+              <Trash2 size={15} aria-hidden="true" />
+              Eliminar
+            </button>
+          )}
+        </div>
+      )}
     </article>
   )
 }

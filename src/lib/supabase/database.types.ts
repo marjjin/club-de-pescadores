@@ -37,6 +37,36 @@ export type Database = {
         }
         Relationships: []
       }
+      anglers: {
+        Row: {
+          id: string
+          first_name: string
+          last_name: string
+          dni: string
+          created_by: string
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          first_name: string
+          last_name: string
+          dni: string
+          created_by: string
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          first_name?: string
+          last_name?: string
+          dni?: string
+          created_by?: string
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       audit_logs: {
         Row: {
           id: string
@@ -78,6 +108,8 @@ export type Database = {
           created_at: string
           updated_at: string
           description: string | null
+          tournament_id: string | null
+          show_time: boolean
         }
         Insert: {
           id?: string
@@ -89,6 +121,8 @@ export type Database = {
           created_at?: string
           updated_at?: string
           description?: string | null
+          tournament_id?: string | null
+          show_time?: boolean
         }
         Update: {
           id?: string
@@ -100,6 +134,8 @@ export type Database = {
           created_at?: string
           updated_at?: string
           description?: string | null
+          tournament_id?: string | null
+          show_time?: boolean
         }
         Relationships: []
       }
@@ -403,6 +439,36 @@ export type Database = {
         }
         Relationships: []
       }
+      tournament_categories: {
+        Row: {
+          id: string
+          name: string
+          archived_at: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          name: string
+          archived_at?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          name?: string
+          archived_at?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      tournament_category_links: {
+        Row: { id: string; tournament_id: string; category_id: string }
+        Insert: { id?: string; tournament_id: string; category_id: string }
+        Update: { id?: string; tournament_id?: string; category_id?: string }
+        Relationships: []
+      }
       tournament_participants: {
         Row: {
           id: string
@@ -414,6 +480,8 @@ export type Database = {
           created_by: string
           created_at: string
           updated_at: string
+          angler_id: string | null
+          category_id: string
         }
         Insert: {
           id?: string
@@ -425,6 +493,8 @@ export type Database = {
           created_by: string
           created_at?: string
           updated_at?: string
+          angler_id?: string | null
+          category_id: string
         }
         Update: {
           id?: string
@@ -436,6 +506,8 @@ export type Database = {
           created_by?: string
           created_at?: string
           updated_at?: string
+          angler_id?: string | null
+          category_id?: string
         }
         Relationships: []
       }
@@ -480,6 +552,7 @@ export type Database = {
           created_by: string
           created_at: string
           updated_at: string
+          start_time: string | null
         }
         Insert: {
           id?: string
@@ -491,6 +564,7 @@ export type Database = {
           created_by: string
           created_at?: string
           updated_at?: string
+          start_time?: string | null
         }
         Update: {
           id?: string
@@ -502,6 +576,7 @@ export type Database = {
           created_by?: string
           created_at?: string
           updated_at?: string
+          start_time?: string | null
         }
         Relationships: []
       }
@@ -595,6 +670,16 @@ export type Database = {
         Args: Record<never, never>
         Returns: string[]
       }
+      angler_get: { Args: { p_id: string | null }; Returns: Json }
+      angler_save: {
+        Args: {
+          p_data: Json | null
+          p_id?: string | null
+          p_version?: string | null
+        }
+        Returns: Json
+      }
+      angler_search: { Args: { p_query: string | null }; Returns: Json }
       bootstrap_admin: { Args: { p_email: string | null }; Returns: string }
       can_manage_media: { Args: Record<never, never>; Returns: boolean }
       club_media_in_use: { Args: { p_name: string | null }; Returns: boolean }
@@ -615,7 +700,8 @@ export type Database = {
       tournament_add_participant: {
         Args: {
           p_tournament: string | null
-          p_name: string | null
+          p_category: string | null
+          p_angler: string | null
           p_consent: boolean | null
         }
         Returns: string
@@ -640,8 +726,38 @@ export type Database = {
           p_points?: number | null
           p_name?: string | null
           p_id?: string | null
+          p_category?: string | null
         }
         Returns: Json
+      }
+      tournament_board_categories: {
+        Args: { p_tournament: string | null }
+        Returns: Json
+      }
+      tournament_category_archive: {
+        Args: { p_id: string | null; p_archived: boolean | null }
+        Returns: undefined
+      }
+      tournament_category_list: { Args: Record<never, never>; Returns: Json }
+      tournament_category_save: {
+        Args: {
+          p_name: string | null
+          p_id?: string | null
+          p_version?: string | null
+        }
+        Returns: string
+      }
+      tournament_change_participant: {
+        Args: {
+          p_id: string | null
+          p_angler: string | null
+          p_consent: boolean | null
+        }
+        Returns: undefined
+      }
+      tournament_delete: {
+        Args: { p_id: string | null; p_version: string | null }
+        Returns: undefined
       }
       tournament_leaderboard: {
         Args: {
@@ -649,8 +765,13 @@ export type Database = {
           p_points?: number | null
           p_name?: string | null
           p_id?: string | null
+          p_category?: string | null
         }
         Returns: Json
+      }
+      tournament_move_participant: {
+        Args: { p_id: string | null; p_category: string | null }
+        Returns: undefined
       }
       tournament_remove_participant: {
         Args: { p_id: string | null }

@@ -20,12 +20,35 @@ async function run(user, sql, args = [], role = 'authenticated') {
 const anon = (sql, args) => run(null, sql, args, 'anon')
 const create = (user, data = {}) =>
   run(user, 'select public.tournament_save($1) as id', [
-    { name: 'Torneo de pejerrey', starts_on: '2026-12-05', ...data },
+    {
+      name: 'Torneo de pejerrey',
+      starts_on: '2026-12-05',
+      start_time: '08:00',
+      ...data,
+    },
   ]).then((result) => result.rows[0].id)
-const join = (user, tournament, name, consent = true) =>
-  run(user, 'select public.tournament_add_participant($1,$2,$3) as id', [
+// Participants come from the people registry; the same name is the same person.
+const people = new Map()
+async function person(user, name) {
+  const key = name.trim().toLowerCase()
+  if (!people.has(key)) {
+    const dni = String(30000000 + people.size)
+    const saved = await run(user, 'select public.angler_save($1) as data', [
+      { first_name: name.trim(), last_name: 'Prueba', dni },
+    ])
+    people.set(key, saved.rows[0].data.id)
+  }
+  return people.get(key)
+}
+const general = () =>
+  db
+    .query("select id from public.tournament_categories where name = 'General'")
+    .then((result) => result.rows[0].id)
+const join = async (user, tournament, name, consent = true) =>
+  run(user, 'select public.tournament_add_participant($1,$2,$3,$4) as id', [
     tournament,
-    name,
+    await general(),
+    await person(user, name),
     consent,
   ]).then((result) => result.rows[0].id)
 const score = (user, participant, points, reason = null) =>
@@ -157,7 +180,7 @@ describe('tournaments', () => {
     ).resolves.toMatchObject({ rows: [] })
     await status(organizer, tournament, 'published')
     expect((await board(tournament)).map((row) => row.display_name)).toEqual([
-      'Ana',
+      'Ana P.',
     ])
     await status(organizer, tournament, 'archived')
     expect(await board(tournament)).toEqual([])
@@ -195,19 +218,26 @@ describe('tournaments', () => {
     await status(organizer, tournament, 'published')
     const rows = await board(tournament)
     expect(rows.map((row) => [row.display_name, row.ranking])).toEqual([
-      ['Ana', 1],
-      ['Bruno', 2],
-      ['Carla', 2],
-      ['Diego', 4],
+      ['Ana P.', 1],
+      ['Bruno P.', 2],
+      ['Carla P.', 2],
+      ['Diego P.', 4],
     ])
     const bruno = rows[1]
-    const after = await board(tournament, [bruno.points, 'Bruno', bruno.id])
-    expect(after.map((row) => row.display_name)).toEqual(['Carla', 'Diego'])
+    const after = await board(tournament, [
+      bruno.points,
+      bruno.display_name,
+      bruno.id,
+    ])
+    expect(after.map((row) => row.display_name)).toEqual([
+      'Carla P.',
+      'Diego P.',
+    ])
     await run(organizer, 'select public.tournament_remove_participant($1)', [
       ids.Ana,
     ])
     expect((await board(tournament))[0]).toMatchObject({
-      display_name: 'Bruno',
+      display_name: 'Bruno P.',
       ranking: 1,
     })
   })
@@ -246,7 +276,7 @@ describe('tournaments', () => {
     const tournament = await create(organizer, { name: 'Versionado' })
     await expect(
       run(organizer, 'select public.tournament_save($1,$2,$3)', [
-        { name: 'Versionado 2', starts_on: '2026-12-05' },
+        { name: 'Versionado 2', starts_on: '2026-12-05', start_time: '08:00' },
         tournament,
         '2000-01-01T00:00:00Z',
       ]),

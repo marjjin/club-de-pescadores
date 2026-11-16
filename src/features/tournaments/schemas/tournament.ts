@@ -16,6 +16,13 @@ export const standingSchema = z.object({
   ranking: z.number().int().min(1),
 })
 
+export const boardCategorySchema = z.object({
+  id: z.uuid(),
+  name: z.string().trim().min(1).max(60),
+  participants: z.number().int().min(0),
+})
+export type BoardCategory = z.infer<typeof boardCategorySchema>
+
 export const tournamentCursorSchema = z.object({
   startsOn: z.iso.date(),
   id: z.uuid(),

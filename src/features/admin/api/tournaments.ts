@@ -4,6 +4,10 @@ import { z } from '@/shared/lib/validation'
 import {
   adminParticipantSchema,
   adminTournamentSchema,
+  categoryListSchema,
+  categoryNameSchema,
+  changePersonSchema,
+  legacyNameSchema,
   participantInputSchema,
   pointsInputSchema,
   tournamentInputSchema,
@@ -11,6 +15,7 @@ import {
 import type {
   AdminParticipant,
   AdminTournament,
+  CategoryListItem,
   TournamentInput,
   TournamentStatus,
 } from '../schemas/tournaments'
@@ -22,6 +27,10 @@ const known = [
   'finalizado',
   'máximo de 500',
   'distinto de cero',
+  'categoría',
+  'categorías',
+  'datos de la persona',
+  'Archivá el torneo',
 ]
 function tournamentError(error: { code?: string; message?: string }) {
   if (
@@ -30,7 +39,15 @@ function tournamentError(error: { code?: string; message?: string }) {
   )
     return new Error(error.message)
   if (error.code === '23505')
-    return new Error('Ya hay un participante con ese nombre en este torneo.')
+    return new Error(
+      error.message?.includes('anotad')
+        ? 'La persona ya está anotada en esa categoría.'
+        : 'Ya existe una categoría o un participante con ese nombre.',
+    )
+  if (error.code === '23503' && error.message?.includes('participantes'))
+    return new Error(
+      'No podés quitar una categoría que ya tiene participantes. Movelos de categoría antes.',
+    )
   return adminError(error)
 }
 
@@ -83,12 +100,46 @@ export async function setTournamentStatus(
   if (error) throw tournamentError(error)
 }
 
+export async function listCategories(signal: AbortSignal) {
+  const { data, error } = await getAdminSupabase()
+    .rpc('tournament_category_list')
+    .abortSignal(requestSignal(signal))
+  if (error) throw adminError(error)
+  return parseAdminResponse(z.array(categoryListSchema), data)
+}
+
+export async function saveCategory(
+  name: string,
+  current?: Pick<CategoryListItem, 'id' | 'updated_at'>,
+) {
+  const parsed = categoryNameSchema.parse(name)
+  const { data, error } = await getAdminSupabase().rpc(
+    'tournament_category_save',
+    {
+      p_name: parsed,
+      p_id: current?.id ?? null,
+      p_version: current?.updated_at ?? null,
+    },
+  )
+  if (error) throw tournamentError(error)
+  return z.uuid().parse(data)
+}
+
+export async function archiveCategory(id: string, archived: boolean) {
+  const { error } = await getAdminSupabase().rpc(
+    'tournament_category_archive',
+    { p_id: id, p_archived: archived },
+  )
+  if (error) throw tournamentError(error)
+}
+
 export type ParticipantCursor = Pick<
   AdminParticipant,
   'points' | 'display_name' | 'id'
 >
 export async function listParticipants(
   tournamentId: string,
+  category: string | null,
   search: string,
   cursor: ParticipantCursor | null,
   signal: AbortSignal,
@@ -96,6 +147,7 @@ export async function listParticipants(
   const { data, error } = await getAdminSupabase()
     .rpc('tournament_admin_participants', {
       p_tournament: tournamentId,
+      p_category: category,
       p_search: search.trim().slice(0, 80),
       p_points: cursor?.points ?? null,
       p_name: cursor?.display_name ?? null,
@@ -108,19 +160,41 @@ export async function listParticipants(
 
 export async function addParticipant(
   tournamentId: string,
-  input: { name: string; consent: boolean },
+  input: { category: string; angler: string; consent: boolean },
 ) {
   const parsed = participantInputSchema.parse(input)
   const { error } = await getAdminSupabase().rpc('tournament_add_participant', {
     p_tournament: tournamentId,
-    p_name: parsed.name,
+    p_category: parsed.category,
+    p_angler: parsed.angler,
     p_consent: parsed.consent,
   })
   if (error) throw tournamentError(error)
 }
 
+/** Fixes an entry loaded with the wrong person; its points stay. */
+export async function changeParticipant(
+  id: string,
+  input: { angler: string; consent: boolean },
+) {
+  const parsed = changePersonSchema.parse(input)
+  const { error } = await getAdminSupabase().rpc(
+    'tournament_change_participant',
+    { p_id: id, p_angler: parsed.angler, p_consent: parsed.consent },
+  )
+  if (error) throw tournamentError(error)
+}
+
+export async function moveParticipant(id: string, category: string) {
+  const { error } = await getAdminSupabase().rpc(
+    'tournament_move_participant',
+    { p_id: id, p_category: z.uuid().parse(category) },
+  )
+  if (error) throw tournamentError(error)
+}
+
 export async function renameParticipant(id: string, name: string) {
-  const parsed = participantInputSchema.shape.name.parse(name)
+  const parsed = legacyNameSchema.parse(name)
   const { error } = await getAdminSupabase().rpc(
     'tournament_rename_participant',
     { p_id: id, p_name: parsed },
@@ -151,4 +225,15 @@ export async function addPoints(
   )
   if (error) throw tournamentError(error)
   return z.number().int().parse(data)
+}
+
+/** Permanent: only for archived tournaments. People stay in the registry. */
+export async function deleteTournament(
+  tournament: Pick<AdminTournament, 'id' | 'updated_at'>,
+) {
+  const { error } = await getAdminSupabase().rpc('tournament_delete', {
+    p_id: tournament.id,
+    p_version: tournament.updated_at,
+  })
+  if (error) throw tournamentError(error)
 }
