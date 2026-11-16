@@ -59,7 +59,7 @@ Los enlaces de invitación y recuperación usan el flujo de sesión de Supabase 
 La función está en `supabase/functions/admin-users/`. Usando la CLI autenticada y vinculada al proyecto:
 
 ```bash
-supabase secrets set ADMIN_SITE_URL=https://club-de-pescadores.vercel.app
+supabase secrets set ADMIN_SITE_URL=https://www.clubdepescadores.com
 supabase functions deploy admin-users --project-ref rjzmcwfwfxtktuleqzgf
 ```
 
@@ -68,7 +68,7 @@ Los secretos estándar `SUPABASE_URL`, `SUPABASE_ANON_KEY` y `SUPABASE_SERVICE_R
 Para usar Usuarios desde el entorno local contra este mismo proyecto, se puede agregar el secreto opcional `ADMIN_DEV_ORIGINS` con orígenes exactos separados por comas:
 
 ```bash
-supabase secrets set ADMIN_DEV_ORIGINS=http://localhost:5173,http://localhost:5174
+supabase secrets set ADMIN_DEV_ORIGINS=https://club-de-pescadores.vercel.app,http://localhost:5173,http://localhost:5174
 ```
 
 Solo amplía CORS: los correos siguen apuntando a `ADMIN_SITE_URL` y cada llamada exige igual una sesión de administrador con MFA. Se ignoran comodines, rutas y entradas inválidas. Para cerrar el acceso local, borrar el secreto con `supabase secrets unset ADMIN_DEV_ORIGINS`.
