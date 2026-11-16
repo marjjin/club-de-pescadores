@@ -155,6 +155,24 @@ it('blocks edits to the current administrator even if the form is submitted dire
   expect(data.saveUser).not.toHaveBeenCalled()
 })
 
+it('preserves an existing retired assignment omitted by the server role catalog', async () => {
+  vi.spyOn(window, 'confirm').mockReturnValue(true)
+  const retiredId = '20000000-0000-4000-8000-000000000099'
+  const account = {
+    ...accessAccount,
+    roles: [...accessAccount.roles, retiredId],
+  }
+  mount(account)
+  await screen.findByRole('checkbox', { name: 'Administrador general' })
+  expect(
+    screen.queryByRole('checkbox', { name: /pileta|portería/i }),
+  ).toBeNull()
+  fireEvent.click(screen.getByRole('radio', { name: 'Acceso desactivado' }))
+  fireEvent.click(screen.getByRole('button', { name: 'Guardar acceso' }))
+  await screen.findByRole('heading', { name: 'Acceso actualizado' })
+  expect(data.saveUser).toHaveBeenCalledWith(account, account.roles, false)
+})
+
 it('preserves changes after an error and protects leaving the form', async () => {
   const confirm = vi.spyOn(window, 'confirm').mockReturnValue(true)
   vi.mocked(data.inviteUser).mockRejectedValueOnce(

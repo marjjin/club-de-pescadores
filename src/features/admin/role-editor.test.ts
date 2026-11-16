@@ -9,7 +9,7 @@ import {
   validateRoleEditor,
 } from './role-editor'
 
-it('groups the real catalog by module and excludes all reserved permissions', () => {
+it('groups active modules and excludes reserved and retired permissions', () => {
   const groups = groupRolePermissions([...catalog].reverse())
   expect(groups.map((group) => group.id)).toEqual([
     'noticias',
@@ -29,6 +29,25 @@ it('groups the real catalog by module and excludes all reserved permissions', ()
       .flatMap((group) => group.permissions)
       .some((permission) => permission.reserved),
   ).toBe(false)
+})
+it('does not offer or accept pool and gate permissions from an older catalog', () => {
+  const retired = ['pileta.controlar', 'porteria.ver', 'portería.ingresar'].map(
+    (id) => ({ id, label: id, reserved: false }),
+  )
+  const legacyCatalog = [...catalog, ...retired]
+  const selected = ['noticias.ver']
+  expect(groupRolePermissions(legacyCatalog).map((group) => group.id)).toEqual([
+    'noticias',
+    'eventos',
+    'tarifas',
+    'auditoria',
+  ])
+  for (const { id } of retired) {
+    expect(toggleRolePermission(selected, id, legacyCatalog)).toEqual(selected)
+    expect(
+      validateRoleEditor('Equipo', [...selected, id], legacyCatalog).success,
+    ).toBe(false)
+  }
 })
 it('adds the required read permission and removes its dependent actions without affecting other modules', () => {
   const selected = toggleRolePermission(

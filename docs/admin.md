@@ -2,6 +2,8 @@
 
 El código del panel está implementado en `/admin`. La matriz fue aprobada el 8 de noviembre de 2026. Los paneles de otros perfiles quedan fuera de esta etapa.
 
+El 16 de noviembre el propietario pidió retirar los roles operativos de control de pileta y portería de Roles y de los selectores de Usuarios, conservando expresamente la sección de temporada y tarifas. La migración `202611160001_retire_pool_gate_roles.sql` actualiza el catálogo remoto sin borrar asignaciones. Ver [la decisión de alcance](decisions/0016-retire-pool-gate-roles.md).
+
 La versión local no crea automáticamente tablas en Supabase, no publica el frontend y no crea una cuenta con contraseña predeterminada. El propietario debe completar la instalación con un acceso autorizado al proyecto. Nunca poner una clave de servicio en Vercel/Vite ni compartir contraseñas por el chat.
 
 ## Funciones
