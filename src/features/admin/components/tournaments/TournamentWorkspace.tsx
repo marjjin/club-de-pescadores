@@ -1,14 +1,16 @@
 import { useState } from 'react'
 import { Link, useParams } from 'react-router'
-import { ArrowLeft, ExternalLink, MapPin, Pencil } from 'lucide-react'
-import { formatShortDate } from '@/shared/lib/dates'
+import { ArrowLeft, ExternalLink, MapPin, Pencil, Users } from 'lucide-react'
 import { useAccess } from '../../hooks/useAccess'
 import { useAdminTournament } from '../../hooks/useAdminTournaments'
 import { Feedback, Loading, SectionHeading, secondaryClass } from '../ui'
+import { DeleteTournament } from './DeleteTournament'
 import { ParticipantsPanel } from './ParticipantsPanel'
 import { TournamentBadge } from './TournamentBadge'
 import { TournamentForm } from './TournamentForm'
+import { TournamentProgress } from './TournamentProgress'
 import { TournamentStatusActions } from './TournamentStatusActions'
+import { tournamentDates } from './tournament-dates'
 
 const back = (
   <Link
@@ -26,7 +28,13 @@ export function TournamentWorkspace({ userId }: { userId: string }) {
   const [editing, setEditing] = useState(false)
   const query = useAdminTournament(userId, id)
   const tournament = query.data
-  if (query.isPending) return <Loading />
+  if (query.isPending)
+    return (
+      <>
+        {back}
+        <Loading />
+      </>
+    )
   if (!tournament)
     return (
       <>
@@ -50,8 +58,8 @@ export function TournamentWorkspace({ userId }: { userId: string }) {
       {back}
       {editing ? (
         <div className="mb-6">
-          <h1 className="mb-4 text-2xl font-extrabold wrap-anywhere">
-            Editar {tournament.name}
+          <h1 className="mb-4 text-2xl font-extrabold wrap-anywhere sm:text-3xl">
+            {tournament.name}
           </h1>
           <TournamentForm
             userId={userId}
@@ -61,7 +69,7 @@ export function TournamentWorkspace({ userId }: { userId: string }) {
           />
         </div>
       ) : (
-        <header className="mb-6 grid gap-4 rounded-2xl border border-navy-900/10 bg-white p-5 shadow-sm sm:p-6">
+        <header className="mb-6 grid gap-5 rounded-2xl border border-navy-900/10 bg-white p-5 shadow-sm sm:p-6">
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div className="min-w-0">
               <TournamentBadge status={tournament.status} />
@@ -69,18 +77,20 @@ export function TournamentWorkspace({ userId }: { userId: string }) {
                 {tournament.name}
               </h1>
               <p className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-sm text-ink-600">
-                <span>
-                  {formatShortDate(tournament.starts_on)}
-                  {tournament.ends_on &&
-                    tournament.ends_on !== tournament.starts_on &&
-                    ` al ${formatShortDate(tournament.ends_on)}`}
-                </span>
+                <span>{tournamentDates(tournament)}</span>
                 {tournament.place && (
                   <span className="inline-flex items-center gap-1">
                     <MapPin size={14} aria-hidden="true" />
                     {tournament.place}
                   </span>
                 )}
+                <span className="inline-flex items-center gap-1">
+                  <Users size={14} aria-hidden="true" />
+                  {tournament.participants}{' '}
+                  {tournament.participants === 1
+                    ? 'participante'
+                    : 'participantes'}
+                </span>
               </p>
             </div>
             <div className="flex flex-wrap gap-2">
@@ -107,9 +117,20 @@ export function TournamentWorkspace({ userId }: { userId: string }) {
               )}
             </div>
           </div>
-          {manage && (
-            <TournamentStatusActions userId={userId} tournament={tournament} />
-          )}
+          <div className="grid gap-4 border-t border-navy-900/10 pt-5 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end lg:gap-8">
+            <TournamentProgress status={tournament.status} />
+            {manage && (
+              <div className="flex flex-wrap items-start gap-2">
+                <TournamentStatusActions
+                  userId={userId}
+                  tournament={tournament}
+                />
+                {tournament.status === 'archived' && (
+                  <DeleteTournament userId={userId} tournament={tournament} />
+                )}
+              </div>
+            )}
+          </div>
         </header>
       )}
       <ParticipantsPanel userId={userId} tournament={tournament} />

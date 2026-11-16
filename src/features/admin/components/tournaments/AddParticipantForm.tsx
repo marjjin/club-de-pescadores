@@ -1,96 +1,149 @@
-import { useId, useState } from 'react'
+import { useState } from 'react'
 import type { FormEvent } from 'react'
-import { UserPlus } from 'lucide-react'
+import { UserPlus, UserRound } from 'lucide-react'
 import { participantInputSchema } from '../../schemas/tournaments'
+import type { Angler, TournamentCategory } from '../../schemas/tournaments'
 import type { useParticipantActions } from '../../hooks/useAdminTournaments'
-import { Feedback, inputClass, primaryClass } from '../ui'
+import { Feedback, inputClass, primaryClass, secondaryClass } from '../ui'
+import { PersonPicker } from './PersonPicker'
+import { personLabel } from './person-label'
 
 type Add = ReturnType<typeof useParticipantActions>['add']
 
-export function AddParticipantForm({ add }: { add: Add }) {
-  const id = useId()
-  const [name, setName] = useState('')
+export function AddParticipantForm({
+  userId,
+  add,
+  categories,
+  category: initialCategory,
+}: {
+  userId: string
+  add: Add
+  categories: TournamentCategory[]
+  /** The table being viewed, preselected. */
+  category: string | null
+}) {
+  const [person, setPerson] = useState<Angler | null>(null)
+  const [category, setCategory] = useState(
+    initialCategory ?? categories[0]?.id ?? '',
+  )
   const [consent, setConsent] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [added, setAdded] = useState<string | null>(null)
+  const categoryName = (id: string) =>
+    categories.find((entry) => entry.id === id)?.name ?? ''
   function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
-    if (add.isPending) return
-    const parsed = participantInputSchema.safeParse({ name, consent })
+    if (add.isPending || !person) return
+    const parsed = participantInputSchema.safeParse({
+      category,
+      angler: person.id,
+      consent,
+    })
     if (!parsed.success) {
       setError(parsed.error.issues[0]?.message ?? 'Revisá los datos.')
       return
     }
-    const form = event.currentTarget
     add.mutate(parsed.data, {
       onSuccess: () => {
-        setAdded(parsed.data.name)
-        setName('')
+        setAdded(`${personLabel(person)} en ${categoryName(category)}`)
+        setPerson(null)
         setConsent(false)
-        // Ready for the next person in line.
-        form.querySelector<HTMLInputElement>('input[name="name"]')?.focus()
       },
     })
   }
   return (
-    <form
-      noValidate
-      onSubmit={submit}
+    <section
       aria-label="Registrar participante"
-      className="grid gap-3 border-b border-navy-900/10 p-5"
+      className="grid gap-4 border-b border-navy-900/10 p-5"
     >
-      <label htmlFor={`${id}-name`} className="text-sm font-bold">
-        Registrar participante
-      </label>
-      <div className="flex flex-wrap gap-2">
-        <input
-          id={`${id}-name`}
-          name="name"
-          value={name}
-          maxLength={80}
-          autoComplete="off"
-          placeholder="Nombre que se mostrará en la tabla"
-          aria-describedby={`${id}-hint`}
-          onChange={(event) => {
-            setName(event.target.value)
-            setError(null)
+      <h3 className="text-sm font-extrabold">Registrar participante</h3>
+      {added && !person && <Feedback success={`Registraste a ${added}.`} />}
+      {!person ? (
+        <PersonPicker
+          userId={userId}
+          label="Buscá a la persona"
+          onSelect={(angler) => {
+            setPerson(angler)
             setAdded(null)
-          }}
-          className={`${inputClass} min-w-48 flex-1`}
-        />
-        <button type="submit" className={primaryClass} disabled={add.isPending}>
-          <UserPlus size={17} aria-hidden="true" />
-          {add.isPending ? 'Registrando…' : 'Registrar'}
-        </button>
-      </div>
-      <p id={`${id}-hint`} className="text-xs text-ink-600">
-        Usá solo el nombre que la persona quiera mostrar (por ejemplo, «Juan
-        P.»). No cargues DNI ni datos de contacto.
-      </p>
-      <label className="flex items-start gap-2 text-sm">
-        <input
-          type="checkbox"
-          checked={consent}
-          onChange={(event) => {
-            setConsent(event.target.checked)
             setError(null)
+            add.reset()
           }}
-          className="mt-0.5 size-4 shrink-0"
         />
-        <span>
-          La persona aceptó que su nombre y su puntaje aparezcan en la tabla
-          pública del sitio.
-        </span>
-      </label>
-      {error && (
-        <p role="alert" className="text-sm text-red-700">
-          {error}
-        </p>
+      ) : (
+        <form noValidate onSubmit={submit} className="grid gap-3">
+          <div className="flex flex-wrap items-center gap-3 rounded-xl border border-navy-900/10 bg-mist-50/60 px-3 py-2">
+            <UserRound size={18} aria-hidden="true" className="text-ink-600" />
+            <p className="min-w-0 flex-1">
+              <span className="font-bold wrap-anywhere">
+                {personLabel(person)}
+              </span>
+              <span className="ml-2 text-xs text-ink-600 tabular-nums">
+                DNI {person.dni_masked}
+              </span>
+            </p>
+            <button
+              type="button"
+              className={secondaryClass}
+              onClick={() => setPerson(null)}
+            >
+              Cambiar persona
+            </button>
+          </div>
+          {categories.length > 1 ? (
+            <label className="grid gap-1.5 text-sm font-bold">
+              Categoría
+              <select
+                value={category}
+                onChange={(event) => {
+                  setCategory(event.target.value)
+                  setError(null)
+                }}
+                className={inputClass}
+              >
+                {categories.map((entry) => (
+                  <option key={entry.id} value={entry.id}>
+                    {entry.name}
+                  </option>
+                ))}
+              </select>
+            </label>
+          ) : (
+            <p className="text-sm text-ink-600">
+              Categoría: <strong>{categoryName(category)}</strong>
+            </p>
+          )}
+          <label className="flex items-start gap-2 text-sm">
+            <input
+              type="checkbox"
+              checked={consent}
+              onChange={(event) => {
+                setConsent(event.target.checked)
+                setError(null)
+              }}
+              className="mt-0.5 size-4 shrink-0"
+            />
+            <span>
+              La persona aceptó que su nombre (como «{person.first_name}{' '}
+              {person.last_name[0]?.toUpperCase()}.») y su puntaje aparezcan en
+              la tabla pública del sitio.
+            </span>
+          </label>
+          {error && (
+            <p role="alert" className="text-sm text-red-700">
+              {error}
+            </p>
+          )}
+          <Feedback error={add.error} />
+          <button
+            type="submit"
+            className={`${primaryClass} justify-self-start`}
+            disabled={add.isPending}
+          >
+            <UserPlus size={17} aria-hidden="true" />
+            {add.isPending ? 'Registrando…' : 'Registrar en el torneo'}
+          </button>
+        </form>
       )}
-      <Feedback
-        error={add.error}
-        success={added ? `Registraste a ${added}.` : null}
-      />
-    </form>
+    </section>
   )
 }

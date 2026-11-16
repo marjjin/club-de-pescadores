@@ -35,6 +35,8 @@ export const eventSchema = z.object({
   starts_at: z.string(),
   place: z.string(),
   description: z.string().nullable(),
+  // Set when the event mirrors a tournament; it is then managed from Torneos.
+  tournament_id: z.uuid().nullable().optional(),
 })
 export const rateSchema = z.object({
   ...content,

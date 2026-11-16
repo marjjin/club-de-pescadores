@@ -1,4 +1,5 @@
-import { Search } from 'lucide-react'
+import { useState } from 'react'
+import { Search, Trophy } from 'lucide-react'
 import { useAccess } from '../../hooks/useAccess'
 import {
   useParticipantActions,
@@ -18,24 +19,79 @@ export function ParticipantsPanel({
   tournament: AdminTournament
 }) {
   const { can } = useAccess()
+  const categories = tournament.categories
+  const [chosen, setChosen] = useState<string | null>(null)
+  // Falls back to the first category if the chosen one was removed meanwhile.
+  const category =
+    categories.find((entry) => entry.id === chosen)?.id ??
+    categories[0]?.id ??
+    null
   const { query, search, setSearch, searching } = useParticipants(
     userId,
     tournament.id,
+    category,
   )
   const actions = useParticipantActions(userId, tournament.id)
   const open = isOpen(tournament.status)
   const participants = query.data?.pages.flat() ?? []
+  // Only the unfiltered first page knows who is on top; ties show no single leader.
+  const [first, second] = participants
+  const leader =
+    !search.trim() &&
+    !searching &&
+    first?.ranking === 1 &&
+    first.points > 0 &&
+    second?.ranking !== 1
+      ? first
+      : null
   return (
     <section
       aria-labelledby="participants-title"
       className="rounded-2xl border border-navy-900/10 bg-white shadow-sm"
     >
-      <h2
-        id="participants-title"
-        className="border-b border-navy-900/10 px-5 py-4 text-base font-extrabold"
-      >
-        Participantes y puntos
-      </h2>
+      <div className="flex flex-wrap items-end justify-between gap-x-6 gap-y-2 border-b border-navy-900/10 px-5 py-4">
+        <div>
+          <h2 id="participants-title" className="text-base font-extrabold">
+            Participantes y puntos
+          </h2>
+          <p className="mt-0.5 text-sm text-ink-600">
+            Ordenados por puntaje, como en la tabla del sitio.
+          </p>
+        </div>
+        {leader && (
+          <p className="inline-flex min-w-0 items-center gap-2 rounded-full bg-sun-400/20 px-3 py-1.5 text-sm">
+            <Trophy size={15} aria-hidden="true" className="shrink-0" />
+            <span className="min-w-0 wrap-anywhere">
+              Lidera <strong>{leader.display_name}</strong> con {leader.points}{' '}
+              {leader.points === 1 ? 'punto' : 'puntos'}
+            </span>
+          </p>
+        )}
+      </div>
+      {categories.length > 1 && (
+        <div
+          role="group"
+          aria-label="Categoría"
+          className="flex gap-2 overflow-x-auto border-b border-navy-900/10 px-5 py-3 [scrollbar-width:thin]"
+        >
+          {categories.map((entry) => (
+            <button
+              key={entry.id}
+              type="button"
+              aria-pressed={entry.id === category}
+              onClick={() => setChosen(entry.id)}
+              className={`inline-flex min-h-11 shrink-0 items-center gap-2 rounded-full border px-4 text-sm font-bold ${entry.id === category ? 'border-navy-900 bg-navy-900 text-white' : 'border-navy-900/15 bg-white text-navy-900 hover:bg-mist-50'}`}
+            >
+              {entry.name}
+              <span
+                className={`rounded-full px-1.5 text-xs tabular-nums ${entry.id === category ? 'bg-white/20' : 'bg-mist-50'}`}
+              >
+                {entry.participants}
+              </span>
+            </button>
+          ))}
+        </div>
+      )}
       {!open && (
         <p className="border-b border-navy-900/10 bg-mist-50 px-5 py-3 text-sm text-ink-600">
           El torneo está cerrado: la tabla quedó fija. Reabrilo para cargar
@@ -43,7 +99,14 @@ export function ParticipantsPanel({
         </p>
       )}
       {open && can('torneos.participantes') && (
-        <AddParticipantForm add={actions.add} />
+        <AddParticipantForm
+          // Each table starts the form on its own category.
+          key={category ?? 'none'}
+          userId={userId}
+          add={actions.add}
+          categories={categories}
+          category={category}
+        />
       )}
       <div className="border-b border-navy-900/10 p-4 sm:px-5">
         <div className="relative">
@@ -87,7 +150,9 @@ export function ParticipantsPanel({
             <ParticipantRow
               // Remount after a rename so the edit field starts from the saved name.
               key={`${participant.id}:${participant.display_name}`}
+              userId={userId}
               participant={participant}
+              categories={categories}
               actions={actions}
               canEdit={open && can('torneos.participantes')}
               canScore={open && can('torneos.puntos')}

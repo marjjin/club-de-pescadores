@@ -47,3 +47,13 @@ it('recovers from a failed request with an explicit retry', async () => {
   fireEvent.click(screen.getByRole('button', { name: 'Reintentar medición' }))
   expect(await screen.findByText('2,34 m')).toBeTruthy()
 })
+it('keeps the height on one line and a compact time and age for phones', async () => {
+  mockResponse([riverRow])
+  mount()
+  const height = await screen.findByText('2,34 m')
+  expect(height.className).toContain('whitespace-nowrap')
+  expect(screen.getByText('01/01 10:30').getAttribute('aria-hidden')).toBe(
+    'true',
+  )
+  expect(screen.getByText('+24 h').getAttribute('aria-hidden')).toBe('true')
+})

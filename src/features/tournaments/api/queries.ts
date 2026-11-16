@@ -5,6 +5,12 @@ export const tournamentKeys = {
   page: (cursor: TournamentCursor | null) =>
     [...tournamentKeys.all, 'page', { cursor }] as const,
   detail: (id: string) => [...tournamentKeys.all, 'detail', id] as const,
-  leaderboard: (id: string, cursor: StandingCursor | null) =>
-    [...tournamentKeys.all, 'leaderboard', id, { cursor }] as const,
+  leaderboard: (
+    id: string,
+    category: string | null,
+    cursor: StandingCursor | null,
+  ) =>
+    [...tournamentKeys.all, 'leaderboard', id, { category, cursor }] as const,
+  categories: (id: string) =>
+    [...tournamentKeys.all, 'categories', id] as const,
 }

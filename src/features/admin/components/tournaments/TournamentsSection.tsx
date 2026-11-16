@@ -1,45 +1,59 @@
 import { useState } from 'react'
-import { Link, useNavigate } from 'react-router'
-import { ChevronRight, Plus, Users } from 'lucide-react'
-import { formatShortDate } from '@/shared/lib/dates'
+import { useNavigate } from 'react-router'
+import { AlertCircle, Plus, Tags, Trophy } from 'lucide-react'
 import { useAccess } from '../../hooks/useAccess'
 import { useTournamentList } from '../../hooks/useAdminTournaments'
-import {
-  Empty,
-  Feedback,
-  Loading,
-  SectionHeading,
-  primaryClass,
-  secondaryClass,
-} from '../ui'
-import { TournamentBadge } from './TournamentBadge'
+import { CatalogListSkeleton } from '../CatalogListSkeleton'
+import { Feedback, SectionHeading, primaryClass, secondaryClass } from '../ui'
+import { CategoriesManager } from './CategoriesManager'
 import { TournamentForm } from './TournamentForm'
+import { TournamentListItem } from './TournamentListItem'
 
 export function TournamentsSection({ userId }: { userId: string }) {
   const { can } = useAccess()
+  const manage = can('torneos.gestionar')
   const navigate = useNavigate()
   const [creating, setCreating] = useState(false)
+  const [categories, setCategories] = useState(false)
   const query = useTournamentList(userId)
   const tournaments = query.data?.pages.flat() ?? []
+  const failed = query.isError && !tournaments.length
   return (
     <>
       <SectionHeading
         title="Torneos"
         description="Creá torneos, registrá participantes y sumales puntos. La tabla de posiciones se publica en el sitio."
         action={
-          can('torneos.gestionar') &&
-          !creating && (
-            <button
-              type="button"
-              className={primaryClass}
-              onClick={() => setCreating(true)}
-            >
-              <Plus size={17} aria-hidden="true" />
-              Nuevo torneo
-            </button>
-          )
+          <div className="flex flex-wrap gap-2">
+            {!categories && (
+              <button
+                type="button"
+                className={secondaryClass}
+                onClick={() => setCategories(true)}
+              >
+                <Tags size={17} aria-hidden="true" />
+                Categorías
+              </button>
+            )}
+            {manage && !creating && (
+              <button
+                type="button"
+                className={primaryClass}
+                onClick={() => setCreating(true)}
+              >
+                <Plus size={17} aria-hidden="true" />
+                Nuevo torneo
+              </button>
+            )}
+          </div>
         }
       />
+      {categories && (
+        <CategoriesManager
+          userId={userId}
+          onClose={() => setCategories(false)}
+        />
+      )}
       {creating && (
         <div className="mb-6">
           <TournamentForm
@@ -53,59 +67,70 @@ export function TournamentsSection({ userId }: { userId: string }) {
       )}
       <section
         aria-label="Listado de torneos"
-        className="rounded-2xl border border-navy-900/10 bg-white shadow-sm"
+        aria-busy={query.isFetching}
+        className="overflow-hidden rounded-2xl border border-navy-900/10 bg-white shadow-sm"
       >
-        <div className="px-5 pt-4 empty:hidden">
-          <Feedback error={tournaments.length ? null : query.error} />
-        </div>
+        {query.error && tournaments.length > 0 && (
+          <div className="p-4 sm:px-5">
+            <Feedback error={query.error} />
+          </div>
+        )}
         {query.isPending ? (
-          <Loading />
+          <CatalogListSkeleton label="Cargando torneos" />
+        ) : failed ? (
+          <div className="grid min-h-64 justify-items-center gap-4 px-6 py-10 text-center">
+            <AlertCircle
+              size={32}
+              aria-hidden="true"
+              className="text-ink-600"
+            />
+            <h2 className="text-lg font-extrabold">
+              No pudimos cargar los torneos
+            </h2>
+            <Feedback error={query.error} />
+            <button
+              type="button"
+              className={secondaryClass}
+              onClick={() => {
+                void query.refetch()
+              }}
+            >
+              Reintentar
+            </button>
+          </div>
         ) : !tournaments.length ? (
-          <Empty
-            text={
-              query.isError
-                ? 'No pudimos cargar los torneos.'
-                : 'Todavía no hay torneos. Creá el primero para empezar a sumar participantes.'
-            }
-          />
+          <div className="grid min-h-64 justify-items-center gap-3 px-6 py-10 text-center">
+            <span
+              aria-hidden="true"
+              className="grid size-14 place-items-center rounded-full bg-sun-400/20 text-navy-900"
+            >
+              <Trophy size={26} />
+            </span>
+            <h2 className="text-lg font-extrabold">Todavía no hay torneos</h2>
+            <p className="max-w-md text-sm leading-6 text-ink-600">
+              Creá el primero, registrá a los participantes y publicá la tabla
+              de posiciones en el sitio.
+            </p>
+            {manage && !creating && (
+              <button
+                type="button"
+                className={`${primaryClass} mt-2`}
+                onClick={() => setCreating(true)}
+              >
+                <Plus size={17} aria-hidden="true" />
+                Crear el primer torneo
+              </button>
+            )}
+          </div>
         ) : (
           <ul className="divide-y divide-navy-900/10">
             {tournaments.map((tournament) => (
-              <li key={tournament.id}>
-                <Link
-                  to={`/admin/torneos/${tournament.id}`}
-                  className="flex min-w-0 items-center gap-4 px-5 py-4 hover:bg-mist-50"
-                >
-                  <span className="min-w-0 flex-1">
-                    <span className="flex flex-wrap items-center gap-2">
-                      <span className="font-extrabold wrap-anywhere">
-                        {tournament.name}
-                      </span>
-                      <TournamentBadge status={tournament.status} />
-                    </span>
-                    <span className="mt-1 flex flex-wrap gap-x-4 gap-y-1 text-xs text-ink-600">
-                      <span>{formatShortDate(tournament.starts_on)}</span>
-                      <span className="inline-flex items-center gap-1">
-                        <Users size={13} aria-hidden="true" />
-                        {tournament.participants}{' '}
-                        {tournament.participants === 1
-                          ? 'participante'
-                          : 'participantes'}
-                      </span>
-                    </span>
-                  </span>
-                  <ChevronRight
-                    size={18}
-                    aria-hidden="true"
-                    className="shrink-0 text-ink-600"
-                  />
-                </Link>
-              </li>
+              <TournamentListItem key={tournament.id} tournament={tournament} />
             ))}
           </ul>
         )}
         {query.hasNextPage && (
-          <div className="border-t border-navy-900/10 p-4">
+          <div className="border-t border-navy-900/10 p-4 sm:px-5">
             <button
               type="button"
               className={secondaryClass}

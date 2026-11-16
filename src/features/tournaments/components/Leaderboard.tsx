@@ -9,9 +9,18 @@ const podium: Record<number, string> = {
 }
 const points = new Intl.NumberFormat('es-AR')
 
-export function Leaderboard({ id, live }: { id: string; live: boolean }) {
+export function Leaderboard({
+  id,
+  category,
+  live,
+}: {
+  id: string
+  category: string | null
+  live: boolean
+}) {
   const { query, hasPrevious, canNext, previous, next } = useLeaderboard(
     id,
+    category,
     live,
   )
   return (

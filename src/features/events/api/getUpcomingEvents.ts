@@ -27,7 +27,7 @@ export async function getEventsPage({
   z.iso.date().parse(from)
   let query = getSupabase()
     .from('events')
-    .select('id,title,starts_at,place,description')
+    .select('id,title,starts_at,place,description,tournament_id,show_time')
     .eq('is_published', true)
     .is('deleted_at', null)
     .gte('starts_at', `${from}T00:00:00-03:00`)
@@ -50,7 +50,8 @@ export async function getEventsPage({
       place: row.place,
       description: row.description,
       startsOn: getClubToday(new Date(row.starts_at)),
-      startsAt: time.format(new Date(row.starts_at)),
+      startsAt: row.show_time ? time.format(new Date(row.starts_at)) : null,
+      tournamentId: row.tournament_id,
     })),
     nextCursor:
       rows.length === pageSize && last

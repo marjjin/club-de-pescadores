@@ -4,7 +4,7 @@ import { button, textLink } from '@/shared/ui/button'
 import { container } from '@/shared/ui/layout'
 import { SectionHeading } from '@/shared/ui/SectionHeading'
 import { useTournament } from '../hooks/useTournaments'
-import { Leaderboard } from './Leaderboard'
+import { CategoryBoards } from './CategoryBoards'
 import { TournamentDates, TournamentStatus } from './TournamentDates'
 
 const back = (
@@ -111,7 +111,7 @@ export function TournamentDetail({ id }: { id: string }) {
             }
           />
         </div>
-        <Leaderboard id={tournament.id} live={!tournament.finished} />
+        <CategoryBoards id={tournament.id} live={!tournament.finished} />
       </section>
     </>
   )
