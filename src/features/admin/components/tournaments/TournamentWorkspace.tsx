@@ -63,6 +63,13 @@ export function TournamentWorkspace({ userId }: { userId: string }) {
   const manage = can('torneos.gestionar')
   const visible =
     tournament.status === 'published' || tournament.status === 'finished'
+  const annualTables = [
+    ...new Set(
+      tournament.categories.flatMap((category) =>
+        category.annual_table_name ? [category.annual_table_name] : [],
+      ),
+    ),
+  ]
   return (
     <>
       {back}
@@ -94,10 +101,10 @@ export function TournamentWorkspace({ userId }: { userId: string }) {
                     {tournament.place}
                   </span>
                 )}
-                {tournament.annual_table_name && (
+                {annualTables.length > 0 && (
                   <span className="inline-flex items-center gap-1">
                     <CalendarRange size={14} aria-hidden="true" />
-                    Suma a {tournament.annual_table_name}
+                    Suma a {annualTables.join(' y ')}
                   </span>
                 )}
                 <span className="inline-flex items-center gap-1">

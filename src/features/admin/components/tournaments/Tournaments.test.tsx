@@ -65,11 +65,21 @@ const tournament: AdminTournament = {
   status: 'published',
   participants: 2,
   categories: [
-    { id: cadetes, name: 'Cadetes', participants: 0, annual: true },
-    { id: senior, name: 'Senior', participants: 2, annual: true },
+    {
+      id: cadetes,
+      name: 'Cadetes',
+      participants: 0,
+      annual_table_id: null,
+      annual_table_name: null,
+    },
+    {
+      id: senior,
+      name: 'Senior',
+      participants: 2,
+      annual_table_id: null,
+      annual_table_name: null,
+    },
   ],
-  annual_table_id: null,
-  annual_table_name: null,
   created_at: '2026-11-01T00:00:00Z',
   updated_at: '2026-11-01T00:00:00Z',
 }
@@ -380,7 +390,13 @@ it('edits the tournament description with a character count', async () => {
   )
 })
 
-it('links a tournament to an annual table and chooses which categories add to it', async () => {
+it('sends each category of the tournament to its own annual table', async () => {
+  const seniorsTable = {
+    ...annualTable,
+    id: '50000000-0000-4000-8000-000000000002',
+    name: 'Tabla anual Senior',
+  }
+  vi.mocked(api.listAnnualTables).mockResolvedValue([annualTable, seniorsTable])
   vi.mocked(api.saveTournament).mockResolvedValue(tournament.id)
   vi.mocked(api.listCategories).mockResolvedValue(
     [
@@ -396,25 +412,40 @@ it('links a tournament to an annual table and chooses which categories add to it
   )
   mount(`/admin/torneos/${tournament.id}`)
   fireEvent.click(await screen.findByRole('button', { name: 'Editar datos' }))
-  const select = await screen.findByRole('combobox', { name: 'Tabla anual' })
-  expect(select).toHaveProperty('value', '')
-  fireEvent.change(select, { target: { value: annualTable.id } })
-  // Every category adds up by default; Cadetes is left out here.
-  const cadets = await screen.findByRole('checkbox', {
-    name: 'Cadetes suma a la tabla anual',
+  const cadets = await screen.findByRole('combobox', {
+    name: 'Tabla anual de Cadetes',
   })
-  expect(cadets).toHaveProperty('checked', true)
-  fireEvent.click(cadets)
+  const seniors = screen.getByRole('combobox', {
+    name: 'Tabla anual de Senior',
+  })
+  expect(cadets).toHaveProperty('value', '')
+  fireEvent.change(cadets, { target: { value: annualTable.id } })
+  fireEvent.change(seniors, { target: { value: seniorsTable.id } })
   fireEvent.click(screen.getByRole('button', { name: 'Guardar cambios' }))
   await waitFor(() =>
     expect(api.saveTournament).toHaveBeenCalledWith(
       expect.objectContaining({
-        annual_table: annualTable.id,
-        annual_excluded: [cadetes],
+        annual_tables: { [cadetes]: annualTable.id, [senior]: seniorsTable.id },
       }),
       expect.objectContaining({ id: tournament.id }),
     ),
   )
+})
+
+it('shows which annual tables the tournament adds to', async () => {
+  vi.mocked(api.getAdminTournament).mockResolvedValue({
+    ...tournament,
+    categories: tournament.categories.map((category) => ({
+      ...category,
+      annual_table_id: annualTable.id,
+      annual_table_name:
+        category.id === senior ? 'Tabla anual Senior' : 'Tabla anual Cadetes',
+    })),
+  })
+  mount(`/admin/torneos/${tournament.id}`)
+  expect(
+    await screen.findByText('Suma a Tabla anual Cadetes y Tabla anual Senior'),
+  ).toBeTruthy()
 })
 
 it('creates annual tables and warns about entries that cannot add up', async () => {
