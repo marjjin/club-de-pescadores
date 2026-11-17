@@ -149,7 +149,7 @@ export function permissionDescription(id: string) {
   if (id === 'torneos.gestionar')
     return 'Crear y editar torneos, publicarlos en el sitio, finalizarlos y archivarlos.'
   if (id === 'torneos.participantes')
-    return 'Registrar participantes con su consentimiento, corregir nombres y quitarlos de la tabla.'
+    return 'Registrar participantes, corregir nombres y quitarlos de la tabla.'
   if (id === 'torneos.puntos')
     return 'Sumar o restar puntos a los participantes mientras el torneo está abierto.'
   if (action === 'ver' && id.startsWith('auditoria.'))

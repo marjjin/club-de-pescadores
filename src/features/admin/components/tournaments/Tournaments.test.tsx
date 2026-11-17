@@ -219,30 +219,35 @@ it('shows one table per category and registers a person from the registry', asyn
       expect.anything(),
     ),
   )
+  // The sign-up form opens on demand, next to the list search.
+  expect(screen.queryByLabelText('Buscá a la persona')).toBeNull()
+  fireEvent.click(
+    screen.getByRole('button', { name: 'Registrar participante' }),
+  )
   fireEvent.change(screen.getByLabelText('Buscá a la persona'), {
     target: { value: 'Luc' },
   })
   fireEvent.click(await screen.findByRole('button', { name: /Lucía Benítez/ }))
   expect(screen.getByRole('combobox')).toHaveProperty('value', senior)
-  fireEvent.click(
-    screen.getByRole('button', { name: 'Registrar en el torneo' }),
-  )
-  expect((await screen.findByRole('alert')).textContent).toContain(
-    'aceptó aparecer',
-  )
-  fireEvent.click(screen.getByRole('checkbox', { name: /La persona aceptó/ }))
+  // Signing up includes the public table: there is nothing else to tick.
+  expect(screen.queryByRole('checkbox')).toBeNull()
   fireEvent.click(
     screen.getByRole('button', { name: 'Registrar en el torneo' }),
   )
   await screen.findByText('Registraste a Lucía Benítez en Senior.')
+  // It stays open to register the next person, until it is closed.
+  expect(screen.getByLabelText('Buscá a la persona')).toBeTruthy()
+  fireEvent.click(
+    screen.getByRole('button', { name: 'Cerrar registro de participante' }),
+  )
+  expect(screen.queryByLabelText('Buscá a la persona')).toBeNull()
   expect(api.addParticipant).toHaveBeenCalledWith(tournament.id, {
     category: senior,
     angler: person.id,
-    consent: true,
   })
 })
 
-it('changes the person of an entry, keeping its points, after consent', async () => {
+it('changes the person of an entry, keeping its points', async () => {
   mount(`/admin/torneos/${tournament.id}`)
   fireEvent.click(
     await screen.findByRole('button', { name: 'Cambiar la persona de Ana G.' }),
@@ -256,13 +261,12 @@ it('changes the person of an entry, keeping its points, after consent', async ()
   fireEvent.click(await screen.findByRole('button', { name: /Lucía Benítez/ }))
   expect(screen.getByText(/7 puntos/)).toBeTruthy()
   const submit = screen.getByRole('button', { name: 'Cambiar persona' })
-  expect(submit).toHaveProperty('disabled', true)
-  fireEvent.click(screen.getByRole('checkbox', { name: /La persona aceptó/ }))
+  expect(screen.queryByRole('checkbox')).toBeNull()
   fireEvent.click(submit)
   expect(await screen.findByText('Ahora figura Lucía Benítez')).toBeTruthy()
   expect(api.changeParticipant).toHaveBeenCalledWith(
     participant(2, 'Ana G.', 7).id,
-    { angler: person.id, consent: true },
+    { angler: person.id },
   )
 })
 

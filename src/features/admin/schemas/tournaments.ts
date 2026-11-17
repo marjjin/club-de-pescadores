@@ -72,9 +72,6 @@ export const tournamentInputSchema = z
   })
 export type TournamentInput = z.input<typeof tournamentInputSchema>
 
-const consent = z.literal(true, {
-  error: 'Confirmá que la persona aceptó aparecer en la tabla pública.',
-})
 /** Free-text name, only for entries loaded before the people registry. */
 export const legacyNameSchema = z
   .string()
@@ -84,11 +81,9 @@ export const legacyNameSchema = z
 export const participantInputSchema = z.object({
   category: z.uuid('Elegí la categoría.'),
   angler: z.uuid('Elegí o registrá a la persona.'),
-  consent,
 })
 export const changePersonSchema = z.object({
   angler: z.uuid('Elegí a la persona correcta.'),
-  consent,
 })
 
 export const categoryListSchema = z.object({

@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import type { FormEvent } from 'react'
-import { UserPlus, UserRound } from 'lucide-react'
+import { UserPlus, UserRound, X } from 'lucide-react'
 import { participantInputSchema } from '../../schemas/tournaments'
 import type { Angler, TournamentCategory } from '../../schemas/tournaments'
 import type { useParticipantActions } from '../../hooks/useAdminTournaments'
@@ -15,18 +15,19 @@ export function AddParticipantForm({
   add,
   categories,
   category: initialCategory,
+  onClose,
 }: {
   userId: string
   add: Add
   categories: TournamentCategory[]
   /** The table being viewed, preselected. */
   category: string | null
+  onClose: () => void
 }) {
   const [person, setPerson] = useState<Angler | null>(null)
   const [category, setCategory] = useState(
     initialCategory ?? categories[0]?.id ?? '',
   )
-  const [consent, setConsent] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [added, setAdded] = useState<string | null>(null)
   const categoryName = (id: string) =>
@@ -37,7 +38,6 @@ export function AddParticipantForm({
     const parsed = participantInputSchema.safeParse({
       category,
       angler: person.id,
-      consent,
     })
     if (!parsed.success) {
       setError(parsed.error.issues[0]?.message ?? 'Revisá los datos.')
@@ -47,16 +47,29 @@ export function AddParticipantForm({
       onSuccess: () => {
         setAdded(`${personLabel(person)} en ${categoryName(category)}`)
         setPerson(null)
-        setConsent(false)
       },
     })
   }
   return (
     <section
       aria-label="Registrar participante"
-      className="grid gap-4 border-b border-navy-900/10 p-5"
+      className="grid gap-4 border-b border-navy-900/10 bg-mist-50/60 p-4 sm:p-5"
     >
-      <h3 className="text-sm font-extrabold">Registrar participante</h3>
+      <div className="flex items-center justify-between gap-3">
+        <h3 className="flex items-center gap-2 text-sm font-extrabold">
+          <UserPlus size={16} aria-hidden="true" />
+          Registrar participante
+        </h3>
+        {/* Stays open after each sign-up, to register several people in a row. */}
+        <button
+          type="button"
+          aria-label="Cerrar registro de participante"
+          onClick={onClose}
+          className="grid size-11 shrink-0 place-items-center rounded-lg text-ink-600 hover:bg-white hover:text-navy-900"
+        >
+          <X size={18} aria-hidden="true" />
+        </button>
+      </div>
       {added && !person && <Feedback success={`Registraste a ${added}.`} />}
       {!person ? (
         <PersonPicker
@@ -71,7 +84,7 @@ export function AddParticipantForm({
         />
       ) : (
         <form noValidate onSubmit={submit} className="grid gap-3">
-          <div className="flex flex-wrap items-center gap-3 rounded-xl border border-navy-900/10 bg-mist-50/60 px-3 py-2">
+          <div className="flex flex-wrap items-center gap-3 rounded-xl border border-navy-900/10 bg-white px-3 py-2">
             <UserRound size={18} aria-hidden="true" className="text-ink-600" />
             <p className="min-w-0 flex-1">
               <span className="font-bold wrap-anywhere">
@@ -112,22 +125,6 @@ export function AddParticipantForm({
               Categoría: <strong>{categoryName(category)}</strong>
             </p>
           )}
-          <label className="flex items-start gap-2 text-sm">
-            <input
-              type="checkbox"
-              checked={consent}
-              onChange={(event) => {
-                setConsent(event.target.checked)
-                setError(null)
-              }}
-              className="mt-0.5 size-4 shrink-0"
-            />
-            <span>
-              La persona aceptó que su nombre (como «{person.first_name}{' '}
-              {person.last_name[0]?.toUpperCase()}.») y su puntaje aparezcan en
-              la tabla pública del sitio.
-            </span>
-          </label>
           {error && (
             <p role="alert" className="text-sm text-red-700">
               {error}

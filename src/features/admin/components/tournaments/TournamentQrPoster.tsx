@@ -49,38 +49,75 @@ export function TournamentQrPoster({
   return (
     <section
       aria-labelledby="qr-title"
-      className="mb-6 rounded-2xl border border-navy-900/10 bg-white p-5 shadow-sm sm:p-6"
+      className="relative mb-6 rounded-2xl border border-navy-900/10 bg-white p-5 shadow-sm sm:p-6"
     >
-      <div className="flex items-start justify-between gap-3 print:hidden">
-        <div>
-          <h2 id="qr-title" className="text-base font-extrabold">
-            QR de la tabla de posiciones
-          </h2>
-          <p className="mt-1 text-sm text-ink-600">
-            Imprimilo y pegalo en el muelle: quien lo escanee abre la tabla de
-            este torneo en el celular.
-          </p>
+      <button
+        type="button"
+        aria-label="Cerrar QR"
+        onClick={onClose}
+        className="absolute top-3 right-3 grid size-11 place-items-center rounded-lg text-ink-600 hover:bg-mist-50 hover:text-navy-900"
+      >
+        <X size={18} aria-hidden="true" />
+      </button>
+      <div className="grid gap-6 sm:grid-cols-[minmax(0,17rem)_minmax(0,1fr)] sm:items-center">
+        <div className="order-2 rounded-2xl border border-navy-900/10 p-5 sm:order-none">
+          <PosterSheet tournament={tournament} url={url} />
         </div>
-        <button
-          type="button"
-          aria-label="Cerrar QR"
-          onClick={onClose}
-          className="grid size-11 shrink-0 place-items-center rounded-lg text-ink-600 hover:bg-mist-50 hover:text-navy-900"
-        >
-          <X size={18} aria-hidden="true" />
-        </button>
-      </div>
-      {!visible && (
-        <p
-          role="status"
-          className="mt-4 rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900 print:hidden"
-        >
-          El torneo todavía no está publicado: hasta que lo publiques, el QR
-          abre una página que dice que no está disponible.
-        </p>
-      )}
-      <div className="mx-auto mt-5 max-w-md rounded-2xl border border-navy-900/10 p-6 sm:p-8 print:hidden">
-        <PosterSheet tournament={tournament} url={url} />
+        <div className="grid content-start gap-4">
+          <div className="pr-12">
+            <h2 id="qr-title" className="text-base font-extrabold">
+              QR de la tabla de posiciones
+            </h2>
+            <p className="mt-1 text-sm text-ink-600">
+              Imprimilo y pegalo en el muelle: quien lo escanee abre la tabla de
+              este torneo en el celular.
+            </p>
+          </div>
+          {!visible && (
+            <p
+              role="status"
+              className="rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900"
+            >
+              El torneo todavía no está publicado: hasta que lo publiques, el QR
+              abre una página que dice que no está disponible.
+            </p>
+          )}
+          <div className="flex flex-wrap gap-2">
+            <button
+              type="button"
+              className={primaryClass}
+              onClick={() => window.print()}
+            >
+              <Printer size={16} aria-hidden="true" />
+              Imprimir
+            </button>
+            <button type="button" className={secondaryClass} onClick={download}>
+              <Download size={16} aria-hidden="true" />
+              Descargar imagen
+            </button>
+            <button
+              type="button"
+              className={secondaryClass}
+              onClick={() => {
+                void copy()
+              }}
+            >
+              {copied ? (
+                <Check size={16} aria-hidden="true" />
+              ) : (
+                <Copy size={16} aria-hidden="true" />
+              )}
+              {copied ? 'Enlace copiado' : 'Copiar enlace'}
+            </button>
+          </div>
+          <ul className="grid list-disc gap-1 pl-5 text-sm text-ink-600">
+            <li>
+              Al imprimir, destildá «Encabezados y pies de página» para que
+              salga solo la hoja.
+            </li>
+            <li>Escanealo con tu celular antes de imprimir varias copias.</li>
+          </ul>
+        </div>
       </div>
       {/* The printed copy sits directly in <body>, so it starts on page one; see index.css. */}
       {createPortal(
@@ -93,34 +130,6 @@ export function TournamentQrPoster({
         </div>,
         document.body,
       )}
-      <div className="mt-5 flex flex-wrap justify-center gap-2 print:hidden">
-        <button
-          type="button"
-          className={primaryClass}
-          onClick={() => window.print()}
-        >
-          <Printer size={16} aria-hidden="true" />
-          Imprimir
-        </button>
-        <button type="button" className={secondaryClass} onClick={download}>
-          <Download size={16} aria-hidden="true" />
-          Descargar imagen
-        </button>
-        <button
-          type="button"
-          className={secondaryClass}
-          onClick={() => {
-            void copy()
-          }}
-        >
-          {copied ? (
-            <Check size={16} aria-hidden="true" />
-          ) : (
-            <Copy size={16} aria-hidden="true" />
-          )}
-          {copied ? 'Enlace copiado' : 'Copiar enlace'}
-        </button>
-      </div>
     </section>
   )
 }
@@ -136,39 +145,39 @@ function PosterSheet({
 }) {
   return (
     <div
-      className={`grid justify-items-center text-center text-navy-950 ${print ? 'gap-6' : 'gap-4'}`}
+      className={`grid justify-items-center text-center text-navy-950 ${print ? 'gap-6' : 'gap-2.5'}`}
     >
       <img
         src={logo}
         alt=""
         width="72"
         height="72"
-        className={print ? 'size-28' : 'size-16'}
+        className={print ? 'size-28' : 'size-12'}
       />
       <p
-        className={`font-extrabold tracking-[0.2em] text-ink-600 uppercase ${print ? 'text-base' : 'text-xs'}`}
+        className={`font-extrabold tracking-[0.2em] text-ink-600 uppercase ${print ? 'text-base' : 'text-[10px]'}`}
       >
         Club de Pescadores San Nicolás
       </p>
       <h3
-        className={`leading-tight font-extrabold wrap-anywhere ${print ? 'text-5xl' : 'text-2xl'}`}
+        className={`leading-tight font-extrabold wrap-anywhere ${print ? 'text-5xl' : 'text-lg'}`}
       >
         {tournament.name}
       </h3>
-      <p className={`text-ink-600 ${print ? 'text-xl' : 'text-sm'}`}>
+      <p className={`text-ink-600 ${print ? 'text-xl' : 'text-xs'}`}>
         {tournamentDates(tournament)}
         {tournament.place ? ` · ${tournament.place}` : ''}
       </p>
       <QrCode
         value={url}
         label={`Código QR de la tabla de posiciones de ${tournament.name}`}
-        className={print ? 'w-[11cm]' : 'w-64 max-w-full'}
+        className={print ? 'w-[11cm]' : 'w-40 max-w-full'}
       />
-      <p className={`font-extrabold ${print ? 'text-3xl' : 'text-lg'}`}>
+      <p className={`font-extrabold ${print ? 'text-3xl' : 'text-sm'}`}>
         Escaneá y mirá la tabla de posiciones
       </p>
       <p
-        className={`break-all text-ink-600 ${print ? 'text-base' : 'text-xs'}`}
+        className={`break-all text-ink-600 ${print ? 'text-base' : 'text-[10px]'}`}
       >
         {url}
       </p>

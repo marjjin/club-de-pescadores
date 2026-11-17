@@ -24,7 +24,6 @@ export function ChangePerson({
   onDone: (message?: string) => void
 }) {
   const [person, setPerson] = useState<Angler | null>(null)
-  const [consent, setConsent] = useState(false)
   if (!person)
     return (
       <div className={panel}>
@@ -52,7 +51,7 @@ export function ChangePerson({
       onSubmit={(event) => {
         event.preventDefault()
         actions.change.mutate(
-          { id: participant.id, angler: person.id, consent },
+          { id: participant.id, angler: person.id },
           { onSuccess: () => onDone(`Ahora figura ${personLabel(person)}`) },
         )
       }}
@@ -65,18 +64,6 @@ export function ChangePerson({
           <strong>{personLabel(person)}</strong> (DNI {person.dni_masked}).
         </span>
       </p>
-      <label className="flex items-start gap-2 text-sm">
-        <input
-          type="checkbox"
-          checked={consent}
-          onChange={(event) => setConsent(event.target.checked)}
-          className="mt-0.5 size-4 shrink-0"
-        />
-        <span>
-          La persona aceptó aparecer con su nombre y puntaje en la tabla
-          pública.
-        </span>
-      </label>
       <Feedback error={actions.change.error} />
       <div className="flex flex-wrap justify-end gap-2">
         <button
@@ -89,7 +76,7 @@ export function ChangePerson({
         <button
           type="submit"
           className={primaryClass}
-          disabled={!consent || actions.change.isPending}
+          disabled={actions.change.isPending}
         >
           {actions.change.isPending ? 'Cambiando…' : 'Cambiar persona'}
         </button>
