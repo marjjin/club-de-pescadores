@@ -67,6 +67,36 @@ export type Database = {
         }
         Relationships: []
       }
+      annual_tables: {
+        Row: {
+          id: string
+          name: string
+          year: number
+          archived_at: string | null
+          created_by: string
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          name: string
+          year: number
+          archived_at?: string | null
+          created_by: string
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          name?: string
+          year?: number
+          archived_at?: string | null
+          created_by?: string
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       audit_logs: {
         Row: {
           id: string
@@ -464,9 +494,24 @@ export type Database = {
         Relationships: []
       }
       tournament_category_links: {
-        Row: { id: string; tournament_id: string; category_id: string }
-        Insert: { id?: string; tournament_id: string; category_id: string }
-        Update: { id?: string; tournament_id?: string; category_id?: string }
+        Row: {
+          id: string
+          tournament_id: string
+          category_id: string
+          counts_annual: boolean
+        }
+        Insert: {
+          id?: string
+          tournament_id: string
+          category_id: string
+          counts_annual?: boolean
+        }
+        Update: {
+          id?: string
+          tournament_id?: string
+          category_id?: string
+          counts_annual?: boolean
+        }
         Relationships: []
       }
       tournament_participants: {
@@ -554,6 +599,7 @@ export type Database = {
           updated_at: string
           start_time: string | null
           description: string | null
+          annual_table_id: string | null
         }
         Insert: {
           id?: string
@@ -567,6 +613,7 @@ export type Database = {
           updated_at?: string
           start_time?: string | null
           description?: string | null
+          annual_table_id?: string | null
         }
         Update: {
           id?: string
@@ -580,6 +627,7 @@ export type Database = {
           updated_at?: string
           start_time?: string | null
           description?: string | null
+          annual_table_id?: string | null
         }
         Relationships: []
       }
@@ -683,6 +731,26 @@ export type Database = {
         Returns: Json
       }
       angler_search: { Args: { p_query: string | null }; Returns: Json }
+      annual_standings: {
+        Args: { p_table: string | null; p_category: string | null }
+        Returns: Json
+      }
+      annual_table_archive: {
+        Args: { p_id: string | null; p_archived: boolean | null }
+        Returns: undefined
+      }
+      annual_table_get: { Args: { p_id: string | null }; Returns: Json }
+      annual_table_list: { Args: Record<never, never>; Returns: Json }
+      annual_table_save: {
+        Args: {
+          p_name: string | null
+          p_year: number | null
+          p_id?: string | null
+          p_version?: string | null
+        }
+        Returns: string
+      }
+      annual_tables_public: { Args: Record<never, never>; Returns: Json }
       bootstrap_admin: { Args: { p_email: string | null }; Returns: string }
       can_manage_media: { Args: Record<never, never>; Returns: boolean }
       club_media_in_use: { Args: { p_name: string | null }; Returns: boolean }

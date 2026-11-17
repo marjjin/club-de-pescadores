@@ -7,7 +7,7 @@ import {
 } from '@testing-library/react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { MemoryRouter, Route, Routes } from 'react-router'
-import { beforeEach, expect, it, vi } from 'vitest'
+import { beforeAll, beforeEach, expect, it, vi } from 'vitest'
 import * as api from '../../api/tournaments'
 import * as people from '../../api/anglers'
 import type {
@@ -33,6 +33,9 @@ vi.mock('../../api/tournaments', () => ({
   saveCategory: vi.fn(),
   archiveCategory: vi.fn(),
   deleteTournament: vi.fn(),
+  listAnnualTables: vi.fn(),
+  saveAnnualTable: vi.fn(),
+  archiveAnnualTable: vi.fn(),
 }))
 vi.mock('../../api/anglers', () => ({
   searchAnglers: vi.fn(),
@@ -62,9 +65,11 @@ const tournament: AdminTournament = {
   status: 'published',
   participants: 2,
   categories: [
-    { id: cadetes, name: 'Cadetes', participants: 0 },
-    { id: senior, name: 'Senior', participants: 2 },
+    { id: cadetes, name: 'Cadetes', participants: 0, annual: true },
+    { id: senior, name: 'Senior', participants: 2, annual: true },
   ],
+  annual_table_id: null,
+  annual_table_name: null,
   created_at: '2026-11-01T00:00:00Z',
   updated_at: '2026-11-01T00:00:00Z',
 }
@@ -81,6 +86,25 @@ const participant = (
   category_id: senior,
   angler_id: `90000000-0000-4000-8000-00000000001${n}`,
   dni_masked: `••••000${n}`,
+})
+const annualTable = {
+  id: '50000000-0000-4000-8000-000000000001',
+  name: 'Campeonato anual',
+  year: 2026,
+  archived_at: null,
+  updated_at: '2026-11-01T00:00:00Z',
+  tournaments: 3,
+  finished: 2,
+  unlinked: 1,
+}
+// jsdom has no modal dialogs.
+beforeAll(() => {
+  Object.defineProperty(HTMLDialogElement.prototype, 'showModal', {
+    configurable: true,
+    value: function (this: HTMLDialogElement) {
+      this.open = true
+    },
+  })
 })
 beforeEach(() => {
   vi.mocked(api.listTournaments).mockResolvedValue([tournament])
@@ -99,6 +123,7 @@ beforeEach(() => {
       tournaments: 1,
     },
   ])
+  vi.mocked(api.listAnnualTables).mockResolvedValue([annualTable])
   vi.mocked(people.searchAnglers).mockResolvedValue([person])
   vi.spyOn(window, 'confirm').mockReturnValue(true)
 })
@@ -323,6 +348,10 @@ it('shows a printable QR that leads to the public leaderboard', async () => {
   ).toBe(true)
   fireEvent.click(screen.getByRole('button', { name: 'Imprimir' }))
   expect(print).toHaveBeenCalled()
+  // The QR opens in a modal window.
+  expect(
+    screen.getByRole('dialog', { name: 'QR de la tabla de posiciones' }),
+  ).toBeTruthy()
   fireEvent.click(screen.getByRole('button', { name: 'Cerrar QR' }))
   expect(
     screen.queryByRole('heading', { name: 'QR de la tabla de posiciones' }),
@@ -347,6 +376,70 @@ it('edits the tournament description with a character count', async () => {
         description: 'Modalidad caña libre.\nInscripción: $25.000',
       }),
       expect.objectContaining({ id: tournament.id }),
+    ),
+  )
+})
+
+it('links a tournament to an annual table and chooses which categories add to it', async () => {
+  vi.mocked(api.saveTournament).mockResolvedValue(tournament.id)
+  vi.mocked(api.listCategories).mockResolvedValue(
+    [
+      [senior, 'Senior'],
+      [cadetes, 'Cadetes'],
+    ].map(([id = '', name = '']) => ({
+      id,
+      name,
+      archived_at: null,
+      updated_at: '2026-11-01T00:00:00Z',
+      tournaments: 1,
+    })),
+  )
+  mount(`/admin/torneos/${tournament.id}`)
+  fireEvent.click(await screen.findByRole('button', { name: 'Editar datos' }))
+  const select = await screen.findByRole('combobox', { name: 'Tabla anual' })
+  expect(select).toHaveProperty('value', '')
+  fireEvent.change(select, { target: { value: annualTable.id } })
+  // Every category adds up by default; Cadetes is left out here.
+  const cadets = await screen.findByRole('checkbox', {
+    name: 'Cadetes suma a la tabla anual',
+  })
+  expect(cadets).toHaveProperty('checked', true)
+  fireEvent.click(cadets)
+  fireEvent.click(screen.getByRole('button', { name: 'Guardar cambios' }))
+  await waitFor(() =>
+    expect(api.saveTournament).toHaveBeenCalledWith(
+      expect.objectContaining({
+        annual_table: annualTable.id,
+        annual_excluded: [cadetes],
+      }),
+      expect.objectContaining({ id: tournament.id }),
+    ),
+  )
+})
+
+it('creates annual tables and warns about entries that cannot add up', async () => {
+  vi.mocked(api.saveAnnualTable).mockResolvedValue(annualTable.id)
+  mount('/admin/torneos')
+  fireEvent.click(await screen.findByRole('button', { name: 'Tablas anuales' }))
+  expect(await screen.findByText('Campeonato anual')).toBeTruthy()
+  expect(screen.getByText('3 torneos vinculados · 2 finalizados')).toBeTruthy()
+  expect(screen.getByText(/1 inscripción sin ficha no suma/)).toBeTruthy()
+  expect(
+    screen
+      .getByRole('link', { name: 'Ver Campeonato anual en el sitio' })
+      .getAttribute('href'),
+  ).toBe(`/torneos/anual/${annualTable.id}`)
+  fireEvent.change(screen.getByLabelText('Nombre de la nueva tabla anual'), {
+    target: { value: 'Copa de invierno' },
+  })
+  fireEvent.change(screen.getByLabelText('Año de la tabla anual'), {
+    target: { value: '2027' },
+  })
+  fireEvent.click(screen.getByRole('button', { name: 'Crear tabla' }))
+  await waitFor(() =>
+    expect(api.saveAnnualTable).toHaveBeenCalledWith(
+      { name: 'Copa de invierno', year: 2027 },
+      undefined,
     ),
   )
 })

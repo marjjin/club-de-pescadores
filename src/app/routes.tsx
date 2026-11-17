@@ -11,6 +11,7 @@ const NewsDetailPage = lazy(() => import('@/pages/news-detail'))
 const EventsPage = lazy(() => import('@/pages/events'))
 const TournamentsPage = lazy(() => import('@/pages/tournaments'))
 const TournamentDetailPage = lazy(() => import('@/pages/tournament-detail'))
+const AnnualTablePage = lazy(() => import('@/pages/annual-table'))
 const AdminPage = lazy(() => import('@/pages/admin'))
 
 export function AppRoutes() {
@@ -33,6 +34,7 @@ export function AppRoutes() {
           <Route path="eventos" element={<EventsPage />} />
           <Route path="torneos" element={<TournamentsPage />} />
           <Route path="torneos/:id" element={<TournamentDetailPage />} />
+          <Route path="torneos/anual/:id" element={<AnnualTablePage />} />
           <Route path="*" element={<NotFoundPage />} />
         </Route>
       </Routes>

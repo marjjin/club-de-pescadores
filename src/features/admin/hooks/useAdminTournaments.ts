@@ -84,6 +84,10 @@ function useRefresh(userId: string, tournamentId?: string) {
   return () =>
     Promise.all([
       client.invalidateQueries({ queryKey: keys.list(userId) }),
+      // Linking or finishing a tournament changes the annual tables' counts.
+      client.invalidateQueries({
+        queryKey: ['admin', userId, 'annual-tables'],
+      }),
       tournamentId &&
         client.invalidateQueries({
           queryKey: keys.participants(userId, tournamentId),

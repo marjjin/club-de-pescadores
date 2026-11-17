@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Link, useParams } from 'react-router'
 import {
   ArrowLeft,
+  CalendarRange,
   ExternalLink,
   MapPin,
   Pencil,
@@ -93,6 +94,12 @@ export function TournamentWorkspace({ userId }: { userId: string }) {
                     {tournament.place}
                   </span>
                 )}
+                {tournament.annual_table_name && (
+                  <span className="inline-flex items-center gap-1">
+                    <CalendarRange size={14} aria-hidden="true" />
+                    Suma a {tournament.annual_table_name}
+                  </span>
+                )}
                 <span className="inline-flex items-center gap-1">
                   <Users size={14} aria-hidden="true" />
                   {tournament.participants}{' '}
@@ -103,7 +110,7 @@ export function TournamentWorkspace({ userId }: { userId: string }) {
               </p>
             </div>
             <div className="flex flex-wrap gap-2">
-              {tournament.status !== 'archived' && !qr && (
+              {tournament.status !== 'archived' && (
                 <button
                   type="button"
                   className={secondaryClass}

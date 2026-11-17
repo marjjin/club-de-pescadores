@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { Check, Copy, Download, Printer, X } from 'lucide-react'
 import logo from '@/shared/assets/images/logo-192.webp'
@@ -27,6 +27,12 @@ export function TournamentQrPoster({
 }) {
   const url = tournamentPublicUrl(tournament.id)
   const [copied, setCopied] = useState(false)
+  const ref = useRef<HTMLDialogElement>(null)
+  // Opens as a modal while mounted; the workspace unmounts it to close it.
+  useEffect(() => {
+    const dialog = ref.current
+    if (dialog && !dialog.open) dialog.showModal()
+  }, [])
   const visible =
     tournament.status === 'published' || tournament.status === 'finished'
   function download() {
@@ -47,78 +53,95 @@ export function TournamentQrPoster({
     }
   }
   return (
-    <section
-      aria-labelledby="qr-title"
-      className="relative mb-6 rounded-2xl border border-navy-900/10 bg-white p-5 shadow-sm sm:p-6"
-    >
-      <button
-        type="button"
-        aria-label="Cerrar QR"
-        onClick={onClose}
-        className="absolute top-3 right-3 grid size-11 place-items-center rounded-lg text-ink-600 hover:bg-mist-50 hover:text-navy-900"
+    <>
+      <dialog
+        ref={ref}
+        aria-labelledby="qr-title"
+        aria-describedby="qr-description"
+        onCancel={onClose}
+        onClose={onClose}
+        onClick={(event) => {
+          // A click on the dimmed backdrop closes it, like Esc.
+          if (event.target === event.currentTarget) onClose()
+        }}
+        className="m-auto max-h-[92dvh] w-[min(46rem,calc(100%_-_2rem))] overflow-y-auto rounded-2xl border-0 bg-white p-0 text-navy-900 shadow-xl backdrop:bg-navy-950/65"
       >
-        <X size={18} aria-hidden="true" />
-      </button>
-      <div className="grid gap-6 sm:grid-cols-[minmax(0,17rem)_minmax(0,1fr)] sm:items-center">
-        <div className="order-2 rounded-2xl border border-navy-900/10 p-5 sm:order-none">
-          <PosterSheet tournament={tournament} url={url} />
-        </div>
-        <div className="grid content-start gap-4">
-          <div className="pr-12">
+        <div className="sticky top-0 z-10 flex items-start justify-between gap-4 border-b border-navy-900/10 bg-white px-5 py-4 sm:px-6">
+          <div>
             <h2 id="qr-title" className="text-base font-extrabold">
               QR de la tabla de posiciones
             </h2>
-            <p className="mt-1 text-sm text-ink-600">
+            <p id="qr-description" className="mt-1 text-sm text-ink-600">
               Imprimilo y pegalo en el muelle: quien lo escanee abre la tabla de
               este torneo en el celular.
             </p>
           </div>
-          {!visible && (
-            <p
-              role="status"
-              className="rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900"
-            >
-              El torneo todavía no está publicado: hasta que lo publiques, el QR
-              abre una página que dice que no está disponible.
-            </p>
-          )}
-          <div className="flex flex-wrap gap-2">
-            <button
-              type="button"
-              className={primaryClass}
-              onClick={() => window.print()}
-            >
-              <Printer size={16} aria-hidden="true" />
-              Imprimir
-            </button>
-            <button type="button" className={secondaryClass} onClick={download}>
-              <Download size={16} aria-hidden="true" />
-              Descargar imagen
-            </button>
-            <button
-              type="button"
-              className={secondaryClass}
-              onClick={() => {
-                void copy()
-              }}
-            >
-              {copied ? (
-                <Check size={16} aria-hidden="true" />
-              ) : (
-                <Copy size={16} aria-hidden="true" />
-              )}
-              {copied ? 'Enlace copiado' : 'Copiar enlace'}
-            </button>
-          </div>
-          <ul className="grid list-disc gap-1 pl-5 text-sm text-ink-600">
-            <li>
-              Al imprimir, destildá «Encabezados y pies de página» para que
-              salga solo la hoja.
-            </li>
-            <li>Escanealo con tu celular antes de imprimir varias copias.</li>
-          </ul>
+          <button
+            type="button"
+            autoFocus
+            aria-label="Cerrar QR"
+            onClick={onClose}
+            className="grid size-11 shrink-0 place-items-center rounded-lg text-ink-600 hover:bg-mist-50 hover:text-navy-900"
+          >
+            <X size={20} aria-hidden="true" />
+          </button>
         </div>
-      </div>
+        <div className="grid gap-6 p-5 sm:grid-cols-[minmax(0,17rem)_minmax(0,1fr)] sm:items-center sm:p-6">
+          <div className="rounded-2xl border border-navy-900/10 bg-white p-5">
+            <PosterSheet tournament={tournament} url={url} />
+          </div>
+          <div className="grid content-start gap-4">
+            {!visible && (
+              <p
+                role="status"
+                className="rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900"
+              >
+                El torneo todavía no está publicado: hasta que lo publiques, el
+                QR abre una página que dice que no está disponible.
+              </p>
+            )}
+            <div className="grid gap-2">
+              <button
+                type="button"
+                className={`${primaryClass} justify-center`}
+                onClick={() => window.print()}
+              >
+                <Printer size={16} aria-hidden="true" />
+                Imprimir
+              </button>
+              <button
+                type="button"
+                className={`${secondaryClass} justify-center`}
+                onClick={download}
+              >
+                <Download size={16} aria-hidden="true" />
+                Descargar imagen
+              </button>
+              <button
+                type="button"
+                className={`${secondaryClass} justify-center`}
+                onClick={() => {
+                  void copy()
+                }}
+              >
+                {copied ? (
+                  <Check size={16} aria-hidden="true" />
+                ) : (
+                  <Copy size={16} aria-hidden="true" />
+                )}
+                {copied ? 'Enlace copiado' : 'Copiar enlace'}
+              </button>
+            </div>
+            <ul className="grid list-disc gap-1 pl-5 text-sm text-ink-600">
+              <li>
+                Al imprimir, destildá «Encabezados y pies de página» para que
+                salga solo la hoja.
+              </li>
+              <li>Escanealo con tu celular antes de imprimir varias copias.</li>
+            </ul>
+          </div>
+        </div>
+      </dialog>
       {/* The printed copy sits directly in <body>, so it starts on page one; see index.css. */}
       {createPortal(
         <div
@@ -130,7 +153,7 @@ export function TournamentQrPoster({
         </div>,
         document.body,
       )}
-    </section>
+    </>
   )
 }
 
