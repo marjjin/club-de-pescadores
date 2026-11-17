@@ -19,6 +19,7 @@ El 17 de noviembre de 2026 el propietario pidió una tabla anual a la que se pue
 - La tabla se **calcula al leerla**: no hay puntajes copiados que se puedan desincronizar. Corregir puntos, mover a alguien de categoría o desvincular un torneo corrige la tabla anual sola.
 - Las personas se agrupan por su ficha (DNI). Las inscripciones «Sin ficha» no suman: el panel muestra cuántas hay en cada tabla para vincularlas a una persona.
 - Archivar una tabla la saca del sitio e impide vincularle torneos nuevos. No se borra: los torneos conservan su vínculo y se puede restaurar.
+- Eliminar (`202611170011`): una tabla anual se elimina solo después de archivarla, y se borran sus vínculos y categorías predeterminadas, nunca torneos ni puntos. Una categoría se elimina solo si ningún torneo la usa; si no, se archiva.
 
 ## Privacidad (Ley 25.326)
 

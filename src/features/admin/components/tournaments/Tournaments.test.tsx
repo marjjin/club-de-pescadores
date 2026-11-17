@@ -36,6 +36,8 @@ vi.mock('../../api/tournaments', () => ({
   listAnnualTables: vi.fn(),
   saveAnnualTable: vi.fn(),
   archiveAnnualTable: vi.fn(),
+  deleteAnnualTable: vi.fn(),
+  deleteCategory: vi.fn(),
 }))
 vi.mock('../../api/anglers', () => ({
   searchAnglers: vi.fn(),
@@ -478,13 +480,19 @@ it('creates annual tables and warns about entries that cannot add up', async () 
       .getByRole('link', { name: 'Ver Campeonato anual en el sitio' })
       .getAttribute('href'),
   ).toBe(`/torneos/anual/${annualTable.id}`)
-  fireEvent.change(screen.getByLabelText('Nombre de la nueva tabla anual'), {
+  // The list comes first; the form opens on demand.
+  expect(within(dialog).queryByRole('form')).toBeNull()
+  fireEvent.click(
+    within(dialog).getByRole('button', { name: 'Nueva tabla anual' }),
+  )
+  const form = within(dialog).getByRole('form', { name: 'Nueva tabla anual' })
+  fireEvent.change(within(form).getByLabelText('Nombre'), {
     target: { value: 'Copa de invierno' },
   })
-  fireEvent.change(screen.getByLabelText('Año de la tabla anual'), {
+  fireEvent.change(within(form).getByLabelText('Año'), {
     target: { value: '2027' },
   })
-  fireEvent.click(screen.getByRole('button', { name: 'Crear tabla' }))
+  fireEvent.click(within(form).getByRole('button', { name: 'Crear tabla' }))
   await waitFor(() =>
     expect(api.saveAnnualTable).toHaveBeenCalledWith(
       { name: 'Copa de invierno', year: 2027, categories: [] },
@@ -511,10 +519,12 @@ it('presets the categories of a new annual table', async () => {
   mount('/admin/torneos')
   fireEvent.click(await screen.findByRole('button', { name: 'Tablas anuales' }))
   const dialog = await screen.findByRole('dialog', { name: 'Tablas anuales' })
-  fireEvent.change(
-    within(dialog).getByLabelText('Nombre de la nueva tabla anual'),
-    { target: { value: 'Tabla anual Senior' } },
+  fireEvent.click(
+    await within(dialog).findByRole('button', { name: 'Nueva tabla anual' }),
   )
+  fireEvent.change(within(dialog).getByLabelText('Nombre'), {
+    target: { value: 'Tabla anual Senior' },
+  })
   const presets = await within(dialog).findByRole('group', {
     name: 'Categorías que suman a la nueva tabla',
   })
@@ -550,4 +560,106 @@ it('links a new tournament category to the tables preset for it', async () => {
       .getByRole('button', { name: /Campeonato anual/ })
       .getAttribute('aria-pressed'),
   ).toBe('true')
+})
+
+it('edits an annual table in place, with labelled fields and buttons', async () => {
+  vi.mocked(api.saveAnnualTable).mockResolvedValue(annualTable.id)
+  mount('/admin/torneos')
+  fireEvent.click(await screen.findByRole('button', { name: 'Tablas anuales' }))
+  const dialog = await screen.findByRole('dialog', { name: 'Tablas anuales' })
+  expect(
+    await within(dialog).findByRole('list', {
+      name: 'Categorías de Campeonato anual',
+    }),
+  ).toHaveProperty('textContent', 'Cualquier categoría')
+  fireEvent.click(
+    within(dialog).getByRole('button', { name: 'Editar Campeonato anual' }),
+  )
+  const form = within(dialog).getByRole('form', {
+    name: 'Editar Campeonato anual',
+  })
+  expect(within(form).getByLabelText('Nombre')).toHaveProperty(
+    'value',
+    'Campeonato anual',
+  )
+  fireEvent.click(await within(form).findByRole('button', { name: /Senior/ }))
+  fireEvent.click(within(form).getByRole('button', { name: 'Guardar cambios' }))
+  await waitFor(() =>
+    expect(api.saveAnnualTable).toHaveBeenCalledWith(
+      { name: 'Campeonato anual', year: 2026, categories: [senior] },
+      expect.objectContaining({ id: annualTable.id }),
+    ),
+  )
+})
+
+it('deletes only the categories that no tournament uses', async () => {
+  vi.mocked(api.deleteCategory).mockResolvedValue(undefined)
+  const spare = {
+    id: '80000000-0000-4000-8000-000000000009',
+    name: 'Juveniles',
+    archived_at: null,
+    updated_at: '2026-11-01T00:00:00Z',
+    tournaments: 0,
+  }
+  vi.mocked(api.listCategories).mockResolvedValue([
+    {
+      id: senior,
+      name: 'Senior',
+      archived_at: null,
+      updated_at: '2026-11-01T00:00:00Z',
+      tournaments: 1,
+    },
+    spare,
+  ])
+  mount('/admin/torneos')
+  fireEvent.click(await screen.findByRole('button', { name: 'Categorías' }))
+  const dialog = await screen.findByRole('dialog', {
+    name: 'Categorías de torneos',
+  })
+  await within(dialog).findByText('Juveniles')
+  // Senior is used by a tournament: it can only be archived.
+  expect(
+    within(dialog).queryByRole('button', { name: 'Eliminar Senior' }),
+  ).toBeNull()
+  fireEvent.click(
+    within(dialog).getByRole('button', { name: 'Eliminar Juveniles' }),
+  )
+  await waitFor(() =>
+    expect(api.deleteCategory).toHaveBeenCalledWith(
+      expect.objectContaining({ id: spare.id }),
+    ),
+  )
+})
+
+it('deletes archived annual tables after confirming', async () => {
+  vi.mocked(api.deleteAnnualTable).mockResolvedValue(undefined)
+  const old = {
+    ...annualTable,
+    id: '50000000-0000-4000-8000-000000000003',
+    name: 'Temporada 2025',
+    archived_at: '2026-11-10T00:00:00Z',
+  }
+  vi.mocked(api.listAnnualTables).mockResolvedValue([annualTable, old])
+  mount('/admin/torneos')
+  fireEvent.click(await screen.findByRole('button', { name: 'Tablas anuales' }))
+  const dialog = await screen.findByRole('dialog', { name: 'Tablas anuales' })
+  await within(dialog).findByText('Archivadas (1)')
+  // Active tables must be archived before they can be deleted.
+  expect(
+    within(dialog).queryByRole('button', {
+      name: 'Eliminar Campeonato anual definitivamente',
+    }),
+  ).toBeNull()
+  const confirm = vi.spyOn(window, 'confirm').mockReturnValueOnce(true)
+  fireEvent.click(
+    within(dialog).getByRole('button', {
+      name: 'Eliminar Temporada 2025 definitivamente',
+    }),
+  )
+  await waitFor(() => expect(confirm).toHaveBeenCalled())
+  await waitFor(() =>
+    expect(api.deleteAnnualTable).toHaveBeenCalledWith(
+      expect.objectContaining({ id: old.id }),
+    ),
+  )
 })

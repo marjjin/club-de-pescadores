@@ -324,3 +324,77 @@ describe('annual tables', () => {
     await expect(tournament(both(table))).rejects.toThrow(/archivada/)
   })
 })
+
+describe('deleting annual tables and categories', () => {
+  const list = async (fn) =>
+    (await run(root, `select public.${fn}() as data`)).rows[0].data
+  it('deletes an archived annual table and its links, keeping the tournament', async () => {
+    const table = await annual('Para borrar')
+    const id = await tournament(both(table))
+    const current = (await list('annual_table_list')).find(
+      (entry) => entry.id === table,
+    )
+    await expect(
+      run(root, 'select public.annual_table_delete($1,$2)', [
+        table,
+        current.updated_at,
+      ]),
+    ).rejects.toThrow(/Archivá/)
+    await run(root, 'select public.annual_table_archive($1,true)', [table])
+    const archived = (await list('annual_table_list')).find(
+      (entry) => entry.id === table,
+    )
+    await expect(
+      run(viewer, 'select public.annual_table_delete($1,$2)', [
+        table,
+        archived.updated_at,
+      ]),
+    ).rejects.toThrow()
+    await run(root, 'select public.annual_table_delete($1,$2)', [
+      table,
+      archived.updated_at,
+    ])
+    expect(
+      (await list('annual_table_list')).some((entry) => entry.id === table),
+    ).toBe(false)
+    const saved = (
+      await run(root, 'select public.tournament_admin_get($1) as data', [id])
+    ).rows[0].data
+    expect(saved.categories.flatMap((c) => c.annual_tables)).toEqual([])
+  })
+
+  it('deletes only categories that no tournament uses', async () => {
+    const used = (await list('tournament_category_list')).find(
+      (entry) => entry.id === cats.mayores,
+    )
+    await expect(
+      run(root, 'select public.tournament_category_delete($1,$2)', [
+        used.id,
+        used.updated_at,
+      ]),
+    ).rejects.toThrow(/usan torneos/)
+    const spare = await run(
+      root,
+      'select public.tournament_category_save($1) as id',
+      ['Juveniles'],
+    ).then(value)
+    // A preset on an annual table does not keep the category alive.
+    await run(
+      root,
+      'select public.annual_table_save($1,$2,p_categories => $3) as id',
+      ['Juveniles 2026', 2026, JSON.stringify([spare])],
+    )
+    const fresh = (await list('tournament_category_list')).find(
+      (entry) => entry.id === spare,
+    )
+    await run(root, 'select public.tournament_category_delete($1,$2)', [
+      spare,
+      fresh.updated_at,
+    ])
+    expect(
+      (await list('tournament_category_list')).some(
+        (entry) => entry.id === spare,
+      ),
+    ).toBe(false)
+  })
+})

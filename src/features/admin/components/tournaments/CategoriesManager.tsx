@@ -21,9 +21,9 @@ export function CategoriesManager({
   const manage = useAccess().can('torneos.gestionar')
   const confirm = useConfirm()
   const query = useCategories(userId)
-  const { save, archive } = useCategoryActions(userId)
+  const { save, archive, remove } = useCategoryActions(userId)
   const [name, setName] = useState('')
-  const busy = save.isPending || archive.isPending
+  const busy = save.isPending || archive.isPending || remove.isPending
   function create() {
     if (!name.trim() || busy) return
     save.mutate({ name }, { onSuccess: () => setName('') })
@@ -41,6 +41,18 @@ export function CategoriesManager({
     )
       return
     archive.mutate({ id: category.id, archived })
+  }
+  async function destroy(category: CategoryListItem) {
+    if (
+      await confirm({
+        title: `¿Eliminar «${category.name}»?`,
+        message:
+          'Ningún torneo la usa. Se quita también de las tablas anuales que la tenían predeterminada. No se puede deshacer.',
+        confirmLabel: 'Eliminar',
+        tone: 'danger',
+      })
+    )
+      remove.mutate(category)
   }
   return (
     <TournamentDialog
@@ -64,7 +76,8 @@ export function CategoriesManager({
             className="mt-0.5 text-sm text-ink-600"
           >
             Senior, Cadetes, Damas… Cada torneo usa una o varias, y cada una
-            tiene su tabla de posiciones.
+            tiene su tabla de posiciones. Solo se pueden eliminar las que ningún
+            torneo usa; las demás se archivan.
           </p>
         </div>
         <button
@@ -109,7 +122,9 @@ export function CategoriesManager({
         </form>
       )}
       <div className="px-5 pt-3 empty:hidden sm:px-6">
-        <Feedback error={save.error ?? archive.error ?? query.error} />
+        <Feedback
+          error={save.error ?? archive.error ?? remove.error ?? query.error}
+        />
       </div>
       {query.isPending ? (
         <Loading />
@@ -131,6 +146,9 @@ export function CategoriesManager({
               }
               onToggleArchive={() => {
                 void toggleArchive(category)
+              }}
+              onDelete={() => {
+                void destroy(category)
               }}
             />
           ))}

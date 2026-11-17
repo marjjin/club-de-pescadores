@@ -51,6 +51,8 @@ function tournamentError(error: { code?: string; message?: string }) {
           ? 'Ya existe una tabla anual con ese nombre para ese año.'
           : 'Ya existe una categoría o un participante con ese nombre.',
     )
+  if (error.code === '23503' && error.message?.includes('usan torneos'))
+    return new Error(error.message)
   if (error.code === '23503' && error.message?.includes('participantes'))
     return new Error(
       'No podés quitar una categoría que ya tiene participantes. Movelos de categoría antes.',
@@ -278,6 +280,28 @@ export async function archiveAnnualTable(id: string, archived: boolean) {
   const { error } = await getAdminSupabase().rpc('annual_table_archive', {
     p_id: id,
     p_archived: archived,
+  })
+  if (error) throw tournamentError(error)
+}
+
+/** Only archived tables; their links go, tournaments and points stay. */
+export async function deleteAnnualTable(
+  table: Pick<AnnualTable, 'id' | 'updated_at'>,
+) {
+  const { error } = await getAdminSupabase().rpc('annual_table_delete', {
+    p_id: table.id,
+    p_version: table.updated_at,
+  })
+  if (error) throw tournamentError(error)
+}
+
+/** Only categories that no tournament uses. */
+export async function deleteCategory(
+  category: Pick<CategoryListItem, 'id' | 'updated_at'>,
+) {
+  const { error } = await getAdminSupabase().rpc('tournament_category_delete', {
+    p_id: category.id,
+    p_version: category.updated_at,
   })
   if (error) throw tournamentError(error)
 }

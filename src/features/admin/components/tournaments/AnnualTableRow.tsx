@@ -1,17 +1,14 @@
 import { useState } from 'react'
 import {
   Archive,
-  Check,
   ExternalLink,
   Pencil,
   RotateCcw,
+  Trash2,
   TriangleAlert,
-  X,
 } from 'lucide-react'
-import { annualTableInputSchema } from '../../schemas/tournaments'
 import type { AnnualTable, AnnualTableInput } from '../../schemas/tournaments'
-import { inputClass } from '../ui'
-import { CategoryToggles } from './CategoryToggles'
+import { AnnualTableForm } from './AnnualTableForm'
 
 const iconButton =
   'grid size-11 shrink-0 place-items-center rounded-lg text-ink-600 hover:bg-mist-50 hover:text-navy-900 disabled:opacity-50'
@@ -25,137 +22,77 @@ export function AnnualTableRow({
   busy,
   onSave,
   onToggleArchive,
+  onDelete,
 }: {
   userId: string
   table: AnnualTable
   manage: boolean
   busy: boolean
-  /** Resolves once saved, so the fields close only on success. */
+  /** Resolves once saved, so the form closes only on success. */
   onSave: (input: AnnualTableInput) => Promise<unknown>
   onToggleArchive: () => void
+  onDelete: () => void
 }) {
   const [editing, setEditing] = useState(false)
-  const [name, setName] = useState(table.name)
-  const [year, setYear] = useState(String(table.year))
-  const [categories, setCategories] = useState(
-    table.categories.map((category) => category.id),
-  )
-  const [error, setError] = useState<string | null>(null)
-  function submit() {
-    if (busy) return
-    const parsed = annualTableInputSchema.safeParse({
-      name,
-      year: Number(year),
-      categories,
-    })
-    if (!parsed.success) {
-      setError(parsed.error.issues[0]?.message ?? 'Revisá los datos.')
-      return
-    }
-    onSave(parsed.data).then(
-      () => setEditing(false),
-      () => undefined,
-    )
-  }
   if (editing)
     return (
-      <li className="px-5 py-3 sm:px-6">
-        <form
-          className="flex flex-wrap gap-1"
-          onSubmit={(event) => {
-            event.preventDefault()
-            submit()
+      <li className="rounded-xl border border-river-600/40 bg-mist-50/60 p-4 ring-2 ring-river-600/10">
+        <AnnualTableForm
+          userId={userId}
+          label={`Editar ${table.name}`}
+          categoriesLabel={`Categorías que suman a ${table.name}`}
+          initial={{
+            name: table.name,
+            year: table.year,
+            categories: table.categories.map((category) => category.id),
           }}
-        >
-          <div className="min-w-40 flex-1">
-            <input
-              value={name}
-              maxLength={120}
-              aria-label={`Nuevo nombre para ${table.name}`}
-              onChange={(event) => {
-                setName(event.target.value)
-                setError(null)
-              }}
-              onKeyDown={(event) => {
-                // Esc cancels the edit without closing the window around it.
-                if (event.key === 'Escape') {
-                  event.preventDefault()
-                  setEditing(false)
-                }
-              }}
-              className={inputClass}
-            />
-          </div>
-          <div className="w-24">
-            <input
-              value={year}
-              type="number"
-              inputMode="numeric"
-              min={2000}
-              max={2100}
-              aria-label={`Año de ${table.name}`}
-              onChange={(event) => {
-                setYear(event.target.value)
-                setError(null)
-              }}
-              className={inputClass}
-            />
-          </div>
-          <button
-            type="submit"
-            aria-label="Guardar tabla anual"
-            className={iconButton}
-            disabled={busy}
-          >
-            <Check size={18} aria-hidden="true" />
-          </button>
-          <button
-            type="button"
-            aria-label="Cancelar"
-            className={iconButton}
-            onClick={() => setEditing(false)}
-          >
-            <X size={18} aria-hidden="true" />
-          </button>
-          <div className="mt-2 basis-full">
-            <CategoryToggles
-              userId={userId}
-              label={`Categorías que suman a ${table.name}`}
-              selected={categories}
-              onChange={setCategories}
-            />
-          </div>
-          {error && (
-            <p role="alert" className="basis-full text-sm text-red-700">
-              {error}
-            </p>
-          )}
-        </form>
+          submitLabel="Guardar cambios"
+          pending={busy}
+          onSubmit={(input) => {
+            onSave(input).then(
+              () => setEditing(false),
+              () => undefined,
+            )
+          }}
+          onCancel={() => setEditing(false)}
+        />
       </li>
     )
   return (
-    <li
-      className={`flex min-w-0 flex-wrap items-center gap-x-3 gap-y-1 px-5 py-3 sm:px-6 ${table.archived_at ? 'opacity-60' : ''}`}
-    >
+    <li className="flex min-w-0 items-start gap-2 rounded-xl border border-navy-900/10 bg-white p-4">
       <div className="min-w-0 flex-1">
-        <p>
+        <p className="flex flex-wrap items-center gap-x-2 gap-y-1">
           <span className="font-bold wrap-anywhere">{table.name}</span>
-          <span className="ml-2 rounded-full bg-mist-50 px-2 py-0.5 text-xs font-bold tabular-nums">
+          <span className="rounded-full bg-mist-50 px-2 py-0.5 text-xs font-bold tabular-nums">
             {table.year}
           </span>
         </p>
-        <p className="mt-0.5 text-xs text-ink-600">
+        <p className="mt-1 text-xs text-ink-600">
           {table.archived_at
             ? 'Archivada: no se ve en el sitio'
             : `${plural(table.tournaments, 'torneo vinculado', 'torneos vinculados')} · ${plural(table.finished, 'finalizado', 'finalizados')}`}
         </p>
-        <p className="mt-0.5 text-xs text-ink-600">
-          {table.categories.length
-            ? `Suman: ${table.categories.map((category) => category.name).join(', ')}`
-            : 'Suma cualquier categoría'}
-        </p>
+        <ul
+          aria-label={`Categorías de ${table.name}`}
+          className="mt-2 flex flex-wrap gap-1.5"
+        >
+          {table.categories.length ? (
+            table.categories.map((category) => (
+              <li
+                key={category.id}
+                className="rounded-full bg-navy-900 px-2.5 py-0.5 text-xs font-bold text-white"
+              >
+                {category.name}
+              </li>
+            ))
+          ) : (
+            <li className="rounded-full border border-dashed border-navy-900/20 px-2.5 py-0.5 text-xs text-ink-600">
+              Cualquier categoría
+            </li>
+          )}
+        </ul>
         {table.unlinked > 0 && (
-          <p className="mt-1 flex items-start gap-1.5 text-xs text-amber-900">
+          <p className="mt-2 flex items-start gap-1.5 text-xs text-amber-900">
             <TriangleAlert
               size={14}
               aria-hidden="true"
@@ -170,51 +107,65 @@ export function AnnualTableRow({
           </p>
         )}
       </div>
-      {!table.archived_at && (
-        <a
-          href={`/torneos/anual/${table.id}`}
-          target="_blank"
-          rel="noreferrer"
-          aria-label={`Ver ${table.name} en el sitio`}
-          className={iconButton}
-        >
-          <ExternalLink size={16} aria-hidden="true" />
-        </a>
-      )}
-      {manage && (
-        <>
-          <button
-            type="button"
-            aria-label={`Editar ${table.name}`}
+      <div className="flex shrink-0">
+        {!table.archived_at && (
+          <a
+            href={`/torneos/anual/${table.id}`}
+            target="_blank"
+            rel="noreferrer"
+            title="Ver en el sitio"
+            aria-label={`Ver ${table.name} en el sitio`}
             className={iconButton}
-            onClick={() => {
-              setName(table.name)
-              setYear(String(table.year))
-              setCategories(table.categories.map((category) => category.id))
-              setEditing(true)
-            }}
           >
-            <Pencil size={16} aria-hidden="true" />
-          </button>
-          <button
-            type="button"
-            aria-label={
-              table.archived_at
-                ? `Restaurar ${table.name}`
-                : `Archivar ${table.name}`
-            }
-            className={iconButton}
-            disabled={busy}
-            onClick={onToggleArchive}
-          >
-            {table.archived_at ? (
-              <RotateCcw size={16} aria-hidden="true" />
-            ) : (
-              <Archive size={16} aria-hidden="true" />
+            <ExternalLink size={16} aria-hidden="true" />
+          </a>
+        )}
+        {manage && (
+          <>
+            {!table.archived_at && (
+              <button
+                type="button"
+                title="Editar"
+                aria-label={`Editar ${table.name}`}
+                className={iconButton}
+                onClick={() => setEditing(true)}
+              >
+                <Pencil size={16} aria-hidden="true" />
+              </button>
             )}
-          </button>
-        </>
-      )}
+            <button
+              type="button"
+              title={table.archived_at ? 'Restaurar' : 'Archivar'}
+              aria-label={
+                table.archived_at
+                  ? `Restaurar ${table.name}`
+                  : `Archivar ${table.name}`
+              }
+              className={iconButton}
+              disabled={busy}
+              onClick={onToggleArchive}
+            >
+              {table.archived_at ? (
+                <RotateCcw size={16} aria-hidden="true" />
+              ) : (
+                <Archive size={16} aria-hidden="true" />
+              )}
+            </button>
+            {table.archived_at && (
+              <button
+                type="button"
+                title="Eliminar definitivamente"
+                aria-label={`Eliminar ${table.name} definitivamente`}
+                className={`${iconButton} hover:bg-red-50 hover:text-red-700`}
+                disabled={busy}
+                onClick={onDelete}
+              >
+                <Trash2 size={16} aria-hidden="true" />
+              </button>
+            )}
+          </>
+        )}
+      </div>
     </li>
   )
 }
