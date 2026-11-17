@@ -4,6 +4,8 @@ export type Tournament = {
   place: string | null
   startsOn: string
   endsOn: string | null
+  /** Only loaded on the tournament page. */
+  description: string | null
   finished: boolean
 }
 

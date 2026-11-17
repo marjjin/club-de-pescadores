@@ -23,6 +23,8 @@ export const adminTournamentSchema = z.object({
   ends_on: z.iso.date().nullable(),
   // Tournaments created before the agenda link have no start time yet.
   start_time: z.string().nullable(),
+  // Only the detail returns it; listings leave it out.
+  description: z.string().nullable().default(null),
   status: z.enum(tournamentStatuses),
   participants: z.number().int(),
   categories: z.array(tournamentCategorySchema).default([]),
@@ -58,6 +60,7 @@ export const tournamentInputSchema = z
     start_time: z
       .string()
       .regex(/^([01][0-9]|2[0-3]):[0-5][0-9]$/, 'Elegí la hora de inicio.'),
+    description: z.string().trim().max(2000, 'Usá hasta 2000 caracteres.'),
     categories: z
       .array(z.uuid())
       .min(1, 'Elegí al menos una categoría.')

@@ -11,6 +11,8 @@ import type { TournamentCursor } from '../schemas/tournament'
 import type { Tournament } from '../types'
 
 const columns = 'id,name,place,starts_on,ends_on,status'
+// The description can be long: only the tournament page asks for it.
+const detailColumns = `${columns},description`
 
 const toTournament = (
   row: z.infer<typeof tournamentRowSchema>,
@@ -20,6 +22,7 @@ const toTournament = (
   place: row.place,
   startsOn: row.starts_on,
   endsOn: row.ends_on,
+  description: row.description,
   finished: row.status === 'finished',
 })
 
@@ -69,7 +72,7 @@ export async function getTournament(
   if (!parsedId.success) return null
   const { data } = await getSupabase()
     .from('tournaments')
-    .select(columns)
+    .select(detailColumns)
     .eq('id', parsedId.data)
     .in('status', ['published', 'finished'])
     .limit(1)

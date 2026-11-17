@@ -60,3 +60,28 @@ body {
     scroll-behavior: auto;
   }
 }
+
+/*
+ * Printing a sheet such as the tournament QR poster: only the marked area prints,
+ * on its own page, with its colours. The rest of the panel stays in the layout but hidden.
+ */
+@media print {
+  @page {
+    size: A4 portrait;
+    margin: 14mm;
+  }
+  body:has([data-print-area]) * {
+    visibility: hidden;
+  }
+  [data-print-area],
+  [data-print-area] * {
+    visibility: visible;
+    print-color-adjust: exact;
+  }
+  [data-print-area] {
+    position: absolute;
+    inset: 0;
+    margin: 0;
+    align-content: center;
+  }
+}

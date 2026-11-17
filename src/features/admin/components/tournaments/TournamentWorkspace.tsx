@@ -1,6 +1,13 @@
 import { useState } from 'react'
 import { Link, useParams } from 'react-router'
-import { ArrowLeft, ExternalLink, MapPin, Pencil, Users } from 'lucide-react'
+import {
+  ArrowLeft,
+  ExternalLink,
+  MapPin,
+  Pencil,
+  QrCode,
+  Users,
+} from 'lucide-react'
 import { useAccess } from '../../hooks/useAccess'
 import { useAdminTournament } from '../../hooks/useAdminTournaments'
 import { Feedback, Loading, SectionHeading, secondaryClass } from '../ui'
@@ -9,6 +16,7 @@ import { ParticipantsPanel } from './ParticipantsPanel'
 import { TournamentBadge } from './TournamentBadge'
 import { TournamentForm } from './TournamentForm'
 import { TournamentProgress } from './TournamentProgress'
+import { TournamentQrPoster } from './TournamentQrPoster'
 import { TournamentStatusActions } from './TournamentStatusActions'
 import { tournamentDates } from './tournament-dates'
 
@@ -26,6 +34,7 @@ export function TournamentWorkspace({ userId }: { userId: string }) {
   const { id = '' } = useParams()
   const { can } = useAccess()
   const [editing, setEditing] = useState(false)
+  const [qr, setQr] = useState(false)
   const query = useAdminTournament(userId, id)
   const tournament = query.data
   if (query.isPending)
@@ -94,6 +103,16 @@ export function TournamentWorkspace({ userId }: { userId: string }) {
               </p>
             </div>
             <div className="flex flex-wrap gap-2">
+              {tournament.status !== 'archived' && !qr && (
+                <button
+                  type="button"
+                  className={secondaryClass}
+                  onClick={() => setQr(true)}
+                >
+                  <QrCode size={16} aria-hidden="true" />
+                  QR para imprimir
+                </button>
+              )}
               {visible && (
                 <a
                   href={`/torneos/${tournament.id}`}
@@ -132,6 +151,12 @@ export function TournamentWorkspace({ userId }: { userId: string }) {
             )}
           </div>
         </header>
+      )}
+      {qr && tournament.status !== 'archived' && (
+        <TournamentQrPoster
+          tournament={tournament}
+          onClose={() => setQr(false)}
+        />
       )}
       <ParticipantsPanel userId={userId} tournament={tournament} />
     </>

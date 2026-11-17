@@ -97,6 +97,19 @@ export function TournamentDetail({ id }: { id: string }) {
           )}
         </div>
       </header>
+      {tournament.description && (
+        <section
+          aria-labelledby="tournament-about"
+          className={`${container} max-w-3xl pt-10 lg:pt-14`}
+        >
+          <h2 id="tournament-about" className="text-xl font-extrabold">
+            Sobre el torneo
+          </h2>
+          <p className="mt-3 leading-7 wrap-anywhere whitespace-pre-line text-navy-900">
+            {tournament.description}
+          </p>
+        </section>
+      )}
       <section
         aria-label="Tabla de posiciones"
         className={`${container} max-w-3xl py-10 lg:py-14`}
