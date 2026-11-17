@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import {
   archiveAnnualTable,
+  deleteAnnualTable,
   listAnnualTables,
   saveAnnualTable,
 } from '../api/tournaments'
@@ -41,6 +42,10 @@ export function useAnnualTableActions(userId: string) {
     archive: useMutation({
       mutationFn: ({ id, archived }: { id: string; archived: boolean }) =>
         archiveAnnualTable(id, archived),
+      onSuccess: refresh,
+    }),
+    remove: useMutation({
+      mutationFn: (table: AnnualTable) => deleteAnnualTable(table),
       onSuccess: refresh,
     }),
   }

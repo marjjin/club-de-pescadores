@@ -748,6 +748,10 @@ export type Database = {
         Args: { p_id: string | null; p_archived: boolean | null }
         Returns: undefined
       }
+      annual_table_delete: {
+        Args: { p_id: string | null; p_version: string | null }
+        Returns: undefined
+      }
       annual_table_get: { Args: { p_id: string | null }; Returns: Json }
       annual_table_list: { Args: Record<never, never>; Returns: Json }
       annual_table_save: {
@@ -818,6 +822,10 @@ export type Database = {
       }
       tournament_category_archive: {
         Args: { p_id: string | null; p_archived: boolean | null }
+        Returns: undefined
+      }
+      tournament_category_delete: {
+        Args: { p_id: string | null; p_version: string | null }
         Returns: undefined
       }
       tournament_category_list: { Args: Record<never, never>; Returns: Json }

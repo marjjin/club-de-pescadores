@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Archive, Check, Pencil, RotateCcw, X } from 'lucide-react'
+import { Archive, Check, Pencil, RotateCcw, Trash2, X } from 'lucide-react'
 import type { CategoryListItem } from '../../schemas/tournaments'
 import { inputClass } from '../ui'
 
@@ -12,6 +12,7 @@ export function CategoryRow({
   busy,
   onRename,
   onToggleArchive,
+  onDelete,
 }: {
   category: CategoryListItem
   manage: boolean
@@ -19,6 +20,8 @@ export function CategoryRow({
   /** Resolves once saved, so the field closes only on success. */
   onRename: (name: string) => Promise<unknown>
   onToggleArchive: () => void
+  /** Only for categories that no tournament uses. */
+  onDelete: () => void
 }) {
   const [editing, setEditing] = useState(false)
   const [draft, setDraft] = useState(category.name)
@@ -109,6 +112,18 @@ export function CategoryRow({
               <Archive size={16} aria-hidden="true" />
             )}
           </button>
+          {category.tournaments === 0 && (
+            <button
+              type="button"
+              title="Eliminar"
+              aria-label={`Eliminar ${category.name}`}
+              className={`${iconButton} hover:bg-red-50 hover:text-red-700`}
+              disabled={busy}
+              onClick={onDelete}
+            >
+              <Trash2 size={16} aria-hidden="true" />
+            </button>
+          )}
         </>
       )}
     </li>

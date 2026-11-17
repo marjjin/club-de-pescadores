@@ -3,6 +3,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { getAngler, saveAngler, searchAnglers } from '../api/anglers'
 import {
   archiveCategory,
+  deleteCategory,
   listCategories,
   saveCategory,
 } from '../api/tournaments'
@@ -49,6 +50,10 @@ export function useCategoryActions(userId: string) {
     archive: useMutation({
       mutationFn: ({ id, archived }: { id: string; archived: boolean }) =>
         archiveCategory(id, archived),
+      onSuccess: refresh,
+    }),
+    remove: useMutation({
+      mutationFn: (category: CategoryListItem) => deleteCategory(category),
       onSuccess: refresh,
     }),
   }
