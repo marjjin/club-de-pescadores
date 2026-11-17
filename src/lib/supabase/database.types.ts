@@ -67,6 +67,12 @@ export type Database = {
         }
         Relationships: []
       }
+      annual_table_categories: {
+        Row: { id: string; annual_table_id: string; category_id: string }
+        Insert: { id?: string; annual_table_id: string; category_id: string }
+        Update: { id?: string; annual_table_id?: string; category_id?: string }
+        Relationships: []
+      }
       annual_tables: {
         Row: {
           id: string
@@ -750,6 +756,7 @@ export type Database = {
           p_year: number | null
           p_id?: string | null
           p_version?: string | null
+          p_categories?: Json | null
         }
         Returns: string
       }

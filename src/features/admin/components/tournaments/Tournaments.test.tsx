@@ -101,6 +101,7 @@ const annualTable = {
   year: 2026,
   archived_at: null,
   updated_at: '2026-11-01T00:00:00Z',
+  categories: [] as { id: string; name: string }[],
   tournaments: 3,
   finished: 2,
   unlinked: 1,
@@ -486,7 +487,7 @@ it('creates annual tables and warns about entries that cannot add up', async () 
   fireEvent.click(screen.getByRole('button', { name: 'Crear tabla' }))
   await waitFor(() =>
     expect(api.saveAnnualTable).toHaveBeenCalledWith(
-      { name: 'Copa de invierno', year: 2027 },
+      { name: 'Copa de invierno', year: 2027, categories: [] },
       undefined,
     ),
   )
@@ -503,4 +504,50 @@ it('manages categories in a modal window', async () => {
     within(dialog).getByRole('button', { name: 'Cerrar categorías' }),
   )
   expect(screen.queryByRole('dialog')).toBeNull()
+})
+
+it('presets the categories of a new annual table', async () => {
+  vi.mocked(api.saveAnnualTable).mockResolvedValue(annualTable.id)
+  mount('/admin/torneos')
+  fireEvent.click(await screen.findByRole('button', { name: 'Tablas anuales' }))
+  const dialog = await screen.findByRole('dialog', { name: 'Tablas anuales' })
+  fireEvent.change(
+    within(dialog).getByLabelText('Nombre de la nueva tabla anual'),
+    { target: { value: 'Tabla anual Senior' } },
+  )
+  const presets = await within(dialog).findByRole('group', {
+    name: 'Categorías que suman a la nueva tabla',
+  })
+  fireEvent.click(within(presets).getByRole('button', { name: /Senior/ }))
+  fireEvent.click(within(dialog).getByRole('button', { name: 'Crear tabla' }))
+  await waitFor(() =>
+    expect(api.saveAnnualTable).toHaveBeenCalledWith(
+      {
+        name: 'Tabla anual Senior',
+        year: new Date().getFullYear(),
+        categories: [senior],
+      },
+      undefined,
+    ),
+  )
+})
+
+it('links a new tournament category to the tables preset for it', async () => {
+  vi.mocked(api.listAnnualTables).mockResolvedValue([
+    { ...annualTable, categories: [{ id: senior, name: 'Senior' }] },
+  ])
+  vi.mocked(api.listTournaments).mockResolvedValue([])
+  mount('/admin/torneos')
+  fireEvent.click(
+    await screen.findByRole('button', { name: 'Crear el primer torneo' }),
+  )
+  fireEvent.click(await screen.findByRole('checkbox', { name: /Senior/ }))
+  const group = await screen.findByRole('group', {
+    name: 'Tablas anuales de Senior',
+  })
+  expect(
+    within(group)
+      .getByRole('button', { name: /Campeonato anual/ })
+      .getAttribute('aria-pressed'),
+  ).toBe('true')
 })

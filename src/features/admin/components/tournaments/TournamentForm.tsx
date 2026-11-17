@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import type { FormEvent, InputHTMLAttributes } from 'react'
+import { useAnnualTables } from '../../hooks/useAnnualTables'
 import { useConfirm } from '../../hooks/useConfirm'
 import { useSaveTournament } from '../../hooks/useAdminTournaments'
 import { tournamentInputSchema } from '../../schemas/tournaments'
@@ -47,6 +48,38 @@ export function TournamentForm({
   const [values, setValues] = useState(initial)
   const [errors, setErrors] = useState<Errors>({})
   const save = useSaveTournament(userId)
+  const annualTables = useAnnualTables(userId)
+  // A category added to the tournament joins the annual tables preset for it.
+  function changeCategories(ids: string[]) {
+    const presets = Object.fromEntries(
+      ids
+        .filter(
+          (id) =>
+            !values.categories.includes(id) && !(id in values.annual_tables),
+        )
+        .map((id) => [
+          id,
+          (annualTables.data ?? [])
+            .filter(
+              (table) =>
+                !table.archived_at &&
+                table.categories.some((category) => category.id === id),
+            )
+            .map((table) => table.id),
+        ]),
+    )
+    setValues((previous) => ({
+      ...previous,
+      categories: ids,
+      annual_tables: { ...previous.annual_tables, ...presets },
+    }))
+    setErrors((previous) => {
+      const next = { ...previous }
+      delete next.categories
+      return next
+    })
+    save.reset()
+  }
   const dirty = JSON.stringify(values) !== JSON.stringify(initial)
   const change = <K extends keyof TournamentInput>(
     name: K,
@@ -169,7 +202,7 @@ export function TournamentForm({
                 .map((category) => category.id) ?? []
             }
             error={errors.categories}
-            onChange={(ids) => change('categories', ids)}
+            onChange={changeCategories}
           />
         </div>
         <div className="lg:col-span-6">

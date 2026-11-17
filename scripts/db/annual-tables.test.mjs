@@ -254,6 +254,50 @@ describe('annual tables', () => {
     ).toHaveLength(1)
   })
 
+  it('presets the categories of a table and only links matching ones', async () => {
+    const only = await run(
+      root,
+      'select public.annual_table_save($1,$2,p_categories => $3) as id',
+      ['Solo Mayores', 2026, JSON.stringify([cats.mayores])],
+    ).then(value)
+    let listed = (
+      await run(viewer, 'select public.annual_table_list() as data')
+    ).rows[0].data.find((entry) => entry.id === only)
+    expect(listed.categories.map((c) => c.name)).toEqual(['Mayores'])
+    // Seniors cannot be linked to a Mayores-only table…
+    await expect(
+      tournament({ annual_tables: { [cats.seniors]: [only] } }),
+    ).rejects.toThrow(/no suma esa categoría/)
+    // …but Mayores can.
+    const id = await tournament({ annual_tables: { [cats.mayores]: [only] } })
+    // Changing the preset keeps the links already saved.
+    await run(root, 'select public.annual_table_save($1,$2,$3,$4,$5)', [
+      'Solo Mayores',
+      2026,
+      only,
+      listed.updated_at,
+      JSON.stringify([cats.seniors]),
+    ])
+    listed = (
+      await run(viewer, 'select public.annual_table_list() as data')
+    ).rows[0].data.find((entry) => entry.id === only)
+    expect(listed.categories.map((c) => c.name)).toEqual(['Seniors'])
+    expect(listed.tournaments).toBe(1)
+    // Saving without categories (an older panel) leaves the preset alone.
+    await run(root, 'select public.annual_table_save($1,$2,$3,$4)', [
+      'Solo Seniors',
+      2026,
+      only,
+      listed.updated_at,
+    ])
+    listed = (
+      await run(viewer, 'select public.annual_table_list() as data')
+    ).rows[0].data.find((entry) => entry.id === only)
+    expect(listed).toMatchObject({ name: 'Solo Seniors' })
+    expect(listed.categories).toHaveLength(1)
+    expect(id).toBeTruthy()
+  })
+
   it('counts entries without a person for staff, and hides archived tables from the site', async () => {
     const table = await annual('Temporada vieja', 2025)
     const id = await tournament(both(table))
