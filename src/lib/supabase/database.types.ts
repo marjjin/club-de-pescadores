@@ -493,25 +493,31 @@ export type Database = {
         }
         Relationships: []
       }
-      tournament_category_links: {
+      tournament_category_annual: {
         Row: {
           id: string
           tournament_id: string
           category_id: string
-          annual_table_id: string | null
+          annual_table_id: string
         }
         Insert: {
           id?: string
           tournament_id: string
           category_id: string
-          annual_table_id?: string | null
+          annual_table_id: string
         }
         Update: {
           id?: string
           tournament_id?: string
           category_id?: string
-          annual_table_id?: string | null
+          annual_table_id?: string
         }
+        Relationships: []
+      }
+      tournament_category_links: {
+        Row: { id: string; tournament_id: string; category_id: string }
+        Insert: { id?: string; tournament_id: string; category_id: string }
+        Update: { id?: string; tournament_id?: string; category_id?: string }
         Relationships: []
       }
       tournament_participants: {

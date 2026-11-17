@@ -40,7 +40,7 @@ export function TournamentForm({
     annual_tables: Object.fromEntries(
       current?.categories.map((category) => [
         category.id,
-        category.annual_table_id ?? '',
+        category.annual_tables.map((table) => table.id),
       ]) ?? [],
     ),
   }))

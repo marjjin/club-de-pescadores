@@ -69,15 +69,13 @@ const tournament: AdminTournament = {
       id: cadetes,
       name: 'Cadetes',
       participants: 0,
-      annual_table_id: null,
-      annual_table_name: null,
+      annual_tables: [],
     },
     {
       id: senior,
       name: 'Senior',
       participants: 2,
-      annual_table_id: null,
-      annual_table_name: null,
+      annual_tables: [],
     },
   ],
   created_at: '2026-11-01T00:00:00Z',
@@ -390,7 +388,7 @@ it('edits the tournament description with a character count', async () => {
   )
 })
 
-it('sends each category of the tournament to its own annual table', async () => {
+it('lets each category of the tournament add to several annual tables', async () => {
   const seniorsTable = {
     ...annualTable,
     id: '50000000-0000-4000-8000-000000000002',
@@ -412,20 +410,32 @@ it('sends each category of the tournament to its own annual table', async () => 
   )
   mount(`/admin/torneos/${tournament.id}`)
   fireEvent.click(await screen.findByRole('button', { name: 'Editar datos' }))
-  const cadets = await screen.findByRole('combobox', {
-    name: 'Tabla anual de Cadetes',
+  const cadets = await screen.findByRole('group', {
+    name: 'Tablas anuales de Cadetes',
   })
-  const seniors = screen.getByRole('combobox', {
-    name: 'Tabla anual de Senior',
+  const seniors = screen.getByRole('group', {
+    name: 'Tablas anuales de Senior',
   })
-  expect(cadets).toHaveProperty('value', '')
-  fireEvent.change(cadets, { target: { value: annualTable.id } })
-  fireEvent.change(seniors, { target: { value: seniorsTable.id } })
+  const toggle = (group: HTMLElement, name: RegExp) =>
+    within(group).getByRole('button', { name })
+  expect(toggle(cadets, /Campeonato anual/).getAttribute('aria-pressed')).toBe(
+    'false',
+  )
+  // Senior adds to two tables; Cadetes to one.
+  fireEvent.click(toggle(cadets, /Campeonato anual/))
+  fireEvent.click(toggle(seniors, /Campeonato anual/))
+  fireEvent.click(toggle(seniors, /Tabla anual Senior/))
+  expect(toggle(seniors, /Campeonato anual/).getAttribute('aria-pressed')).toBe(
+    'true',
+  )
   fireEvent.click(screen.getByRole('button', { name: 'Guardar cambios' }))
   await waitFor(() =>
     expect(api.saveTournament).toHaveBeenCalledWith(
       expect.objectContaining({
-        annual_tables: { [cadetes]: annualTable.id, [senior]: seniorsTable.id },
+        annual_tables: {
+          [cadetes]: [annualTable.id],
+          [senior]: [annualTable.id, seniorsTable.id],
+        },
       }),
       expect.objectContaining({ id: tournament.id }),
     ),
@@ -437,9 +447,15 @@ it('shows which annual tables the tournament adds to', async () => {
     ...tournament,
     categories: tournament.categories.map((category) => ({
       ...category,
-      annual_table_id: annualTable.id,
-      annual_table_name:
-        category.id === senior ? 'Tabla anual Senior' : 'Tabla anual Cadetes',
+      annual_tables: [
+        {
+          id: annualTable.id,
+          name:
+            category.id === senior
+              ? 'Tabla anual Senior'
+              : 'Tabla anual Cadetes',
+        },
+      ],
     })),
   })
   mount(`/admin/torneos/${tournament.id}`)
