@@ -12,6 +12,8 @@ export const tournamentCategorySchema = z.object({
   id: z.uuid(),
   name: z.string(),
   participants: z.number().int(),
+  // Whether this category adds to the tournament's annual table.
+  annual: z.boolean().default(true),
 })
 export type TournamentCategory = z.infer<typeof tournamentCategorySchema>
 
@@ -28,6 +30,8 @@ export const adminTournamentSchema = z.object({
   status: z.enum(tournamentStatuses),
   participants: z.number().int(),
   categories: z.array(tournamentCategorySchema).default([]),
+  annual_table_id: z.uuid().nullable().default(null),
+  annual_table_name: z.string().nullable().default(null),
   created_at: z.string(),
   updated_at: z.string(),
 })
@@ -65,6 +69,9 @@ export const tournamentInputSchema = z
       .array(z.uuid())
       .min(1, 'Elegí al menos una categoría.')
       .max(10, 'Elegí hasta 10 categorías.'),
+    annual_table: z.union([z.literal(''), z.uuid()]),
+    // Categories that do not add to the annual table; the rest do.
+    annual_excluded: z.array(z.uuid()),
   })
   .refine((value) => !value.ends_on || value.ends_on >= value.starts_on, {
     path: ['ends_on'],
@@ -136,3 +143,29 @@ export const pointsInputSchema = z.object({
     .refine((value) => value !== 0, 'Ingresá un valor distinto de cero.'),
   reason: z.string().trim().max(200, 'Usá hasta 200 caracteres.'),
 })
+
+export const annualTableSchema = z.object({
+  id: z.uuid(),
+  name: z.string(),
+  year: z.number().int(),
+  archived_at: z.string().nullable(),
+  updated_at: z.string(),
+  tournaments: z.number().int(),
+  finished: z.number().int(),
+  /** Entries of finished tournaments with no person behind them: they do not add up. */
+  unlinked: z.number().int(),
+})
+export type AnnualTable = z.infer<typeof annualTableSchema>
+export const annualTableInputSchema = z.object({
+  name: z
+    .string()
+    .trim()
+    .min(3, 'Usá al menos 3 caracteres.')
+    .max(120, 'Usá hasta 120 caracteres.'),
+  year: z
+    .number({ error: 'Ingresá el año.' })
+    .int('Ingresá el año.')
+    .min(2000, 'Ingresá un año entre 2000 y 2100.')
+    .max(2100, 'Ingresá un año entre 2000 y 2100.'),
+})
+export type AnnualTableInput = z.input<typeof annualTableInputSchema>

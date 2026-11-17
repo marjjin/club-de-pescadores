@@ -1,10 +1,11 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router'
-import { AlertCircle, Plus, Tags, Trophy } from 'lucide-react'
+import { AlertCircle, CalendarRange, Plus, Tags, Trophy } from 'lucide-react'
 import { useAccess } from '../../hooks/useAccess'
 import { useTournamentList } from '../../hooks/useAdminTournaments'
 import { CatalogListSkeleton } from '../CatalogListSkeleton'
 import { Feedback, SectionHeading, primaryClass, secondaryClass } from '../ui'
+import { AnnualTablesManager } from './AnnualTablesManager'
 import { CategoriesManager } from './CategoriesManager'
 import { TournamentForm } from './TournamentForm'
 import { TournamentListItem } from './TournamentListItem'
@@ -15,6 +16,7 @@ export function TournamentsSection({ userId }: { userId: string }) {
   const navigate = useNavigate()
   const [creating, setCreating] = useState(false)
   const [categories, setCategories] = useState(false)
+  const [annual, setAnnual] = useState(false)
   const query = useTournamentList(userId)
   const tournaments = query.data?.pages.flat() ?? []
   const failed = query.isError && !tournaments.length
@@ -25,6 +27,16 @@ export function TournamentsSection({ userId }: { userId: string }) {
         description="Creá torneos, registrá participantes y sumales puntos. La tabla de posiciones se publica en el sitio."
         action={
           <div className="flex flex-wrap gap-2">
+            {!annual && (
+              <button
+                type="button"
+                className={secondaryClass}
+                onClick={() => setAnnual(true)}
+              >
+                <CalendarRange size={17} aria-hidden="true" />
+                Tablas anuales
+              </button>
+            )}
             {!categories && (
               <button
                 type="button"
@@ -48,6 +60,9 @@ export function TournamentsSection({ userId }: { userId: string }) {
           </div>
         }
       />
+      {annual && (
+        <AnnualTablesManager userId={userId} onClose={() => setAnnual(false)} />
+      )}
       {categories && (
         <CategoriesManager
           userId={userId}
