@@ -6,6 +6,7 @@ import { SectionHeading } from '@/shared/ui/SectionHeading'
 import { useTournament } from '../hooks/useTournaments'
 import { CategoryBoards } from './CategoryBoards'
 import { TournamentDates, TournamentStatus } from './TournamentDates'
+import { TournamentTabs } from './TournamentTabs'
 
 const back = (
   <Link to="/torneos" className={textLink}>
@@ -66,6 +67,24 @@ export function TournamentDetail({ id }: { id: string }) {
         </div>
       </section>
     )
+  const board = (
+    <section
+      aria-label="Tabla de posiciones"
+      className={`${container} max-w-3xl py-10 lg:py-14`}
+    >
+      <div className="mb-8">
+        <SectionHeading
+          title="Tabla de posiciones"
+          description={
+            tournament.finished
+              ? 'Resultado final del torneo.'
+              : 'Se actualiza sola mientras el torneo está en curso.'
+          }
+        />
+      </div>
+      <CategoryBoards id={tournament.id} live={!tournament.finished} />
+    </section>
+  )
   return (
     <>
       <title>{`${tournament.name} | Club de Pescadores San Nicolás`}</title>
@@ -97,35 +116,26 @@ export function TournamentDetail({ id }: { id: string }) {
           )}
         </div>
       </header>
-      {tournament.description && (
-        <section
-          aria-labelledby="tournament-about"
-          className={`${container} max-w-3xl pt-10 lg:pt-14`}
-        >
-          <h2 id="tournament-about" className="text-xl font-extrabold">
-            Sobre el torneo
-          </h2>
-          <p className="mt-3 leading-7 wrap-anywhere whitespace-pre-line text-navy-900">
-            {tournament.description}
-          </p>
-        </section>
+      {tournament.description ? (
+        <TournamentTabs
+          board={board}
+          info={
+            <section
+              aria-labelledby="tournament-about"
+              className={`${container} max-w-3xl py-10 lg:py-14`}
+            >
+              <SectionHeading title="Sobre el torneo" />
+              <div className="mt-8 rounded-2xl border border-navy-900/10 bg-white p-5 shadow-sm sm:p-7">
+                <p className="leading-7 wrap-anywhere whitespace-pre-line text-navy-900">
+                  {tournament.description}
+                </p>
+              </div>
+            </section>
+          }
+        />
+      ) : (
+        board
       )}
-      <section
-        aria-label="Tabla de posiciones"
-        className={`${container} max-w-3xl py-10 lg:py-14`}
-      >
-        <div className="mb-8">
-          <SectionHeading
-            title="Tabla de posiciones"
-            description={
-              tournament.finished
-                ? 'Resultado final del torneo.'
-                : 'Se actualiza sola mientras el torneo está en curso.'
-            }
-          />
-        </div>
-        <CategoryBoards id={tournament.id} live={!tournament.finished} />
-      </section>
     </>
   )
 }
