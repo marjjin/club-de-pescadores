@@ -19,7 +19,7 @@ export function NewsArchive() {
           />
         }
       >
-        {(items) => <NewsList items={items} />}
+        {(items) => <NewsList items={items} priority />}
       </QueryBoundary>
       <PagerNav
         label="Paginación de noticias"
