@@ -34,7 +34,7 @@ const tournament = (extra) =>
   ]).then(value)
 // Every category of the tournament adds to the same table.
 const both = (table) => ({
-  annual_tables: { [cats.mayores]: table, [cats.seniors]: table },
+  annual_tables: { [cats.mayores]: [table], [cats.seniors]: [table] },
 })
 const join = (id, category, angler) =>
   run(root, 'select public.tournament_add_participant($1,$2,$3,true) as id', [
@@ -176,13 +176,17 @@ describe('annual tables', () => {
     ).rows[0].data
     expect(
       Object.fromEntries(
-        saved.categories.map((c) => [c.name, c.annual_table_name]),
+        saved.categories.map((c) => [
+          c.name,
+          c.annual_tables.map((t) => t.name),
+        ]),
       ),
     ).toEqual({
-      Mayores: 'Tabla anual Mayores',
-      Seniors: 'Tabla anual Seniors',
+      Mayores: ['Tabla anual Mayores'],
+      Seniors: ['Tabla anual Seniors'],
     })
     // A panel that sends no map keeps the links; null takes a category out.
+    // (Single ids and null are what the previous panel sent.)
     await run(root, 'select public.tournament_save($1,$2,$3)', [
       base,
       id,
@@ -199,6 +203,55 @@ describe('annual tables', () => {
     ])
     expect(await standings(seniorsTable, cats.seniors)).toEqual([])
     expect(await standings(mayoresTable, cats.mayores)).toHaveLength(1)
+  })
+
+  it('lets one category add to several annual tables at once', async () => {
+    const season = await annual('Temporada de costa')
+    const winter = await annual('Copa de primavera')
+    const id = await tournament({
+      annual_tables: { [cats.mayores]: [season, winter], [cats.seniors]: [] },
+    })
+    await score(await join(id, cats.mayores, people.beto), 7)
+    await finish(id)
+    for (const table of [season, winter])
+      expect(await standings(table, cats.mayores)).toEqual([
+        { display_name: 'Beto R.', points: 7, tournaments: 1, ranking: 1 },
+      ])
+    const saved = (
+      await run(root, 'select public.tournament_admin_get($1) as data', [id])
+    ).rows[0].data
+    const mayores = saved.categories.find((c) => c.name === 'Mayores')
+    expect(mayores.annual_tables.map((t) => t.name).sort()).toEqual([
+      'Copa de primavera',
+      'Temporada de costa',
+    ])
+    // Dropping one table keeps the other.
+    await run(root, 'select public.tournament_save($1,$2,$3)', [
+      { ...base, annual_tables: { [cats.mayores]: [season] } },
+      id,
+      saved.updated_at,
+    ])
+    expect(await standings(winter, cats.mayores)).toEqual([])
+    expect(await standings(season, cats.mayores)).toHaveLength(1)
+    // Removing the category from the tournament drops its links with it.
+    const fresh = await tournament({
+      annual_tables: { [cats.seniors]: [winter] },
+    })
+    const version = (
+      await run(root, 'select public.tournament_admin_get($1) as data', [fresh])
+    ).rows[0].data.updated_at
+    await run(root, 'select public.tournament_save($1,$2,$3)', [
+      { ...base, categories: [cats.mayores] },
+      fresh,
+      version,
+    ])
+    expect(
+      (
+        await run(root, 'select public.tournament_admin_get($1) as data', [
+          fresh,
+        ])
+      ).rows[0].data.categories,
+    ).toHaveLength(1)
   })
 
   it('counts entries without a person for staff, and hides archived tables from the site', async () => {

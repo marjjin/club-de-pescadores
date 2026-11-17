@@ -66,7 +66,7 @@ export function TournamentWorkspace({ userId }: { userId: string }) {
   const annualTables = [
     ...new Set(
       tournament.categories.flatMap((category) =>
-        category.annual_table_name ? [category.annual_table_name] : [],
+        category.annual_tables.map((table) => table.name),
       ),
     ),
   ]

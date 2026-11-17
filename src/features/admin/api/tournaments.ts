@@ -92,7 +92,7 @@ export async function saveTournament(
       ...parsed,
       // Every chosen category is sent, so clearing one takes it out of its table.
       annual_tables: Object.fromEntries(
-        parsed.categories.map((id) => [id, annual_tables[id] || null]),
+        parsed.categories.map((id) => [id, annual_tables[id] ?? []]),
       ),
     },
     p_id: current?.id ?? null,
