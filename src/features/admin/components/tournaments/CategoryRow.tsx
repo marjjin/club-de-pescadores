@@ -44,7 +44,11 @@ export function CategoryRow({
             aria-label={`Nuevo nombre para ${category.name}`}
             onChange={(event) => setDraft(event.target.value)}
             onKeyDown={(event) => {
-              if (event.key === 'Escape') setEditing(false)
+              // Esc cancels the edit without closing the window around it.
+              if (event.key === 'Escape') {
+                event.preventDefault()
+                setEditing(false)
+              }
             }}
             className={`${inputClass} min-w-0 flex-1`}
           />

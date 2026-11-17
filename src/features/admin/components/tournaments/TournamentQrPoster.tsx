@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useState } from 'react'
 import { createPortal } from 'react-dom'
 import { Check, Copy, Download, Printer, X } from 'lucide-react'
 import logo from '@/shared/assets/images/logo-192.webp'
@@ -6,6 +6,7 @@ import type { AdminTournament } from '../../schemas/tournaments'
 import { qrSvgFile, tournamentPublicUrl } from '../../tournament-qr'
 import { primaryClass, secondaryClass } from '../ui'
 import { QrCode } from './QrCode'
+import { TournamentDialog } from './TournamentDialog'
 import { tournamentDates } from './tournament-dates'
 
 const fileName = (name: string) =>
@@ -27,12 +28,6 @@ export function TournamentQrPoster({
 }) {
   const url = tournamentPublicUrl(tournament.id)
   const [copied, setCopied] = useState(false)
-  const ref = useRef<HTMLDialogElement>(null)
-  // Opens as a modal while mounted; the workspace unmounts it to close it.
-  useEffect(() => {
-    const dialog = ref.current
-    if (dialog && !dialog.open) dialog.showModal()
-  }, [])
   const visible =
     tournament.status === 'published' || tournament.status === 'finished'
   function download() {
@@ -54,17 +49,11 @@ export function TournamentQrPoster({
   }
   return (
     <>
-      <dialog
-        ref={ref}
-        aria-labelledby="qr-title"
-        aria-describedby="qr-description"
-        onCancel={onClose}
+      <TournamentDialog
+        labelledBy="qr-title"
+        describedBy="qr-description"
+        width="46rem"
         onClose={onClose}
-        onClick={(event) => {
-          // A click on the dimmed backdrop closes it, like Esc.
-          if (event.target === event.currentTarget) onClose()
-        }}
-        className="m-auto max-h-[92dvh] w-[min(46rem,calc(100%_-_2rem))] overflow-y-auto rounded-2xl border-0 bg-white p-0 text-navy-900 shadow-xl backdrop:bg-navy-950/65"
       >
         <div className="sticky top-0 z-10 flex items-start justify-between gap-4 border-b border-navy-900/10 bg-white px-5 py-4 sm:px-6">
           <div>
@@ -141,7 +130,7 @@ export function TournamentQrPoster({
             </ul>
           </div>
         </div>
-      </dialog>
+      </TournamentDialog>
       {/* The printed copy sits directly in <body>, so it starts on page one; see index.css. */}
       {createPortal(
         <div

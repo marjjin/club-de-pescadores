@@ -27,26 +27,22 @@ export function TournamentsSection({ userId }: { userId: string }) {
         description="Creá torneos, registrá participantes y sumales puntos. La tabla de posiciones se publica en el sitio."
         action={
           <div className="flex flex-wrap gap-2">
-            {!annual && (
-              <button
-                type="button"
-                className={secondaryClass}
-                onClick={() => setAnnual(true)}
-              >
-                <CalendarRange size={17} aria-hidden="true" />
-                Tablas anuales
-              </button>
-            )}
-            {!categories && (
-              <button
-                type="button"
-                className={secondaryClass}
-                onClick={() => setCategories(true)}
-              >
-                <Tags size={17} aria-hidden="true" />
-                Categorías
-              </button>
-            )}
+            <button
+              type="button"
+              className={secondaryClass}
+              onClick={() => setAnnual(true)}
+            >
+              <CalendarRange size={17} aria-hidden="true" />
+              Tablas anuales
+            </button>
+            <button
+              type="button"
+              className={secondaryClass}
+              onClick={() => setCategories(true)}
+            >
+              <Tags size={17} aria-hidden="true" />
+              Categorías
+            </button>
             {manage && !creating && (
               <button
                 type="button"

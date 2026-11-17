@@ -10,6 +10,7 @@ import { annualTableInputSchema } from '../../schemas/tournaments'
 import type { AnnualTable } from '../../schemas/tournaments'
 import { Feedback, Loading, inputClass, primaryClass } from '../ui'
 import { AnnualTableRow } from './AnnualTableRow'
+import { TournamentDialog } from './TournamentDialog'
 
 const thisYear = () => new Date().getFullYear()
 
@@ -55,11 +56,12 @@ export function AnnualTablesManager({
     archive.mutate({ id: table.id, archived })
   }
   return (
-    <section
-      aria-labelledby="annual-title"
-      className="mb-6 overflow-hidden rounded-2xl border border-navy-900/10 bg-white shadow-sm"
+    <TournamentDialog
+      labelledBy="annual-title"
+      describedBy="annual-description"
+      onClose={onClose}
     >
-      <div className="flex items-start gap-3 border-b border-navy-900/10 bg-mist-50/60 px-5 py-4 sm:px-6">
+      <div className="sticky top-0 z-10 flex items-start gap-3 border-b border-navy-900/10 bg-mist-50 px-5 py-4 sm:px-6">
         <span
           aria-hidden="true"
           className="grid size-10 shrink-0 place-items-center rounded-full bg-sun-400/25 text-navy-900"
@@ -70,7 +72,7 @@ export function AnnualTablesManager({
           <h2 id="annual-title" className="text-base font-extrabold">
             Tablas anuales
           </h2>
-          <p className="mt-0.5 text-sm text-ink-600">
+          <p id="annual-description" className="mt-0.5 text-sm text-ink-600">
             Suman los puntos de cada persona en los torneos finalizados que
             vincules, con una tabla por categoría. El vínculo se elige al crear
             o editar cada torneo.
@@ -78,6 +80,7 @@ export function AnnualTablesManager({
         </div>
         <button
           type="button"
+          autoFocus
           aria-label="Cerrar tablas anuales"
           className="grid size-11 shrink-0 place-items-center rounded-lg text-ink-600 hover:bg-mist-50 hover:text-navy-900"
           onClick={onClose}
@@ -93,32 +96,36 @@ export function AnnualTablesManager({
             create()
           }}
         >
-          <input
-            value={name}
-            maxLength={120}
-            aria-label="Nombre de la nueva tabla anual"
-            placeholder="Por ejemplo, Campeonato anual"
-            onChange={(event) => {
-              setName(event.target.value)
-              setError(null)
-              save.reset()
-            }}
-            className={`${inputClass} min-w-48 flex-1`}
-          />
-          <input
-            value={year}
-            type="number"
-            inputMode="numeric"
-            min={2000}
-            max={2100}
-            aria-label="Año de la tabla anual"
-            onChange={(event) => {
-              setYear(event.target.value)
-              setError(null)
-              save.reset()
-            }}
-            className={`${inputClass} w-28`}
-          />
+          <div className="min-w-48 flex-1">
+            <input
+              value={name}
+              maxLength={120}
+              aria-label="Nombre de la nueva tabla anual"
+              placeholder="Por ejemplo, Campeonato anual"
+              onChange={(event) => {
+                setName(event.target.value)
+                setError(null)
+                save.reset()
+              }}
+              className={inputClass}
+            />
+          </div>
+          <div className="w-28">
+            <input
+              value={year}
+              type="number"
+              inputMode="numeric"
+              min={2000}
+              max={2100}
+              aria-label="Año de la tabla anual"
+              onChange={(event) => {
+                setYear(event.target.value)
+                setError(null)
+                save.reset()
+              }}
+              className={inputClass}
+            />
+          </div>
           <button
             type="submit"
             className={primaryClass}
@@ -161,6 +168,6 @@ export function AnnualTablesManager({
           ))}
         </ul>
       )}
-    </section>
+    </TournamentDialog>
   )
 }

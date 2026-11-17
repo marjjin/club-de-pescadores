@@ -421,7 +421,8 @@ it('creates annual tables and warns about entries that cannot add up', async () 
   vi.mocked(api.saveAnnualTable).mockResolvedValue(annualTable.id)
   mount('/admin/torneos')
   fireEvent.click(await screen.findByRole('button', { name: 'Tablas anuales' }))
-  expect(await screen.findByText('Campeonato anual')).toBeTruthy()
+  const dialog = await screen.findByRole('dialog', { name: 'Tablas anuales' })
+  expect(await within(dialog).findByText('Campeonato anual')).toBeTruthy()
   expect(screen.getByText('3 torneos vinculados · 2 finalizados')).toBeTruthy()
   expect(screen.getByText(/1 inscripción sin ficha no suma/)).toBeTruthy()
   expect(
@@ -442,4 +443,17 @@ it('creates annual tables and warns about entries that cannot add up', async () 
       undefined,
     ),
   )
+})
+
+it('manages categories in a modal window', async () => {
+  mount('/admin/torneos')
+  fireEvent.click(await screen.findByRole('button', { name: 'Categorías' }))
+  const dialog = await screen.findByRole('dialog', {
+    name: 'Categorías de torneos',
+  })
+  expect(await within(dialog).findByText('Senior')).toBeTruthy()
+  fireEvent.click(
+    within(dialog).getByRole('button', { name: 'Cerrar categorías' }),
+  )
+  expect(screen.queryByRole('dialog')).toBeNull()
 })
