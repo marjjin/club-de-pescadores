@@ -143,21 +143,25 @@ export function selectPermissionGroup(
 export function permissionDescription(id: string) {
   const action = id.split('.')[1]
   if (id === 'muelle.publicar')
-    return 'Publicar el parte diario: actualiza la altura del río y suma fotos o videos. También permite retirar partes.'
+    return 'Publicar el parte diario: actualiza la altura del río y suma fotos o videos. También permite retirar y borrar partes con su medición.'
   if (id === 'torneos.ver')
-    return 'Consultar los torneos, sus participantes y la tabla, incluidos los borradores.'
+    return 'Consultar los torneos, sus participantes y la tabla, incluidos los borradores, además de las categorías y las tablas anuales.'
   if (id === 'torneos.gestionar')
-    return 'Crear y editar torneos, publicarlos en el sitio, finalizarlos y archivarlos.'
+    return 'Crear, editar, publicar, finalizar, archivar y eliminar torneos. Manejar sus categorías y las tablas anuales, y preparar el QR de la tabla.'
   if (id === 'torneos.participantes')
-    return 'Registrar participantes, corregir nombres y quitarlos de la tabla.'
+    return 'Registrar personas con nombre, apellido y DNI, anotarlas en el torneo, corregir sus datos, cambiarlas de persona o de categoría y quitarlas de la tabla. Es el único permiso que ve el DNI completo.'
   if (id === 'torneos.puntos')
     return 'Sumar o restar puntos a los participantes mientras el torneo está abierto.'
+  if (id === 'instalaciones.ver')
+    return 'Consultar la sección Instalaciones del inicio tal como está publicada.'
+  if (id === 'instalaciones.editar')
+    return 'Cambiar el título de la sección y sus tarjetas: fotos, nombres y descripciones. Se publica al guardar.'
   if (action === 'ver' && id.startsWith('auditoria.'))
     return 'Revisar quién hizo cada cambio, sin modificar el historial.'
   if (id === 'usuarios.ver')
     return 'Consultar quién integra el equipo, su estado y sus roles, sin modificarlos.'
   if (id === 'usuarios.gestionar')
-    return 'Invitar personas, asignar roles y desactivar accesos. Solo puede dar roles con permisos que ya tiene, nunca el de Administrador general.'
+    return 'Invitar personas, asignar roles, desactivar accesos y dar de baja cuentas. Solo puede dar roles con permisos que ya tiene, nunca el de Administrador general.'
   if (action === 'ver')
     return 'Consultar contenido, borradores y registros archivados.'
   if (action === 'editar')
