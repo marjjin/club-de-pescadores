@@ -104,6 +104,12 @@ it('names the pier module and explains what publishing a report does', () => {
   expect(permissionDescription('muelle.publicar')).toContain(
     'actualiza la altura del río',
   )
+  // Facilities save and publish at once: no mention of a Publicar permission.
+  expect(permissionDescription('instalaciones.editar')).not.toContain(
+    'Publicar',
+  )
+  expect(permissionDescription('torneos.gestionar')).toContain('tablas anuales')
+  expect(permissionDescription('torneos.participantes')).toContain('DNI')
 })
 
 it('groups tournament permissions under their own module with specific help', () => {
