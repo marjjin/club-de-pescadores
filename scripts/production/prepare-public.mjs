@@ -1,7 +1,14 @@
-import { readFile, writeFile } from 'node:fs/promises'
-import { createHash } from 'node:crypto'
+import { mkdir, readFile, readdir, writeFile } from 'node:fs/promises'
+import { pathToFileURL } from 'node:url'
 import { gzipSync } from 'node:zlib'
 import sharp from 'sharp'
+import {
+  applyHead,
+  breadcrumbsJsonLd,
+  clubJsonLd,
+  headTags,
+} from '../../src/shared/seo/head.mjs'
+import { PAGES } from '../../src/shared/seo/pages.mjs'
 import { productionConfig } from './config.mjs'
 
 const { siteUrl, url } = productionConfig()
@@ -33,43 +40,123 @@ if (initialBytes > 200_000)
 console.log(
   `Initial home JavaScript: ${(initialBytes / 1000).toFixed(1)} KB gzip (budget: 200 KB).`,
 )
-let html = await readFile('dist/index.html', 'utf8')
-const structured = JSON.stringify({
-  '@context': 'https://schema.org',
-  '@type': 'SportsClub',
-  name: 'Club de Pescadores San Nicolás',
-  url: siteUrl,
-})
-const hash = createHash('sha256').update(structured).digest('base64')
-html = html.replace(
-  '</head>',
-  `<meta property="og:url" content="${siteUrl}/"><meta property="og:image" content="${siteUrl}/og-image.webp"><meta name="twitter:card" content="summary_large_image"><script type="application/ld+json">${structured}</script></head>`,
-)
-await writeFile('dist/index.html', html)
-const paths = ['', '/noticias', '/eventos', '/torneos']
+
+// One HTML file per public page, so crawlers and link previews (WhatsApp, Facebook)
+// get the right title, description and image without running JavaScript.
+const template = await readFile('dist/index.html', 'utf8')
+const club = clubJsonLd(siteUrl)
+const assets = await readdir('dist/assets')
+const asset = (name) => {
+  const file = assets.find((entry) =>
+    new RegExp(`^${name}-[\\w-]+\\.webp$`).test(entry),
+  )
+  if (!file) throw new Error(`No se encontró la imagen ${name} en dist/assets.`)
+  return `/assets/${file}`
+}
+// The hero photo is the largest element of the home page: start it with the HTML
+// instead of waiting for the app. Same files, sizes and breakpoint as HeroSection.
+const heroPreload = [
+  `<link rel="preload" as="image" href="${asset('hero-mobile')}" media="(max-width: 639px)" fetchpriority="high" />`,
+  `<link rel="preload" as="image" imagesrcset="${asset('hero-960')} 960w, ${asset('hero-1920')} 1920w" imagesizes="max(100vw, 1330px)" media="(min-width: 640px)" fetchpriority="high" />`,
+].join('\n    ')
+// The fixed public pages also carry their rendered markup (src/entry-server.tsx), so the
+// header, hero and headings paint before the JavaScript runs; the app then hydrates them.
+const { render } = await import(pathToFileURL('dist-ssr/entry-server.js').href)
+const withBody = async (html, path) => {
+  const body = await render(path)
+  if (!body.includes('<h1'))
+    throw new Error(`El prerender de ${path} salió sin título.`)
+  return html.replace('<div id="root"></div>', `<div id="root">${body}</div>`)
+}
+const page = (meta, extra = {}) =>
+  applyHead(
+    template,
+    headTags({
+      siteUrl,
+      title: meta.title,
+      description: meta.description,
+      path: meta.path,
+      ...extra,
+    }),
+    extra.preload ?? '',
+  )
+const section = (meta, name) =>
+  page(meta, {
+    jsonLd: [
+      club,
+      breadcrumbsJsonLd(siteUrl, [
+        { name: 'Inicio', path: '/' },
+        { name, path: meta.path },
+      ]),
+    ],
+  })
+
+// The bare template serves the panel and is the base the Vercel function fills in.
+await writeFile('dist/_app.html', template)
 await writeFile(
-  'dist/sitemap.xml',
-  `<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">${paths.map((route) => `<url><loc>${siteUrl}${route || '/'}</loc></url>`).join('')}</urlset>\n`,
+  'dist/index.html',
+  await withBody(
+    page(PAGES.home, { jsonLd: [club], preload: heroPreload }),
+    '/',
+  ),
 )
+await mkdir('dist/_pages', { recursive: true })
+await writeFile(
+  'dist/_pages/noticias.html',
+  await withBody(section(PAGES.news, 'Noticias'), '/noticias'),
+)
+await writeFile(
+  'dist/_pages/eventos.html',
+  await withBody(section(PAGES.events, 'Eventos'), '/eventos'),
+)
+await writeFile(
+  'dist/_pages/torneos.html',
+  await withBody(section(PAGES.tournaments, 'Torneos'), '/torneos'),
+)
+// Unknown addresses answer 404 with this page; the app then shows its own "not found".
+await writeFile('dist/404.html', page(PAGES.notFound, { index: false }))
+
+// The sitemap is served live by api/seo.js, so new news and tournaments appear at once.
 await writeFile(
   'dist/robots.txt',
-  `User-agent: *\nAllow: /\nDisallow: /admin\nSitemap: ${siteUrl}/sitemap.xml\n`,
+  `User-agent: *\nAllow: /\nDisallow: /admin\nDisallow: /api/\nSitemap: ${siteUrl}/sitemap.xml\n`,
 )
+// JPEG: every link preview service reads it (some still skip WebP).
 await sharp('src/shared/assets/images/hero-1920.webp')
   .resize(1200, 630, { fit: 'cover' })
-  .webp({ quality: 80 })
-  .toFile('dist/og-image.webp')
-// The tracked Vercel configuration must authorize the exact structured-data block.
+  .jpeg({ quality: 82, mozjpeg: true })
+  .toFile('dist/og-image.jpg')
+// Square logo for search results (Google asks for at least 112×112).
+await sharp('src/shared/assets/images/logo-384.webp')
+  .flatten({ background: '#ffffff' })
+  .png()
+  .toFile('dist/logo.png')
+
+// The tracked Vercel configuration must allow the Supabase origin.
 const vercel = JSON.parse(await readFile('vercel.json', 'utf8'))
 const csp =
-  vercel.headers
-    .flatMap((entry) => entry.headers)
-    .find((header) => header.key === 'Content-Security-Policy')?.value ?? ''
-if (!csp.includes(`'sha256-${hash}'`) || !csp.includes(new URL(url).origin)) {
-  throw new Error(
-    'Vercel CSP does not match the production metadata or Supabase origin.',
+  vercel.routes
+    ?.map((route) => route.headers?.['Content-Security-Policy'])
+    .find(Boolean) ?? ''
+if (!csp.includes(new URL(url).origin) || !csp.includes("script-src 'self'")) {
+  throw new Error('Vercel CSP does not match the Supabase origin.')
+}
+for (const file of [
+  'dist/index.html',
+  'dist/_pages/noticias.html',
+  'dist/404.html',
+]) {
+  const html = await readFile(file, 'utf8')
+  if (
+    !html.includes('<link data-seo rel="canonical"') &&
+    !file.endsWith('404.html')
   )
+    throw new Error(`${file} no tiene dirección canónica.`)
+  if (!html.includes('<script type="module"'))
+    throw new Error(`${file} perdió el script de la aplicación.`)
 }
 console.log(
-  'Generated sitemap, robots, social image and structured data; Vercel CSP matches.',
+  'Generated per-page HTML, 404 page, robots, social image and logo; Vercel CSP matches.',
 )
+// The rendered pages leave query-cache timers behind; nothing else is pending.
+process.exit(0)

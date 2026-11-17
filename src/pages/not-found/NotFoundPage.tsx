@@ -1,5 +1,6 @@
 import { Link } from 'react-router'
 import { button } from '@/shared/ui/button'
+import { PAGES } from '@/shared/seo/pages.mjs'
 import { container } from '@/shared/ui/layout'
 
 export function NotFoundPage() {
@@ -7,7 +8,7 @@ export function NotFoundPage() {
     <section
       className={`${container} grid justify-items-center py-24 text-center lg:py-32`}
     >
-      <title>Página no encontrada | Club de Pescadores San Nicolás</title>
+      <title>{PAGES.notFound.title}</title>
       <meta name="robots" content="noindex" />
       <p
         aria-hidden="true"

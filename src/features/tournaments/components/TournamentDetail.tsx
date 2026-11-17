@@ -1,6 +1,7 @@
 import { ChevronLeft, MapPin } from 'lucide-react'
 import { Link } from 'react-router'
 import { button, textLink } from '@/shared/ui/button'
+import { pageTitle, tournamentDescription } from '@/shared/seo/pages.mjs'
 import { container } from '@/shared/ui/layout'
 import { SectionHeading } from '@/shared/ui/SectionHeading'
 import { useTournament } from '../hooks/useTournaments'
@@ -87,11 +88,8 @@ export function TournamentDetail({ id }: { id: string }) {
   )
   return (
     <>
-      <title>{`${tournament.name} | Club de Pescadores San Nicolás`}</title>
-      <meta
-        name="description"
-        content={`Tabla de posiciones de ${tournament.name}, torneo del Club de Pescadores San Nicolás.`}
-      />
+      <title>{pageTitle(tournament.name)}</title>
+      <meta name="description" content={tournamentDescription(tournament)} />
       <link
         rel="canonical"
         href={`${import.meta.env.VITE_SITE_URL}/torneos/${tournament.id}`}

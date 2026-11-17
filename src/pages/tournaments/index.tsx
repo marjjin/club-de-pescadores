@@ -1,15 +1,13 @@
 import { AnnualTablesList, TournamentsArchive } from '@/features/tournaments'
+import { PAGES } from '@/shared/seo/pages.mjs'
 import { container } from '@/shared/ui/layout'
 import { PageHeader } from '@/shared/ui/PageHeader'
 
 export default function TournamentsPage() {
   return (
     <>
-      <title>Torneos | Club de Pescadores San Nicolás</title>
-      <meta
-        name="description"
-        content="Torneos de pesca del club, sus tablas de posiciones y las tablas anuales."
-      />
+      <title>{PAGES.tournaments.title}</title>
+      <meta name="description" content={PAGES.tournaments.description} />
       <link rel="canonical" href={`${import.meta.env.VITE_SITE_URL}/torneos`} />
       <PageHeader
         title="Torneos"
