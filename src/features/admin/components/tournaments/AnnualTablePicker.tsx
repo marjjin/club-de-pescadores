@@ -53,13 +53,23 @@ export function AnnualTablePicker({
       ) : (
         <div className="grid gap-3 rounded-xl border border-navy-900/10 bg-mist-50/60 p-3">
           <p className="text-sm text-ink-600">
-            Marcá a qué tablas suma cada categoría; puede sumar a varias. Los
-            puntos se suman cuando finalices el torneo.
+            Cada categoría suma a las tablas marcadas; puede sumar a varias. Las
+            que tienen esa categoría predeterminada se marcan solas. Los puntos
+            se suman cuando finalices el torneo.
           </p>
           <ul className="grid gap-3">
             {categories.map((categoryId) => {
               const name = categoryName(categoryId)
               const selected = value[categoryId] ?? []
+              // Tables preset for other categories are left out, unless already chosen.
+              const fitting = options.filter(
+                (table) =>
+                  selected.includes(table.id) ||
+                  !table.categories.length ||
+                  table.categories.some(
+                    (category) => category.id === categoryId,
+                  ),
+              )
               return (
                 <li
                   key={categoryId}
@@ -73,7 +83,7 @@ export function AnnualTablePicker({
                     aria-label={`Tablas anuales de ${name}`}
                     className="flex flex-wrap gap-2"
                   >
-                    {options.map((table) => {
+                    {fitting.map((table) => {
                       const active = selected.includes(table.id)
                       return (
                         <button
@@ -95,7 +105,9 @@ export function AnnualTablePicker({
                     })}
                     {!selected.length && (
                       <span className="self-center text-xs text-ink-600">
-                        No suma a ninguna tabla anual
+                        {fitting.length
+                          ? 'No suma a ninguna tabla anual'
+                          : 'Ninguna tabla anual suma esta categoría'}
                       </span>
                     )}
                   </div>

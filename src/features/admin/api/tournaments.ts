@@ -268,6 +268,7 @@ export async function saveAnnualTable(
     p_year: parsed.year,
     p_id: current?.id ?? null,
     p_version: current?.updated_at ?? null,
+    p_categories: parsed.categories,
   })
   if (error) throw tournamentError(error)
   return z.uuid().parse(data)

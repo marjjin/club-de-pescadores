@@ -10,6 +10,7 @@ import { annualTableInputSchema } from '../../schemas/tournaments'
 import type { AnnualTable } from '../../schemas/tournaments'
 import { Feedback, Loading, inputClass, primaryClass } from '../ui'
 import { AnnualTableRow } from './AnnualTableRow'
+import { CategoryToggles } from './CategoryToggles'
 import { TournamentDialog } from './TournamentDialog'
 
 const thisYear = () => new Date().getFullYear()
@@ -27,6 +28,7 @@ export function AnnualTablesManager({
   const { save, archive } = useAnnualTableActions(userId)
   const [name, setName] = useState('')
   const [year, setYear] = useState(String(thisYear()))
+  const [categories, setCategories] = useState<string[]>([])
   const [error, setError] = useState<string | null>(null)
   const busy = save.isPending || archive.isPending
   function create() {
@@ -34,12 +36,21 @@ export function AnnualTablesManager({
     const parsed = annualTableInputSchema.safeParse({
       name,
       year: Number(year),
+      categories,
     })
     if (!parsed.success) {
       setError(parsed.error.issues[0]?.message ?? 'Revisá los datos.')
       return
     }
-    save.mutate({ input: parsed.data }, { onSuccess: () => setName('') })
+    save.mutate(
+      { input: parsed.data },
+      {
+        onSuccess: () => {
+          setName('')
+          setCategories([])
+        },
+      },
+    )
   }
   async function toggleArchive(table: AnnualTable) {
     const archived = !table.archived_at
@@ -74,8 +85,8 @@ export function AnnualTablesManager({
           </h2>
           <p id="annual-description" className="mt-0.5 text-sm text-ink-600">
             Suman los puntos de cada persona en los torneos finalizados que
-            vincules, con una tabla por categoría. El vínculo se elige al crear
-            o editar cada torneo.
+            vincules, con posiciones por categoría. Elegí qué categorías suman y
+            los torneos se vinculan solos al elegir esas categorías.
           </p>
         </div>
         <button
@@ -134,6 +145,17 @@ export function AnnualTablesManager({
             <Plus size={16} aria-hidden="true" />
             Crear tabla
           </button>
+          <div className="basis-full">
+            <CategoryToggles
+              userId={userId}
+              label="Categorías que suman a la nueva tabla"
+              selected={categories}
+              onChange={(ids) => {
+                setCategories(ids)
+                save.reset()
+              }}
+            />
+          </div>
           {error && (
             <p role="alert" className="basis-full text-sm text-red-700">
               {error}
@@ -155,6 +177,7 @@ export function AnnualTablesManager({
         <ul className="divide-y divide-navy-900/10">
           {query.data.map((table) => (
             <AnnualTableRow
+              userId={userId}
               // Remount after an edit so the fields start from the saved values.
               key={`${table.id}:${table.updated_at}`}
               table={table}

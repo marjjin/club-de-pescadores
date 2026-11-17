@@ -9,6 +9,8 @@ El 17 de noviembre de 2026 el propietario pidió una tabla anual a la que se pue
 - **Tablas por categoría del torneo:** cada categoría elige a qué tablas anuales suma: ninguna, una o varias (por ejemplo, Mayores suma a «Tabla anual Mayores 2026» y a «Copa de invierno 2026», y Seniors a «Tabla anual Seniors 2026»). Dentro de una tabla, cada categoría tiene sus propias posiciones.
 - **Solo torneos finalizados:** un torneo publicado o en curso aparece en la página de la tabla como «Suma al finalizar», pero no suma.
 
+- **Categorías predeterminadas:** cada tabla anual puede indicar qué categorías suman (`annual_table_categories`). Al agregar una categoría a un torneo, el panel la vincula sola a esas tablas, y en el formulario cada categoría muestra solo las tablas que la aceptan. Una tabla sin categorías acepta cualquiera. Cambiar las categorías de una tabla no toca los vínculos ya guardados (`202611170010`).
+
 ## Modelo (`202611170007_annual_tables.sql`)
 
 - `annual_tables` (nombre, año, archivado). Se lee y se escribe solo con funciones: `annual_table_list/save/archive` en el panel (`torneos.ver` / `torneos.gestionar`) y `annual_tables_public`, `annual_table_get` y `annual_standings` en el sitio.

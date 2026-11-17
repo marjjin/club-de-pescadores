@@ -152,6 +152,8 @@ export const annualTableSchema = z.object({
   year: z.number().int(),
   archived_at: z.string().nullable(),
   updated_at: z.string(),
+  /** Categories that add to it; empty takes any category. */
+  categories: z.array(z.object({ id: z.uuid(), name: z.string() })).default([]),
   tournaments: z.number().int(),
   finished: z.number().int(),
   /** Entries of finished tournaments with no person behind them: they do not add up. */
@@ -169,5 +171,6 @@ export const annualTableInputSchema = z.object({
     .int('Ingresá el año.')
     .min(2000, 'Ingresá un año entre 2000 y 2100.')
     .max(2100, 'Ingresá un año entre 2000 y 2100.'),
+  categories: z.array(z.uuid()).max(20, 'Elegí hasta 20 categorías.'),
 })
 export type AnnualTableInput = z.input<typeof annualTableInputSchema>
