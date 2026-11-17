@@ -8,9 +8,11 @@ type Props = {
   items: NewsItem[]
   /** Home only: the latest item gets a wide card so the section has a lead. */
   featured?: boolean
+  /** First on the page (the news archive): its first photo loads right away. */
+  priority?: boolean
 }
 
-export function NewsList({ items, featured = false }: Props) {
+export function NewsList({ items, featured = false, priority = false }: Props) {
   return (
     <ul
       className={`grid gap-6 ${featured ? 'md:grid-cols-2' : 'md:grid-cols-2 lg:grid-cols-3'}`}
@@ -39,7 +41,9 @@ export function NewsList({ items, featured = false }: Props) {
                     src={item.imageUrl}
                     width={lead ? 900 : 600}
                     height={lead ? 600 : 400}
-                    loading="lazy"
+                    {...(priority && index === 0
+                      ? { fetchPriority: 'high' as const }
+                      : { loading: 'lazy' as const })}
                     alt={item.imageAlt}
                     style={{ objectPosition: item.imagePosition }}
                     className={`aspect-[3/2] w-full object-cover transition-[scale] duration-500 ease-out group-hover:scale-105 motion-reduce:transition-none ${
