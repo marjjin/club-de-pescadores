@@ -129,11 +129,8 @@ export function useParticipantActions(userId: string, tournamentId: string) {
   const refresh = useRefresh(userId, tournamentId)
   return {
     add: useMutation({
-      mutationFn: (input: {
-        category: string
-        angler: string
-        consent: boolean
-      }) => addParticipant(tournamentId, input),
+      mutationFn: (input: { category: string; angler: string }) =>
+        addParticipant(tournamentId, input),
       onSuccess: refresh,
     }),
     rename: useMutation({
@@ -142,15 +139,8 @@ export function useParticipantActions(userId: string, tournamentId: string) {
       onSuccess: refresh,
     }),
     change: useMutation({
-      mutationFn: ({
-        id,
-        angler,
-        consent,
-      }: {
-        id: string
-        angler: string
-        consent: boolean
-      }) => changeParticipant(id, { angler, consent }),
+      mutationFn: ({ id, angler }: { id: string; angler: string }) =>
+        changeParticipant(id, { angler }),
       onSuccess: refresh,
     }),
     move: useMutation({

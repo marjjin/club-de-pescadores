@@ -160,27 +160,26 @@ export async function listParticipants(
 
 export async function addParticipant(
   tournamentId: string,
-  input: { category: string; angler: string; consent: boolean },
+  input: { category: string; angler: string },
 ) {
   const parsed = participantInputSchema.parse(input)
   const { error } = await getAdminSupabase().rpc('tournament_add_participant', {
     p_tournament: tournamentId,
     p_category: parsed.category,
     p_angler: parsed.angler,
-    p_consent: parsed.consent,
+    // Signing up for the tournament includes appearing in its public table, so the
+    // panel no longer asks; the database still records when it was accepted.
+    p_consent: true,
   })
   if (error) throw tournamentError(error)
 }
 
 /** Fixes an entry loaded with the wrong person; its points stay. */
-export async function changeParticipant(
-  id: string,
-  input: { angler: string; consent: boolean },
-) {
+export async function changeParticipant(id: string, input: { angler: string }) {
   const parsed = changePersonSchema.parse(input)
   const { error } = await getAdminSupabase().rpc(
     'tournament_change_participant',
-    { p_id: id, p_angler: parsed.angler, p_consent: parsed.consent },
+    { p_id: id, p_angler: parsed.angler, p_consent: true },
   )
   if (error) throw tournamentError(error)
 }

@@ -1,12 +1,18 @@
 import { useState } from 'react'
-import { Search, Trophy } from 'lucide-react'
+import { Search, Trophy, UserPlus } from 'lucide-react'
 import { useAccess } from '../../hooks/useAccess'
 import {
   useParticipantActions,
   useParticipants,
 } from '../../hooks/useAdminTournaments'
 import type { AdminTournament } from '../../schemas/tournaments'
-import { Empty, Feedback, Loading, inputClass, secondaryClass } from '../ui'
+import {
+  Feedback,
+  Loading,
+  inputClass,
+  primaryClass,
+  secondaryClass,
+} from '../ui'
 import { AddParticipantForm } from './AddParticipantForm'
 import { ParticipantRow } from './ParticipantRow'
 import { isOpen } from '../../tournament-status'
@@ -33,6 +39,10 @@ export function ParticipantsPanel({
   )
   const actions = useParticipantActions(userId, tournament.id)
   const open = isOpen(tournament.status)
+  const canAdd = open && can('torneos.participantes')
+  const [adding, setAdding] = useState(false)
+  const filtered = Boolean(search.trim()) || searching
+  const categoryName = categories.find((entry) => entry.id === category)?.name
   const participants = query.data?.pages.flat() ?? []
   // Only the unfiltered first page knows who is on top; ties show no single leader.
   const [first, second] = participants
@@ -98,7 +108,7 @@ export function ParticipantsPanel({
           puntos o participantes.
         </p>
       )}
-      {open && can('torneos.participantes') && (
+      {canAdd && adding && (
         <AddParticipantForm
           // Each table starts the form on its own category.
           key={category ?? 'none'}
@@ -106,10 +116,11 @@ export function ParticipantsPanel({
           add={actions.add}
           categories={categories}
           category={category}
+          onClose={() => setAdding(false)}
         />
       )}
-      <div className="border-b border-navy-900/10 p-4 sm:px-5">
-        <div className="relative">
+      <div className="flex flex-wrap gap-3 border-b border-navy-900/10 p-4 sm:px-5">
+        <div className="relative min-w-48 flex-1">
           <Search
             size={17}
             aria-hidden="true"
@@ -125,6 +136,16 @@ export function ParticipantsPanel({
             className={`${inputClass} h-11 pl-10`}
           />
         </div>
+        {canAdd && !adding && (
+          <button
+            type="button"
+            className={primaryClass}
+            onClick={() => setAdding(true)}
+          >
+            <UserPlus size={16} aria-hidden="true" />
+            Registrar participante
+          </button>
+        )}
       </div>
       <div className="px-5 pt-4 empty:hidden">
         <Feedback error={participants.length ? null : query.error} />
@@ -132,15 +153,15 @@ export function ParticipantsPanel({
       {query.isPending ? (
         <Loading />
       ) : !participants.length ? (
-        <Empty
-          text={
-            query.isError
-              ? 'No pudimos cargar los participantes.'
-              : search.trim() || searching
-                ? 'Ningún participante empieza con ese nombre.'
-                : 'Todavía no hay participantes registrados.'
-          }
-        />
+        <p className="px-5 py-12 text-center text-sm text-ink-600">
+          {query.isError
+            ? 'No pudimos cargar los participantes.'
+            : filtered
+              ? 'Ningún participante empieza con ese nombre.'
+              : categories.length > 1 && categoryName
+                ? `Todavía no hay participantes en ${categoryName}.`
+                : 'Todavía no hay participantes registrados.'}
+        </p>
       ) : (
         <ul
           aria-busy={query.isFetching || searching}
@@ -154,7 +175,7 @@ export function ParticipantsPanel({
               participant={participant}
               categories={categories}
               actions={actions}
-              canEdit={open && can('torneos.participantes')}
+              canEdit={canAdd}
               canScore={open && can('torneos.puntos')}
             />
           ))}
