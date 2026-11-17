@@ -25,13 +25,15 @@ export function PoolSection() {
             emptyMessage="Pronto publicaremos los valores."
           >
             {(items) => (
+              // Each card spans three shared rows (title, prices, note): side by side,
+              // their titles and prices line up even when one wraps to more lines.
               <ul className="grid gap-6 md:grid-cols-2">
                 {items.map((rate) => (
                   <li
                     key={rate.id}
-                    className="overflow-hidden rounded-2xl border border-navy-900/5 bg-white shadow-card"
+                    className="row-span-3 grid grid-rows-subgrid gap-0 overflow-hidden rounded-2xl border border-navy-900/5 bg-white shadow-card"
                   >
-                    <h3 className="border-b border-navy-900/10 bg-mist-50 px-6 py-4 font-display text-2xl tracking-wide uppercase">
+                    <h3 className="flex items-center border-b border-navy-900/10 bg-mist-50 px-6 py-4 font-display text-2xl tracking-wide uppercase">
                       {rate.season} · {rate.period}
                     </h3>
                     <dl className="grid gap-6 p-6 sm:grid-cols-2 sm:gap-0 sm:divide-x sm:divide-navy-900/10">
@@ -55,11 +57,14 @@ export function PoolSection() {
                         </dd>
                       </div>
                     </dl>
-                    {rate.discountNote && (
-                      <p className="mx-6 mb-6 rounded-lg bg-sun-400/15 px-4 py-3 text-sm text-navy-900">
-                        {rate.discountNote}
-                      </p>
-                    )}
+                    {/* The note row stays even when empty, so the grid keeps three rows. */}
+                    <div className="px-6 pb-6 empty:p-0">
+                      {rate.discountNote && (
+                        <p className="rounded-lg bg-sun-400/15 px-4 py-3 text-sm text-navy-900">
+                          {rate.discountNote}
+                        </p>
+                      )}
+                    </div>
                   </li>
                 ))}
               </ul>
