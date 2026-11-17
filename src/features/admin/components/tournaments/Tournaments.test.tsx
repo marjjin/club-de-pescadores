@@ -308,15 +308,22 @@ it('shows a printable QR that leads to the public leaderboard', async () => {
       name: 'Código QR de la tabla de posiciones de Torneo de Pesca',
     }),
   ).toBeTruthy()
+  // The printed copy lives directly in <body>, so it prints on the first page.
+  const sheet = document.querySelector<HTMLElement>('body > [data-print-sheet]')
+  expect(sheet?.textContent).toContain(`/torneos/${tournament.id}`)
+  expect(sheet?.textContent).toContain('Escaneá y mirá la tabla de posiciones')
   expect(
-    screen.getByText(new RegExp(`/torneos/${tournament.id}$`)),
-  ).toBeTruthy()
+    screen
+      .getAllByText(new RegExp(`/torneos/${tournament.id}$`))
+      .some((element) => !sheet?.contains(element)),
+  ).toBe(true)
   fireEvent.click(screen.getByRole('button', { name: 'Imprimir' }))
   expect(print).toHaveBeenCalled()
   fireEvent.click(screen.getByRole('button', { name: 'Cerrar QR' }))
   expect(
     screen.queryByRole('heading', { name: 'QR de la tabla de posiciones' }),
   ).toBeNull()
+  expect(document.querySelector('[data-print-sheet]')).toBeNull()
 })
 
 it('edits the tournament description with a character count', async () => {

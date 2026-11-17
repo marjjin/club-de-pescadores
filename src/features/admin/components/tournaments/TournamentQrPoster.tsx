@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { createPortal } from 'react-dom'
 import { Check, Copy, Download, Printer, X } from 'lucide-react'
 import logo from '@/shared/assets/images/logo-192.webp'
 import type { AdminTournament } from '../../schemas/tournaments'
@@ -78,38 +79,20 @@ export function TournamentQrPoster({
           abre una página que dice que no está disponible.
         </p>
       )}
-      {/* Only this sheet is printed; see the print rules in index.css. */}
-      <div
-        data-print-area
-        className="mx-auto mt-5 grid max-w-md justify-items-center gap-4 rounded-2xl border border-navy-900/10 bg-white p-6 text-center text-navy-950 sm:p-8 print:max-w-none print:border-0 print:p-0"
-      >
-        <img
-          src={logo}
-          alt=""
-          width="72"
-          height="72"
-          className="size-16 print:size-24"
-        />
-        <p className="text-xs font-extrabold tracking-[0.2em] text-ink-600 uppercase print:text-base">
-          Club de Pescadores San Nicolás
-        </p>
-        <h3 className="text-2xl leading-tight font-extrabold wrap-anywhere print:text-5xl">
-          {tournament.name}
-        </h3>
-        <p className="text-sm text-ink-600 print:text-xl">
-          {tournamentDates(tournament)}
-          {tournament.place ? ` · ${tournament.place}` : ''}
-        </p>
-        <QrCode
-          value={url}
-          label={`Código QR de la tabla de posiciones de ${tournament.name}`}
-          className="w-64 max-w-full print:w-[11cm]"
-        />
-        <p className="text-lg font-extrabold print:text-3xl">
-          Escaneá y mirá la tabla de posiciones
-        </p>
-        <p className="text-xs break-all text-ink-600 print:text-base">{url}</p>
+      <div className="mx-auto mt-5 max-w-md rounded-2xl border border-navy-900/10 p-6 sm:p-8 print:hidden">
+        <PosterSheet tournament={tournament} url={url} />
       </div>
+      {/* The printed copy sits directly in <body>, so it starts on page one; see index.css. */}
+      {createPortal(
+        <div
+          data-print-sheet
+          aria-hidden="true"
+          className="hidden print:grid print:min-h-[265mm] print:content-center"
+        >
+          <PosterSheet tournament={tournament} url={url} print />
+        </div>,
+        document.body,
+      )}
       <div className="mt-5 flex flex-wrap justify-center gap-2 print:hidden">
         <button
           type="button"
@@ -139,5 +122,56 @@ export function TournamentQrPoster({
         </button>
       </div>
     </section>
+  )
+}
+
+function PosterSheet({
+  tournament,
+  url,
+  print = false,
+}: {
+  tournament: AdminTournament
+  url: string
+  print?: boolean
+}) {
+  return (
+    <div
+      className={`grid justify-items-center text-center text-navy-950 ${print ? 'gap-6' : 'gap-4'}`}
+    >
+      <img
+        src={logo}
+        alt=""
+        width="72"
+        height="72"
+        className={print ? 'size-28' : 'size-16'}
+      />
+      <p
+        className={`font-extrabold tracking-[0.2em] text-ink-600 uppercase ${print ? 'text-base' : 'text-xs'}`}
+      >
+        Club de Pescadores San Nicolás
+      </p>
+      <h3
+        className={`leading-tight font-extrabold wrap-anywhere ${print ? 'text-5xl' : 'text-2xl'}`}
+      >
+        {tournament.name}
+      </h3>
+      <p className={`text-ink-600 ${print ? 'text-xl' : 'text-sm'}`}>
+        {tournamentDates(tournament)}
+        {tournament.place ? ` · ${tournament.place}` : ''}
+      </p>
+      <QrCode
+        value={url}
+        label={`Código QR de la tabla de posiciones de ${tournament.name}`}
+        className={print ? 'w-[11cm]' : 'w-64 max-w-full'}
+      />
+      <p className={`font-extrabold ${print ? 'text-3xl' : 'text-lg'}`}>
+        Escaneá y mirá la tabla de posiciones
+      </p>
+      <p
+        className={`break-all text-ink-600 ${print ? 'text-base' : 'text-xs'}`}
+      >
+        {url}
+      </p>
+    </div>
   )
 }
