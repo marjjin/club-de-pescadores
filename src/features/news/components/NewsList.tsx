@@ -25,7 +25,8 @@ export function NewsList({ items, featured = false }: Props) {
             <article className="h-full min-w-0">
               <Link
                 to={`/noticias/${item.id}`}
-                aria-label={`Leer noticia: ${item.title}`}
+                // Named by its visible title, so voice control and screen readers agree.
+                aria-labelledby={`news-card-${item.id}`}
                 className={`group flex h-full min-w-0 flex-col overflow-hidden rounded-2xl border border-navy-900/5 bg-white shadow-card transition-[box-shadow,translate] duration-300 hover:-translate-y-0.5 hover:shadow-raised motion-reduce:transition-none motion-reduce:hover:translate-y-0 ${
                   lead ? 'md:grid md:grid-cols-[3fr_2fr]' : ''
                 }`}
@@ -58,6 +59,7 @@ export function NewsList({ items, featured = false }: Props) {
                     {formatShortDate(item.publishedOn)}
                   </time>
                   <h3
+                    id={`news-card-${item.id}`}
                     className={`mt-2 leading-snug font-extrabold ${lead ? 'text-2xl sm:text-3xl' : 'text-xl'}`}
                   >
                     {item.title}

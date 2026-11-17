@@ -3,67 +3,72 @@
   "framework": "vite",
   "buildCommand": "npm run build",
   "outputDirectory": "dist",
-  "rewrites": [
+  "routes": [
     {
-      "source": "/((?!assets(?:/|$)|\\.vite(?:/|$)).*)",
-      "destination": "/index.html"
-    }
-  ],
-  "headers": [
-    {
-      "source": "/(.*)",
-      "headers": [
-        {
-          "key": "Cache-Control",
-          "value": "no-cache"
-        },
-        {
-          "key": "Content-Security-Policy",
-          "value": "default-src 'self'; script-src 'self' 'sha256-eBDUVO9KphO5i6Ana/9WRKQvW4Y8gjSq5CWO7jnRdR8='; style-src 'self' 'unsafe-inline'; img-src 'self' https: data:; media-src 'self' blob: https://rjzmcwfwfxtktuleqzgf.supabase.co; font-src 'self'; connect-src 'self' https://rjzmcwfwfxtktuleqzgf.supabase.co; object-src 'none'; base-uri 'self'; frame-ancestors 'none'; form-action 'none'; upgrade-insecure-requests"
-        },
-        {
-          "key": "X-Content-Type-Options",
-          "value": "nosniff"
-        },
-        {
-          "key": "X-Frame-Options",
-          "value": "DENY"
-        },
-        {
-          "key": "Referrer-Policy",
-          "value": "strict-origin-when-cross-origin"
-        },
-        {
-          "key": "Permissions-Policy",
-          "value": "camera=(), microphone=(), geolocation=(), payment=()"
-        },
-        {
-          "key": "Strict-Transport-Security",
-          "value": "max-age=31536000"
-        }
-      ]
+      "src": "^/(.*)$",
+      "headers": {
+        "Cache-Control": "no-cache",
+        "Content-Security-Policy": "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' https: data:; media-src 'self' blob: https://rjzmcwfwfxtktuleqzgf.supabase.co; font-src 'self'; connect-src 'self' https://rjzmcwfwfxtktuleqzgf.supabase.co; object-src 'none'; base-uri 'self'; frame-ancestors 'none'; form-action 'none'; upgrade-insecure-requests",
+        "X-Content-Type-Options": "nosniff",
+        "X-Frame-Options": "DENY",
+        "Referrer-Policy": "strict-origin-when-cross-origin",
+        "Permissions-Policy": "camera=(), microphone=(), geolocation=(), payment=()",
+        "Strict-Transport-Security": "max-age=31536000"
+      },
+      "continue": true
     },
     {
-      "source": "/assets/(.*)",
-      "headers": [
-        {
-          "key": "Cache-Control",
-          "value": "public, max-age=31536000, immutable"
-        }
-      ]
+      "src": "^/assets/(.*)$",
+      "headers": { "Cache-Control": "public, max-age=31536000, immutable" },
+      "continue": true
     },
     {
-      "source": "/admin/:path*",
-      "headers": [
-        {
-          "key": "Cache-Control",
-          "value": "no-store"
-        },
-        {
-          "key": "X-Robots-Tag",
-          "value": "noindex, nofollow"
-        }
-      ]
-    }
+      "src": "^/admin(?:/.*)?$",
+      "headers": {
+        "Cache-Control": "no-store",
+        "X-Robots-Tag": "noindex, nofollow"
+      },
+      "continue": true
+    },
+    {
+      "src": "^/(?:_app\\.html|404\\.html|_pages/.*|api/.*)$",
+      "headers": { "X-Robots-Tag": "noindex" },
+      "continue": true
+    },
+    {
+      "src": "^/index\\.html$",
+      "status": 308,
+      "headers": { "Location": "/" }
+    },
+    {
+      "src": "^/(.+)/$",
+      "status": 308,
+      "headers": { "Location": "/$1" }
+    },
+    { "handle": "filesystem" },
+    {
+      "src": "^/assets/.*$",
+      "status": 404,
+      "headers": { "Cache-Control": "no-store" },
+      "dest": "/404.html"
+    },
+    { "src": "^/noticias$", "dest": "/_pages/noticias.html" },
+    { "src": "^/eventos$", "dest": "/_pages/eventos.html" },
+    { "src": "^/torneos$", "dest": "/_pages/torneos.html" },
+    {
+      "src": "^/noticias/(?<id>[^/]+)$",
+      "dest": "/api/seo?kind=news&id=$id"
+    },
+    {
+      "src": "^/torneos/anual/(?<id>[^/]+)$",
+      "dest": "/api/seo?kind=annual&id=$id"
+    },
+    {
+      "src": "^/torneos/(?<id>[^/]+)$",
+      "dest": "/api/seo?kind=tournament&id=$id"
+    },
+    { "src": "^/sitemap\\.xml$", "dest": "/api/seo?kind=sitemap" },
+    { "src": "^/admin(?:/.*)?$", "dest": "/_app.html" },
+    { "src": "^/.*$", "status": 404, "dest": "/404.html" }
   ]
 }

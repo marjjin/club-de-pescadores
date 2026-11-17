@@ -7,7 +7,13 @@ import tseslint from 'typescript-eslint'
 import { architectureRule } from './scripts/eslint/architecture.mjs'
 
 export default defineConfig([
-  globalIgnores(['dist', 'coverage', 'playwright-report', 'test-results']),
+  globalIgnores([
+    'dist',
+    'dist-ssr',
+    'coverage',
+    'playwright-report',
+    'test-results',
+  ]),
   {
     files: ['**/*.{ts,tsx}'],
     ignores: ['supabase/functions/**'],
@@ -36,7 +42,13 @@ export default defineConfig([
     rules: { 'architecture/boundaries': 'error' },
   },
   {
-    files: ['scripts/**/*.mjs', 'supabase/functions/**/*.mjs', '*.config.js'],
+    files: [
+      'scripts/**/*.mjs',
+      'supabase/functions/**/*.mjs',
+      '*.config.js',
+      'api/**/*.js',
+      'src/shared/seo/*.mjs',
+    ],
     extends: [js.configs.recommended],
     languageOptions: {
       globals: globals.node,

@@ -32,7 +32,7 @@ describe('reading a news article', () => {
     const scroll = vi.spyOn(window, 'scrollTo')
     mount('/noticias')
     const link = await screen.findByRole('link', {
-      name: 'Leer noticia: Noticia de prueba',
+      name: 'Noticia de prueba',
     })
     expect(link.getAttribute('href')).toBe(`/noticias/${id}`)
     expect(link.textContent).not.toContain('último párrafo completo')

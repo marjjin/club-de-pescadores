@@ -3,6 +3,10 @@ import { CheckCircle2, ChevronLeft, Clock3 } from 'lucide-react'
 import { Link } from 'react-router'
 import { formatLongDate } from '@/shared/lib/dates'
 import { button, textLink } from '@/shared/ui/button'
+import {
+  annualTableDescription,
+  annualTableTitle,
+} from '@/shared/seo/pages.mjs'
 import { container } from '@/shared/ui/layout'
 import { SectionHeading } from '@/shared/ui/SectionHeading'
 import { useAnnualTable } from '../hooks/useTournaments'
@@ -77,11 +81,8 @@ export function AnnualTableDetail({ id }: { id: string }) {
   const finished = table.tournaments.filter((entry) => entry.finished).length
   return (
     <>
-      <title>{`${table.name} ${table.year} | Club de Pescadores San Nicolás`}</title>
-      <meta
-        name="description"
-        content={`Tabla anual ${table.year} de ${table.name}, con los puntos de los torneos del Club de Pescadores San Nicolás.`}
-      />
+      <title>{annualTableTitle(table)}</title>
+      <meta name="description" content={annualTableDescription(table)} />
       <link
         rel="canonical"
         href={`${import.meta.env.VITE_SITE_URL}/torneos/anual/${table.id}`}

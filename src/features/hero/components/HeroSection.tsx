@@ -1,5 +1,6 @@
 import hero960 from '@/shared/assets/images/hero-960.webp'
 import hero1920 from '@/shared/assets/images/hero-1920.webp'
+import heroMobile from '@/shared/assets/images/hero-mobile.webp'
 import { button } from '@/shared/ui/button'
 
 export function HeroSection() {
@@ -8,16 +9,26 @@ export function HeroSection() {
       id="inicio"
       className="relative isolate flex min-h-[560px] items-end overflow-hidden bg-navy-950 lg:h-[min(42vw,calc(100vh-5rem))]"
     >
-      <img
-        src={hero1920}
-        srcSet={`${hero960} 960w, ${hero1920} 1920w`}
-        sizes="max(100vw, 1330px)"
-        width="1920"
-        height="809"
-        fetchPriority="high"
-        alt="Muelle y sede del club sobre el río al atardecer"
-        className="absolute inset-0 -z-20 size-full object-cover object-[35%_center] lg:object-center"
-      />
+      {/* Phones show a 560px-tall slice of the photo: they get that crop, a third of the
+          weight. The build preloads the same files (scripts/production/prepare-public.mjs). */}
+      <picture>
+        <source
+          media="(max-width: 639px)"
+          srcSet={heroMobile}
+          width="922"
+          height="809"
+        />
+        <img
+          src={hero1920}
+          srcSet={`${hero960} 960w, ${hero1920} 1920w`}
+          sizes="max(100vw, 1330px)"
+          width="1920"
+          height="809"
+          fetchPriority="high"
+          alt="Muelle y sede del club sobre el río al atardecer"
+          className="absolute inset-0 -z-20 size-full object-cover object-center sm:object-[35%_center] lg:object-center"
+        />
+      </picture>
       <div
         aria-hidden="true"
         className="absolute inset-0 -z-10 bg-gradient-to-t from-navy-950/70 via-navy-950/25 via-50% to-transparent lg:bg-gradient-to-r lg:from-navy-950/50 lg:via-navy-950/15 lg:via-35% lg:to-55%"

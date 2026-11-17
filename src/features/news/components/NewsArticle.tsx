@@ -5,6 +5,7 @@ import { button } from '@/shared/ui/button'
 import { useNewsItem } from '../hooks/useNewsItem'
 import { NewsArticleImage } from './NewsArticleImage'
 import { ShareNewsButton } from './ShareNewsButton'
+import { clip, pageTitle } from '@/shared/seo/pages.mjs'
 
 export function NewsArticle({ id }: { id: string }) {
   const query = useNewsItem(id)
@@ -67,7 +68,8 @@ export function NewsArticle({ id }: { id: string }) {
   const url = `${import.meta.env.VITE_SITE_URL}/noticias/${item.id}`
   return (
     <section className="bg-white px-4 py-8 sm:px-6 sm:py-14">
-      <title>{item.title} | Club de Pescadores San Nicolás</title>
+      <title>{pageTitle(item.title)}</title>
+      <meta name="description" content={clip(item.excerpt)} />
       <link rel="canonical" href={url} />
       {/* One reading column so title, photo and text share the same edges. */}
       <article className="mx-auto min-w-0 max-w-3xl">

@@ -1,6 +1,6 @@
 # Publicación en Vercel
 
-Destino confirmado: https://club-de-pescadores.vercel.app/
+Destino confirmado: https://www.clubdepescadores.com/ (el dominio de Vercel redirige al propio).
 
 La configuración de este repositorio prepara el sitio público. Un build local aprobado no implica que el esquema remoto exista o que Vercel ya haya recibido esta versión.
 
@@ -11,16 +11,16 @@ La configuración de este repositorio prepara el sitio público. Un build local 
 3. Las fotos actuales y el teléfono fueron autorizados por el usuario el 8 de noviembre de 2026. El usuario confirmó que el correo del boceto era ficticio; se retiró y el sitio se publica sin correo hasta contar con uno oficial. No cargar noticias, eventos o tarifas ficticias para llenar la página.
 4. Configurar en Vercel, para **Production**, las variables `VITE_SUPABASE_URL`, `VITE_SUPABASE_PUBLISHABLE_KEY` y `VITE_SITE_URL` con los mismos valores públicos de `.env.local`. El origen del sitio es `https://www.clubdepescadores.com`, sin barra final (el dominio propio, no el de Vercel: es la dirección que se imprime en los QR de los torneos y en los enlaces canónicos). No subir el archivo `.env.local` al repositorio.
 5. Ejecutar `npm run check` y `npm audit --omit=dev`. Desplegar el código completo del repositorio, incluido `vercel.json`, mediante el proyecto Vercel existente. El build es `npm run build`, la salida es `dist/` y Node es 24.
-6. Verificar la versión publicada: inicio, `/noticias`, `/eventos`, navegación móvil, errores de red, `/robots.txt`, `/sitemap.xml`, `/og-image.webp` y cabeceras CSP. Revisar en navegador la consola y la pestaña de red; comprobar que las consultas van al proyecto Supabase correcto.
+6. Verificar la versión publicada: inicio, `/noticias`, `/eventos`, navegación móvil, errores de red, `/robots.txt`, `/sitemap.xml`, `/og-image.jpg`, una dirección inexistente (debe responder 404) y cabeceras CSP. `npm run site:check` verifica todo esto contra el sitio publicado. Revisar en navegador la consola y la pestaña de red; comprobar que las consultas van al proyecto Supabase correcto.
 
 Si se usa el SQL Editor como alternativa al mecanismo de migraciones, ejecutar el archivo completo una sola vez y registrar después esa versión como aplicada con la CLI antes de introducir nuevas migraciones. No ejecutar `db reset` sobre la base remota.
 
 ## Qué protege el despliegue
 
 - El build falla si falta la configuración pública. No hay un modo de demostración en producción ni se sustituye un error remoto por fixtures.
-- Vercel tiene reescrituras de SPA, CSP con origen de Supabase explícito, hash del JSON-LD, protección contra frames, `nosniff`, política de referrer y permisos restringidos.
+- `vercel.json` usa rutas explícitas (`routes`): cada página pública tiene su HTML, las direcciones desconocidas responden 404 y los archivos de `/assets` que faltan responden 404 sin guardarse en caché (un 404 guardado un año dejaba la página en blanco). También fija la CSP con el origen de Supabase, la protección contra frames, `nosniff`, la política de referrer y los permisos restringidos.
 - Los assets con hash usan caché de un año. Las páginas usan revalidación. Los datos se cachean temporalmente con TanStack Query.
-- Se generan sitemap, robots, Open Graph e imagen social durante el build. La generación verifica que la CSP coincida con el JSON-LD y el origen de Supabase. Si cambia el dominio o el proyecto, actualizar también `vercel.json`.
+- El build pre-renderiza las páginas fijas y genera robots, imagen social, logo y página 404; noticias, torneos y el sitemap los arma `api/seo.js`. Ver [seo.md](seo.md). La generación verifica que la CSP incluya el origen de Supabase: si cambia el proyecto, actualizar también `vercel.json`.
 - Los listados solicitan columnas explícitas, usan límites, cursor con desempate por ID, cancelación y un timeout de 12 segundos.
 
 ## Contenido y permisos
