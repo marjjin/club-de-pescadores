@@ -244,6 +244,13 @@ it('renders the general workspace for an authorized MFA session', async () => {
   )
   expect(screen.getByRole('link', { name: 'Tarifas de pileta' })).toBeTruthy()
   expect(screen.getByText('Tarifas publicadas sin vencer')).toBeTruthy()
+  // With no rates on the site, the tile says so instead of just showing 0.
+  expect(
+    screen.getByText('El sitio no muestra precios de pileta.'),
+  ).toBeTruthy()
+  expect(
+    screen.getByText('Sin publicar: noticias, eventos o tarifas.'),
+  ).toBeTruthy()
 })
 it('keeps season and pool pricing management available', async () => {
   vi.mocked(auth.getAdminSession).mockResolvedValue(session)
