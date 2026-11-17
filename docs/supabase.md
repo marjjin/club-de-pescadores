@@ -9,7 +9,7 @@ Copiá `.env.example` a `.env.local` y completá:
 ```dotenv
 VITE_SUPABASE_URL=https://TU_PROYECTO.supabase.co
 VITE_SUPABASE_PUBLISHABLE_KEY=sb_publishable_TU_CLAVE_PUBLICA
-VITE_SITE_URL=https://club-de-pescadores.vercel.app
+VITE_SITE_URL=https://www.clubdepescadores.com
 ```
 
 El proyecto elegido es `rjzmcwfwfxtktuleqzgf`; su configuración pública está guardada localmente en un archivo ignorado por Git. Los mismos valores deben configurarse en el entorno Production de Vercel antes de desplegar.
