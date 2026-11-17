@@ -1,6 +1,5 @@
 import { useState } from 'react'
 import type { FormEvent, InputHTMLAttributes } from 'react'
-import { LoaderCircle, Save } from 'lucide-react'
 import { useConfirm } from '../../hooks/useConfirm'
 import { useSaveTournament } from '../../hooks/useAdminTournaments'
 import { tournamentInputSchema } from '../../schemas/tournaments'
@@ -8,14 +7,10 @@ import type {
   AdminTournament,
   TournamentInput,
 } from '../../schemas/tournaments'
-import {
-  Feedback,
-  Field,
-  inputClass,
-  primaryClass,
-  secondaryClass,
-} from '../ui'
+import { Field, inputClass } from '../ui'
 import { CategoryPicker } from './CategoryPicker'
+import { DescriptionField } from './DescriptionField'
+import { TournamentFormActions } from './TournamentFormActions'
 import { TournamentFormHeader } from './TournamentFormHeader'
 
 type Errors = Partial<Record<keyof TournamentInput, string>>
@@ -39,6 +34,7 @@ export function TournamentForm({
     starts_on: current?.starts_on ?? '',
     ends_on: current?.ends_on ?? '',
     start_time: current?.start_time ?? '',
+    description: current?.description ?? '',
     categories: current?.categories.map((category) => category.id) ?? [],
   }))
   const [values, setValues] = useState(initial)
@@ -150,6 +146,13 @@ export function TournamentForm({
           })}
         </div>
         <div className="lg:col-span-6">
+          <DescriptionField
+            value={values.description}
+            error={errors.description}
+            onChange={(value) => change('description', value)}
+          />
+        </div>
+        <div className="lg:col-span-6">
           <CategoryPicker
             userId={userId}
             selected={values.categories}
@@ -163,43 +166,15 @@ export function TournamentForm({
           />
         </div>
       </div>
-      <div className="flex flex-col-reverse gap-3 border-t border-navy-900/10 px-5 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-6">
-        <div className="min-w-0 flex-1">
-          <Feedback error={save.error} />
-        </div>
-        <div className="flex flex-wrap gap-2 sm:justify-end">
-          <button
-            type="button"
-            className={secondaryClass}
-            disabled={save.isPending}
-            onClick={() => {
-              void cancel()
-            }}
-          >
-            Cancelar
-          </button>
-          <button
-            type="submit"
-            className={primaryClass}
-            disabled={save.isPending || (Boolean(current) && !dirty)}
-          >
-            {save.isPending ? (
-              <LoaderCircle
-                size={16}
-                aria-hidden="true"
-                className="motion-safe:animate-spin"
-              />
-            ) : (
-              <Save size={16} aria-hidden="true" />
-            )}
-            {save.isPending
-              ? 'Guardando…'
-              : current
-                ? 'Guardar cambios'
-                : 'Crear torneo'}
-          </button>
-        </div>
-      </div>
+      <TournamentFormActions
+        editing={Boolean(current)}
+        pending={save.isPending}
+        canSave={!current || dirty}
+        error={save.error}
+        onCancel={() => {
+          void cancel()
+        }}
+      />
     </form>
   )
 }

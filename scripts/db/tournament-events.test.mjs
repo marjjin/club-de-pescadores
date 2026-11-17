@@ -181,3 +181,77 @@ describe('tournaments in the events agenda', () => {
     ).rejects.toThrow(/events_show_time_only_tournaments/)
   })
 })
+
+describe('tournament description', () => {
+  it('is public on the tournament and summarized in its agenda event', async () => {
+    const long = `Premios del 1.º al 10.º puesto. ${'Modalidad caña libre. '.repeat(40)}`
+    const id = await create({
+      name: 'Tradicional 12 hs',
+      description: `  ${long}  `,
+    })
+    const saved = (
+      await db.query(
+        'select description from public.tournaments where id = $1',
+        [id],
+      )
+    ).rows[0].description
+    expect(saved).toBe(long.trim())
+    const event = (
+      await db.query(
+        'select description from public.events where tournament_id = $1',
+        [id],
+      )
+    ).rows[0].description
+    expect(event).toHaveLength(600)
+    expect(event.endsWith('…')).toBe(true)
+    await status(id, 'published')
+    expect(
+      (
+        await run(
+          null,
+          'select description from public.tournaments where id = $1',
+          [id],
+          'anon',
+        )
+      ).rows[0].description,
+    ).toBe(long.trim())
+  })
+
+  it('keeps the description when an older panel saves without it, and clears it when emptied', async () => {
+    const id = await create({
+      name: 'Con descripción',
+      description: 'Inscripción $25.000',
+    })
+    const version = async () =>
+      (await run(root, 'select public.tournament_admin_get($1) as data', [id]))
+        .rows[0].data
+    const base = {
+      name: 'Con descripción',
+      starts_on: '2026-12-05',
+      start_time: '07:30',
+    }
+    await run(root, 'select public.tournament_save($1,$2,$3)', [
+      base,
+      id,
+      (await version()).updated_at,
+    ])
+    expect((await version()).description).toBe('Inscripción $25.000')
+    await run(root, 'select public.tournament_save($1,$2,$3)', [
+      { ...base, description: '   ' },
+      id,
+      (await version()).updated_at,
+    ])
+    expect((await version()).description).toBeNull()
+    expect(
+      (
+        await db.query(
+          'select description from public.events where tournament_id = $1',
+          [id],
+        )
+      ).rows[0].description,
+    ).toBeNull()
+    await expect(
+      create({ name: 'Muy larga', description: 'x'.repeat(2001) }),
+    ).rejects.toThrow()
+  })
+})

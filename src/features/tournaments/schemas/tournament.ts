@@ -7,6 +7,7 @@ export const tournamentRowSchema = z.object({
   starts_on: z.iso.date(),
   ends_on: z.iso.date().nullable(),
   status: z.enum(['published', 'finished']),
+  description: z.string().max(2000).nullable().default(null),
 })
 
 export const standingSchema = z.object({

@@ -58,6 +58,7 @@ const tournament: AdminTournament = {
   starts_on: '2026-11-29',
   ends_on: '2026-11-30',
   start_time: '07:30',
+  description: 'Modalidad caña libre.',
   status: 'published',
   participants: 2,
   categories: [
@@ -293,5 +294,48 @@ it('deletes an archived tournament and returns to the list', async () => {
   await screen.findByRole('link', { name: 'Gestionar Torneo de Pesca' })
   expect(api.deleteTournament).toHaveBeenCalledWith(
     expect.objectContaining({ id: tournament.id }),
+  )
+})
+
+it('shows a printable QR that leads to the public leaderboard', async () => {
+  const print = vi.spyOn(window, 'print').mockImplementation(() => undefined)
+  mount(`/admin/torneos/${tournament.id}`)
+  fireEvent.click(
+    await screen.findByRole('button', { name: 'QR para imprimir' }),
+  )
+  expect(
+    screen.getByRole('img', {
+      name: 'Código QR de la tabla de posiciones de Torneo de Pesca',
+    }),
+  ).toBeTruthy()
+  expect(
+    screen.getByText(new RegExp(`/torneos/${tournament.id}$`)),
+  ).toBeTruthy()
+  fireEvent.click(screen.getByRole('button', { name: 'Imprimir' }))
+  expect(print).toHaveBeenCalled()
+  fireEvent.click(screen.getByRole('button', { name: 'Cerrar QR' }))
+  expect(
+    screen.queryByRole('heading', { name: 'QR de la tabla de posiciones' }),
+  ).toBeNull()
+})
+
+it('edits the tournament description with a character count', async () => {
+  vi.mocked(api.saveTournament).mockResolvedValue(tournament.id)
+  mount(`/admin/torneos/${tournament.id}`)
+  fireEvent.click(await screen.findByRole('button', { name: 'Editar datos' }))
+  const field = screen.getByLabelText('Descripción (opcional)')
+  expect(field).toHaveProperty('value', 'Modalidad caña libre.')
+  fireEvent.change(field, {
+    target: { value: 'Modalidad caña libre.\nInscripción: $25.000' },
+  })
+  expect(screen.getByText('1958 caracteres disponibles')).toBeTruthy()
+  fireEvent.click(screen.getByRole('button', { name: 'Guardar cambios' }))
+  await waitFor(() =>
+    expect(api.saveTournament).toHaveBeenCalledWith(
+      expect.objectContaining({
+        description: 'Modalidad caña libre.\nInscripción: $25.000',
+      }),
+      expect.objectContaining({ id: tournament.id }),
+    ),
   )
 })
