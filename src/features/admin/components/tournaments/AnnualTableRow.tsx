@@ -60,32 +60,40 @@ export function AnnualTableRow({
             submit()
           }}
         >
-          <input
-            value={name}
-            maxLength={120}
-            aria-label={`Nuevo nombre para ${table.name}`}
-            onChange={(event) => {
-              setName(event.target.value)
-              setError(null)
-            }}
-            onKeyDown={(event) => {
-              if (event.key === 'Escape') setEditing(false)
-            }}
-            className={`${inputClass} min-w-40 flex-1`}
-          />
-          <input
-            value={year}
-            type="number"
-            inputMode="numeric"
-            min={2000}
-            max={2100}
-            aria-label={`Año de ${table.name}`}
-            onChange={(event) => {
-              setYear(event.target.value)
-              setError(null)
-            }}
-            className={`${inputClass} w-24`}
-          />
+          <div className="min-w-40 flex-1">
+            <input
+              value={name}
+              maxLength={120}
+              aria-label={`Nuevo nombre para ${table.name}`}
+              onChange={(event) => {
+                setName(event.target.value)
+                setError(null)
+              }}
+              onKeyDown={(event) => {
+                // Esc cancels the edit without closing the window around it.
+                if (event.key === 'Escape') {
+                  event.preventDefault()
+                  setEditing(false)
+                }
+              }}
+              className={inputClass}
+            />
+          </div>
+          <div className="w-24">
+            <input
+              value={year}
+              type="number"
+              inputMode="numeric"
+              min={2000}
+              max={2100}
+              aria-label={`Año de ${table.name}`}
+              onChange={(event) => {
+                setYear(event.target.value)
+                setError(null)
+              }}
+              className={inputClass}
+            />
+          </div>
           <button
             type="submit"
             aria-label="Guardar tabla anual"

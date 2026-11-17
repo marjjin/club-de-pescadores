@@ -9,6 +9,7 @@ import {
 import type { CategoryListItem } from '../../schemas/tournaments'
 import { Feedback, Loading, inputClass, primaryClass } from '../ui'
 import { CategoryRow } from './CategoryRow'
+import { TournamentDialog } from './TournamentDialog'
 
 export function CategoriesManager({
   userId,
@@ -42,11 +43,12 @@ export function CategoriesManager({
     archive.mutate({ id: category.id, archived })
   }
   return (
-    <section
-      aria-labelledby="categories-title"
-      className="mb-6 overflow-hidden rounded-2xl border border-navy-900/10 bg-white shadow-sm"
+    <TournamentDialog
+      labelledBy="categories-title"
+      describedBy="categories-description"
+      onClose={onClose}
     >
-      <div className="flex items-start gap-3 border-b border-navy-900/10 bg-mist-50/60 px-5 py-4 sm:px-6">
+      <div className="sticky top-0 z-10 flex items-start gap-3 border-b border-navy-900/10 bg-mist-50 px-5 py-4 sm:px-6">
         <span
           aria-hidden="true"
           className="grid size-10 shrink-0 place-items-center rounded-full bg-river-600/10 text-river-600"
@@ -57,13 +59,17 @@ export function CategoriesManager({
           <h2 id="categories-title" className="text-base font-extrabold">
             Categorías de torneos
           </h2>
-          <p className="mt-0.5 text-sm text-ink-600">
+          <p
+            id="categories-description"
+            className="mt-0.5 text-sm text-ink-600"
+          >
             Senior, Cadetes, Damas… Cada torneo usa una o varias, y cada una
             tiene su tabla de posiciones.
           </p>
         </div>
         <button
           type="button"
+          autoFocus
           aria-label="Cerrar categorías"
           className="grid size-11 shrink-0 place-items-center rounded-lg text-ink-600 hover:bg-mist-50 hover:text-navy-900"
           onClick={onClose}
@@ -79,17 +85,19 @@ export function CategoriesManager({
             create()
           }}
         >
-          <input
-            value={name}
-            maxLength={60}
-            aria-label="Nombre de la nueva categoría"
-            placeholder="Nueva categoría"
-            onChange={(event) => {
-              setName(event.target.value)
-              save.reset()
-            }}
-            className={`${inputClass} min-w-48 flex-1`}
-          />
+          <div className="min-w-48 flex-1">
+            <input
+              value={name}
+              maxLength={60}
+              aria-label="Nombre de la nueva categoría"
+              placeholder="Nueva categoría"
+              onChange={(event) => {
+                setName(event.target.value)
+                save.reset()
+              }}
+              className={inputClass}
+            />
+          </div>
           <button
             type="submit"
             className={primaryClass}
@@ -128,6 +136,6 @@ export function CategoriesManager({
           ))}
         </ul>
       )}
-    </section>
+    </TournamentDialog>
   )
 }
