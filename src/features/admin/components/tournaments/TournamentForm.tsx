@@ -15,10 +15,7 @@ import { TournamentFormActions } from './TournamentFormActions'
 import { TournamentFormHeader } from './TournamentFormHeader'
 
 type Errors = Partial<Record<keyof TournamentInput, string>>
-type TextField = Exclude<
-  keyof TournamentInput,
-  'categories' | 'annual_table' | 'annual_excluded'
->
+type TextField = Exclude<keyof TournamentInput, 'categories' | 'annual_tables'>
 
 export function TournamentForm({
   userId,
@@ -40,11 +37,12 @@ export function TournamentForm({
     start_time: current?.start_time ?? '',
     description: current?.description ?? '',
     categories: current?.categories.map((category) => category.id) ?? [],
-    annual_table: current?.annual_table_id ?? '',
-    annual_excluded:
-      current?.categories
-        .filter((category) => !category.annual)
-        .map((category) => category.id) ?? [],
+    annual_tables: Object.fromEntries(
+      current?.categories.map((category) => [
+        category.id,
+        category.annual_table_id ?? '',
+      ]) ?? [],
+    ),
   }))
   const [values, setValues] = useState(initial)
   const [errors, setErrors] = useState<Errors>({})
@@ -177,11 +175,9 @@ export function TournamentForm({
         <div className="lg:col-span-6">
           <AnnualTablePicker
             userId={userId}
-            value={values.annual_table}
             categories={values.categories}
-            excluded={values.annual_excluded}
-            onChange={(id) => change('annual_table', id)}
-            onExcludedChange={(ids) => change('annual_excluded', ids)}
+            value={values.annual_tables}
+            onChange={(tables) => change('annual_tables', tables)}
           />
         </div>
       </div>

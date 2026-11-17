@@ -498,19 +498,19 @@ export type Database = {
           id: string
           tournament_id: string
           category_id: string
-          counts_annual: boolean
+          annual_table_id: string | null
         }
         Insert: {
           id?: string
           tournament_id: string
           category_id: string
-          counts_annual?: boolean
+          annual_table_id?: string | null
         }
         Update: {
           id?: string
           tournament_id?: string
           category_id?: string
-          counts_annual?: boolean
+          annual_table_id?: string | null
         }
         Relationships: []
       }
@@ -599,7 +599,6 @@ export type Database = {
           updated_at: string
           start_time: string | null
           description: string | null
-          annual_table_id: string | null
         }
         Insert: {
           id?: string
@@ -613,7 +612,6 @@ export type Database = {
           updated_at?: string
           start_time?: string | null
           description?: string | null
-          annual_table_id?: string | null
         }
         Update: {
           id?: string
@@ -627,7 +625,6 @@ export type Database = {
           updated_at?: string
           start_time?: string | null
           description?: string | null
-          annual_table_id?: string | null
         }
         Relationships: []
       }

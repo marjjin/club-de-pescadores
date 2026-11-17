@@ -86,12 +86,13 @@ export async function saveTournament(
   input: TournamentInput,
   current?: Pick<AdminTournament, 'id' | 'updated_at'>,
 ) {
-  const { annual_excluded, ...parsed } = tournamentInputSchema.parse(input)
+  const { annual_tables, ...parsed } = tournamentInputSchema.parse(input)
   const { data, error } = await getAdminSupabase().rpc('tournament_save', {
     p_data: {
       ...parsed,
-      annual_categories: parsed.categories.filter(
-        (id) => !annual_excluded.includes(id),
+      // Every chosen category is sent, so clearing one takes it out of its table.
+      annual_tables: Object.fromEntries(
+        parsed.categories.map((id) => [id, annual_tables[id] || null]),
       ),
     },
     p_id: current?.id ?? null,

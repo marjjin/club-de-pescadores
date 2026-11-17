@@ -12,8 +12,9 @@ export const tournamentCategorySchema = z.object({
   id: z.uuid(),
   name: z.string(),
   participants: z.number().int(),
-  // Whether this category adds to the tournament's annual table.
-  annual: z.boolean().default(true),
+  // The annual table this category of the tournament adds to, if any.
+  annual_table_id: z.uuid().nullable().default(null),
+  annual_table_name: z.string().nullable().default(null),
 })
 export type TournamentCategory = z.infer<typeof tournamentCategorySchema>
 
@@ -30,8 +31,6 @@ export const adminTournamentSchema = z.object({
   status: z.enum(tournamentStatuses),
   participants: z.number().int(),
   categories: z.array(tournamentCategorySchema).default([]),
-  annual_table_id: z.uuid().nullable().default(null),
-  annual_table_name: z.string().nullable().default(null),
   created_at: z.string(),
   updated_at: z.string(),
 })
@@ -69,9 +68,8 @@ export const tournamentInputSchema = z
       .array(z.uuid())
       .min(1, 'Elegí al menos una categoría.')
       .max(10, 'Elegí hasta 10 categorías.'),
-    annual_table: z.union([z.literal(''), z.uuid()]),
-    // Categories that do not add to the annual table; the rest do.
-    annual_excluded: z.array(z.uuid()),
+    // Annual table chosen for each category ('' when it adds to none).
+    annual_tables: z.record(z.string(), z.union([z.literal(''), z.uuid()])),
   })
   .refine((value) => !value.ends_on || value.ends_on >= value.starts_on, {
     path: ['ends_on'],
