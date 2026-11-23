@@ -39,6 +39,28 @@ function settings(env) {
   return { site, supabase, key }
 }
 
+/**
+ * The page template is fetched from the requesting host so Vercel previews serve their
+ * own build. That host comes from a request header and the answer is cached by the CDN,
+ * so only the site itself and this deployment's own Vercel URLs are trusted: any other
+ * host falls back to the site, never to a template (and scripts) from somewhere else.
+ */
+function templateOrigin(origin, config, env) {
+  if (!origin) return config.site
+  let requested
+  try {
+    requested = new URL(origin)
+  } catch {
+    return config.site
+  }
+  const allowed = new Set([config.site])
+  for (const host of [env.VERCEL_URL, env.VERCEL_BRANCH_URL])
+    if (host) allowed.add(`https://${host.trim().toLowerCase()}`)
+  return requested.protocol === 'https:' && allowed.has(requested.origin)
+    ? requested.origin
+    : config.site
+}
+
 async function rest(config, fetchImpl, path, body) {
   const response = await fetchImpl(`${config.supabase}/rest/v1/${path}`, {
     method: body ? 'POST' : 'GET',
@@ -263,7 +285,7 @@ export async function respond({
     return await page(
       kind,
       String(id),
-      origin ?? config.site,
+      templateOrigin(origin, config, env),
       config,
       fetchImpl,
       now,

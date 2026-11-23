@@ -72,14 +72,9 @@ describe('public routes', () => {
     mount(path)
     expect(await screen.findByRole('heading', { name: title })).toBeTruthy()
     expect(await screen.findByText(item)).toBeTruthy()
-    expect(screen.getByRole('button', { name: 'Anterior' })).toHaveProperty(
-      'disabled',
-      true,
-    )
-    expect(screen.getByRole('button', { name: 'Siguiente' })).toHaveProperty(
-      'disabled',
-      true,
-    )
+    // A single page has no pager: two disabled buttons would only be noise.
+    expect(screen.queryByRole('button', { name: 'Anterior' })).toBeNull()
+    expect(screen.queryByRole('button', { name: 'Siguiente' })).toBeNull()
   })
 
   it('navigates news cursor pages and restores the previous page', async () => {

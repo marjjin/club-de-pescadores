@@ -8,6 +8,28 @@ if (typeof Element !== 'undefined') {
 if (typeof window !== 'undefined') {
   window.scrollTo = () => {}
 }
+// jsdom has no modal dialogs nor Web Animations; tests that need more override these.
+if (typeof HTMLDialogElement !== 'undefined') {
+  Object.defineProperties(HTMLDialogElement.prototype, {
+    showModal: {
+      configurable: true,
+      value(this: HTMLDialogElement) {
+        this.open = true
+      },
+    },
+    close: {
+      configurable: true,
+      value(this: HTMLDialogElement) {
+        this.open = false
+        this.dispatchEvent(new Event('close'))
+      },
+    },
+  })
+  Object.defineProperty(Element.prototype, 'getAnimations', {
+    configurable: true,
+    value: () => [],
+  })
+}
 
 afterEach(() => {
   cleanup()

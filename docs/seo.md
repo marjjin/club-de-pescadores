@@ -25,12 +25,12 @@ Las rutas están en `vercel.json` (`routes`). **Una página pública nueva en `s
 
 Solo con información real publicada en el sitio:
 
-- `SportsClub` + `WebSite` en todas las páginas: nombre, ciudad (San Nicolás de los Arroyos, Buenos Aires), teléfono, logo.
+- `SportsClub` + `WebSite` en todas las páginas: nombre, dirección (Leandro Alem 1352, 2900 San Nicolás de los Arroyos, Buenos Aires), teléfono, horario (abierto las 24 horas, todos los días), logo e Instagram y Facebook oficiales. Datos confirmados por el club el 17/11/2026; si cambian, actualizarlos en `CLUB` (`src/shared/seo/pages.mjs`) y en `src/shared/config/club.ts` (pie del sitio).
 - `BreadcrumbList` en secciones, noticias y torneos.
 - `NewsArticle` en cada noticia (fecha de publicación y de modificación, foto).
-- `SportsEvent` en cada torneo (fechas, lugar, organizador).
+- `SportsEvent` en cada torneo (fechas, lugar, organizador). Sin lugar propio se usa la dirección del club; con lugar propio no se supone ninguna calle.
 
-No hay dirección exacta, horarios ni redes sociales porque el sitio no los publica: cuando el club los confirme, agregarlos a `CLUB` en `pages.mjs` (y al pie del sitio).
+El HTML pre-renderizado lleva título, descripción y canonical solo en el `<head>`: `src/entry-server.tsx` quita las copias que React genera al principio del cuerpo (hasta el 18/11/2026 se publicaban también dentro de `<div id="root">`).
 
 ## Rendimiento (Lighthouse, celular, medido el 17/11/2026)
 

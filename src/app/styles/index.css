@@ -62,6 +62,151 @@ body {
 }
 
 /*
+ * Modal windows (shared/ui/Modal) and the photo viewer (shared/ui/Lightbox).
+ * The closed state is the base rule and the open state excludes [data-closing]:
+ * useModalDialog sets that attribute, waits for the transition and then calls
+ * close(), so the exit animates in every browser, not only where `overlay` and
+ * discrete `display` transitions exist. Entry comes from @starting-style.
+ */
+@layer components {
+  .modal {
+    margin: auto;
+    width: min(var(--modal-width, 40rem), calc(100% - 2rem));
+    max-height: min(90dvh, calc(100% - 2rem));
+    overflow-y: auto;
+    /* Keeps scrolling inside the window from reaching the page behind it. */
+    overscroll-behavior: contain;
+    border: 0;
+    border-radius: 1rem;
+    padding: 0;
+    background: white;
+    color: var(--color-navy-900);
+    box-shadow:
+      0 2px 6px rgb(7 27 51 / 0.12),
+      0 24px 64px rgb(7 27 51 / 0.28);
+    opacity: 0;
+    transition-property: opacity, translate, scale;
+    transition-duration: 220ms;
+    transition-timing-function: cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+  .modal[open]:not([data-closing]) {
+    opacity: 1;
+  }
+  @starting-style {
+    .modal[open]:not([data-closing]) {
+      opacity: 0;
+    }
+  }
+
+  .modal::backdrop,
+  .lightbox::backdrop {
+    background-color: rgb(7 27 51 / 0);
+    /* ::backdrop is not a scroll container by default and would ignore overscroll-behavior. */
+    overflow: hidden;
+    overscroll-behavior: contain;
+    transition: background-color 220ms ease-out;
+  }
+  .modal[open]:not([data-closing])::backdrop {
+    background-color: rgb(7 27 51 / 0.6);
+  }
+  /* Opaque: any trace of the page behind competes with the photo. */
+  .lightbox[open]:not([data-closing])::backdrop {
+    background-color: rgb(4 16 31);
+  }
+  @starting-style {
+    .modal[open]:not([data-closing])::backdrop,
+    .lightbox[open]:not([data-closing])::backdrop {
+      background-color: rgb(7 27 51 / 0);
+    }
+  }
+
+  /* Phones: a sheet anchored to the bottom edge, where the thumb already is. */
+  @media (max-width: 39.99rem) {
+    .modal {
+      margin: auto 0 0;
+      width: 100%;
+      max-width: 100%;
+      max-height: 92dvh;
+      border-radius: 1.25rem 1.25rem 0 0;
+      padding-bottom: env(safe-area-inset-bottom);
+    }
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .modal {
+      translate: 0 0.75rem;
+      scale: 0.98;
+    }
+    .modal[open]:not([data-closing]) {
+      translate: 0 0;
+      scale: 1;
+    }
+    @starting-style {
+      .modal[open]:not([data-closing]) {
+        translate: 0 0.75rem;
+        scale: 0.98;
+      }
+    }
+  }
+  @media (prefers-reduced-motion: no-preference) and (max-width: 39.99rem) {
+    .modal {
+      translate: 0 100%;
+      scale: 1;
+      transition-duration: 280ms;
+    }
+    @starting-style {
+      .modal[open]:not([data-closing]) {
+        translate: 0 100%;
+        scale: 1;
+      }
+    }
+  }
+
+  .lightbox {
+    margin: 0;
+    width: 100%;
+    max-width: none;
+    height: 100dvh;
+    max-height: none;
+    overflow: hidden;
+    overscroll-behavior: contain;
+    border: 0;
+    padding: 0;
+    background: transparent;
+    color: white;
+    opacity: 0;
+    transition: opacity 220ms ease-out;
+  }
+  .lightbox[open]:not([data-closing]) {
+    opacity: 1;
+  }
+  @starting-style {
+    .lightbox[open]:not([data-closing]) {
+      opacity: 0;
+    }
+  }
+
+  /* Each photo is remounted when it changes, so it fades in on its own. */
+  .lightbox-media {
+    transition: opacity 200ms ease-out;
+  }
+  @starting-style {
+    .lightbox-media {
+      opacity: 0;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .modal,
+    .lightbox,
+    .modal::backdrop,
+    .lightbox::backdrop {
+      transition-duration: 100ms;
+    }
+  }
+}
+
+/*
  * Printing a sheet such as the tournament QR poster: the sheet is a direct child of
  * <body>, so hiding everything else leaves it alone on the first page, with its colours.
  */

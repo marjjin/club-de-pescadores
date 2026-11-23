@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { createPortal } from 'react-dom'
-import { Check, Copy, Download, Printer, X } from 'lucide-react'
+import { Check, Copy, Download, Printer } from 'lucide-react'
 import logo from '@/shared/assets/images/logo-192.webp'
 import type { AdminTournament } from '../../schemas/tournaments'
 import { qrSvgFile, tournamentPublicUrl } from '../../tournament-qr'
@@ -50,31 +50,12 @@ export function TournamentQrPoster({
   return (
     <>
       <TournamentDialog
-        labelledBy="qr-title"
-        describedBy="qr-description"
-        width="46rem"
+        title="QR de la tabla de posiciones"
+        description="Imprimilo y pegalo en el muelle: quien lo escanee abre la tabla de este torneo en el celular."
+        closeLabel="Cerrar QR"
+        size="lg"
         onClose={onClose}
       >
-        <div className="sticky top-0 z-10 flex items-start justify-between gap-4 border-b border-navy-900/10 bg-white px-5 py-4 sm:px-6">
-          <div>
-            <h2 id="qr-title" className="text-base font-extrabold">
-              QR de la tabla de posiciones
-            </h2>
-            <p id="qr-description" className="mt-1 text-sm text-ink-600">
-              Imprimilo y pegalo en el muelle: quien lo escanee abre la tabla de
-              este torneo en el celular.
-            </p>
-          </div>
-          <button
-            type="button"
-            autoFocus
-            aria-label="Cerrar QR"
-            onClick={onClose}
-            className="grid size-11 shrink-0 place-items-center rounded-lg text-ink-600 hover:bg-mist-50 hover:text-navy-900"
-          >
-            <X size={20} aria-hidden="true" />
-          </button>
-        </div>
         <div className="grid gap-6 p-5 sm:grid-cols-[minmax(0,17rem)_minmax(0,1fr)] sm:items-center sm:p-6">
           <div className="rounded-2xl border border-navy-900/10 bg-white p-5">
             <PosterSheet tournament={tournament} url={url} />

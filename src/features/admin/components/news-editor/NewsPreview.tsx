@@ -1,5 +1,4 @@
-import { useEffect, useRef } from 'react'
-import { X } from 'lucide-react'
+import { Modal } from '@/shared/ui/Modal'
 import { summarizeNews } from '@/features/news'
 import type { NewsEditorValues } from '../../news-editor'
 import { NewsCover } from './NewsCover'
@@ -52,46 +51,19 @@ export function NewsPreviewDialog({
   values: NewsEditorValues
   onClose: () => void
 }) {
-  const ref = useRef<HTMLDialogElement>(null)
-  useEffect(() => {
-    const dialog = ref.current
-    if (!dialog) return
-    if (open && !dialog.open) dialog.showModal()
-    else if (!open && dialog.open) dialog.close()
-  }, [open])
   return (
-    <dialog
-      ref={ref}
-      aria-labelledby="news-preview-heading"
-      onCancel={onClose}
+    <Modal
+      open={open}
       onClose={onClose}
-      onClick={(event) => {
-        if (event.target === event.currentTarget) onClose()
-      }}
-      className="m-auto max-h-[90dvh] w-[min(48rem,calc(100%_-_2rem))] overflow-y-auto rounded-2xl border-0 bg-mist-50 p-0 text-navy-900 shadow-xl backdrop:bg-navy-950/65"
+      size="lg"
+      title="Vista previa de la noticia"
+      description="Esta vista no guarda ni publica cambios."
+      closeLabel="Cerrar vista previa"
+      className="bg-mist-50"
     >
-      <div className="sticky top-0 z-10 flex items-center justify-between gap-4 border-b border-navy-900/10 bg-white p-4">
-        <div>
-          <h2 id="news-preview-heading" className="font-extrabold">
-            Vista previa de la noticia
-          </h2>
-          <p className="mt-1 text-xs text-ink-600">
-            Esta vista no guarda ni publica cambios.
-          </p>
-        </div>
-        <button
-          type="button"
-          autoFocus
-          aria-label="Cerrar vista previa"
-          onClick={onClose}
-          className="grid size-11 shrink-0 place-items-center rounded-lg text-ink-600 hover:bg-mist-50"
-        >
-          <X size={20} aria-hidden="true" />
-        </button>
-      </div>
       <div className="p-4 sm:p-6">
         <NewsPreview values={values} full />
       </div>
-    </dialog>
+    </Modal>
   )
 }

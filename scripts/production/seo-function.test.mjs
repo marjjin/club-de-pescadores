@@ -59,6 +59,13 @@ describe('server-rendered pages', () => {
     // Text from the database is escaped, never injected as markup.
     expect(page.body).toContain('&lt;b&gt;desde el muelle&lt;/b&gt;')
     expect(page.body).toContain('"@type":"NewsArticle"')
+    // The club's confirmed address, hours and official profiles go with every page.
+    expect(page.body).toContain('"streetAddress":"Leandro Alem 1352"')
+    expect(page.body).toContain('"postalCode":"2900"')
+    expect(page.body).toContain(
+      'https://www.instagram.com/clubdepescadores.sn/',
+    )
+    expect(page.body).toContain('"opens":"00:00"')
     expect(page.body).toContain('"dateModified":"2026-11-11T09:00:00+00:00"')
     // The app still loads on top of it.
     expect(page.body).toContain('<script type="module" src="/assets/index.js">')
@@ -92,8 +99,29 @@ describe('server-rendered pages', () => {
     expect(page.body).toContain('"@type":"SportsEvent"')
     expect(page.body).toContain('"startDate":"2026-11-28"')
     expect(page.body).toContain('"name":"Muelle del club"')
+    // A place of its own may not be at the club's street: no address is assumed.
+    expect(page.body).not.toMatch(/"SportsEvent"[^<]*"streetAddress"/)
     expect(page.body).toContain(
       'content="Tradicional 12 horas: Categoría Mayores y Seniors."',
+    )
+  })
+
+  it('places tournaments without a place of their own at the club', async () => {
+    const page = await call('tournament', tournamentId, {
+      '/tournaments': [
+        {
+          id: tournamentId,
+          name: 'Torneo de verano',
+          place: null,
+          starts_on: '2027-01-10',
+          ends_on: null,
+          status: 'published',
+          description: null,
+        },
+      ],
+    })
+    expect(page.body).toMatch(
+      /"SportsEvent"[^<]*"name":"Club de Pescadores San Nicolás","address":\{"@type":"PostalAddress","streetAddress":"Leandro Alem 1352","postalCode":"2900"/,
     )
   })
 
@@ -151,5 +179,41 @@ describe('sitemap', () => {
     })
     expect(result.status).toBe(200)
     expect(result.body).toContain(`<loc>${origin}/eventos</loc>`)
+  })
+})
+
+describe('template origin', () => {
+  // The template carries the page scripts and the answer is cached by the CDN, so
+  // a forged X-Forwarded-Host must never choose where it comes from.
+  const templateHost = async (requested, extraEnv = {}) => {
+    const fetchImpl = network({})
+    await respond({
+      kind: 'news',
+      id: newsId,
+      origin: requested,
+      env: { ...env, ...extraEnv },
+      fetchImpl,
+    })
+    return new URL(String(fetchImpl.mock.calls[0][0])).origin
+  }
+
+  it('ignores hosts that are not the site or this deployment', async () => {
+    expect(await templateHost('https://attacker.example')).toBe(origin)
+    expect(await templateHost('http://www.clubdepescadores.com')).toBe(origin)
+    expect(await templateHost('not a url')).toBe(origin)
+    expect(await templateHost(undefined)).toBe(origin)
+  })
+
+  it('keeps serving previews from their own Vercel deployment', async () => {
+    const preview = 'club-git-feature-club.vercel.app'
+    expect(
+      await templateHost(`https://${preview}`, { VERCEL_BRANCH_URL: preview }),
+    ).toBe(`https://${preview}`)
+    expect(
+      await templateHost('https://club-abc123.vercel.app', {
+        VERCEL_URL: 'club-abc123.vercel.app',
+      }),
+    ).toBe('https://club-abc123.vercel.app')
+    expect(await templateHost('https://other.vercel.app')).toBe(origin)
   })
 })

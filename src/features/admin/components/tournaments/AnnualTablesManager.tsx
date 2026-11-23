@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { CalendarRange, ChevronDown, Plus, X } from 'lucide-react'
+import { CalendarRange, ChevronDown, Plus } from 'lucide-react'
 import { useAccess } from '../../hooks/useAccess'
 import { useConfirm } from '../../hooks/useConfirm'
 import {
@@ -77,36 +77,13 @@ export function AnnualTablesManager({
   )
   return (
     <TournamentDialog
-      labelledBy="annual-title"
-      describedBy="annual-description"
+      title="Tablas anuales"
+      description="Suman los puntos de los torneos finalizados. Elegí qué categorías suma cada tabla y los torneos se vinculan solos."
+      icon={<CalendarRange size={19} />}
+      iconTone="sun"
+      closeLabel="Cerrar tablas anuales"
       onClose={onClose}
     >
-      <div className="sticky top-0 z-10 flex items-start gap-3 border-b border-navy-900/10 bg-mist-50 px-5 py-4 sm:px-6">
-        <span
-          aria-hidden="true"
-          className="grid size-10 shrink-0 place-items-center rounded-full bg-sun-400/25 text-navy-900"
-        >
-          <CalendarRange size={19} />
-        </span>
-        <div className="min-w-0 flex-1">
-          <h2 id="annual-title" className="text-base font-extrabold">
-            Tablas anuales
-          </h2>
-          <p id="annual-description" className="mt-0.5 text-sm text-ink-600">
-            Suman los puntos de los torneos finalizados. Elegí qué categorías
-            suma cada tabla y los torneos se vinculan solos.
-          </p>
-        </div>
-        <button
-          type="button"
-          autoFocus
-          aria-label="Cerrar tablas anuales"
-          className="grid size-11 shrink-0 place-items-center rounded-lg text-ink-600 hover:bg-white hover:text-navy-900"
-          onClick={onClose}
-        >
-          <X size={18} aria-hidden="true" />
-        </button>
-      </div>
       <div className="grid gap-4 p-5 sm:p-6">
         <Feedback
           error={save.error ?? archive.error ?? remove.error ?? query.error}

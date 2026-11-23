@@ -2,11 +2,15 @@ export declare const SITE_NAME: string
 export declare const SITE_LOCALE: string
 export declare const CLUB: {
   readonly name: string
+  readonly street: string
+  readonly postalCode: string
   readonly locality: string
   readonly region: string
   readonly country: string
   readonly telephone: string
   readonly whatsapp: string
+  readonly openAllDay: boolean
+  readonly profiles: readonly string[]
 }
 export type PageMeta = {
   readonly path: string

@@ -1,7 +1,8 @@
-import { MapPin, MessageCircle } from 'lucide-react'
+import { Clock3, MapPin, MessageCircle } from 'lucide-react'
 import logo192 from '@/shared/assets/images/logo-192.webp'
 import { club } from '@/shared/config/club'
 import { container } from '@/shared/ui/layout'
+import { FacebookIcon, InstagramIcon } from '@/shared/ui/SocialIcons'
 import { navLinks } from '../config/navigation'
 
 const link =
@@ -11,21 +12,22 @@ export function Footer() {
   return (
     <footer id="contacto" className="bg-navy-950 text-white">
       <div
-        className={`${container} grid gap-10 py-14 sm:grid-cols-2 lg:grid-cols-[1.6fr_1fr_1.4fr] lg:py-16`}
+        className={`${container} grid gap-10 py-12 sm:grid-cols-2 sm:py-14 lg:grid-cols-[1.6fr_1fr_1.4fr] lg:py-16`}
       >
-        <div>
+        {/* Phones put the crest beside the name, so the footer starts with the links sooner. */}
+        <div className="flex items-center gap-4 sm:block">
           {/* The crest has a white background, so it sits on a white disc. */}
-          <span className="grid size-20 place-items-center rounded-full bg-white">
+          <span className="grid size-16 shrink-0 place-items-center rounded-full bg-white sm:size-20">
             <img
               src={logo192}
               width="192"
               height="192"
               loading="lazy"
               alt=""
-              className="size-16"
+              className="size-12 sm:size-16"
             />
           </span>
-          <p className="mt-5 max-w-xs font-display text-2xl tracking-wide uppercase">
+          <p className="max-w-xs font-display text-xl tracking-wide uppercase sm:mt-5 sm:text-2xl">
             {club.name}
           </p>
         </div>
@@ -33,7 +35,7 @@ export function Footer() {
           <h2 className="text-xs font-extrabold tracking-[0.18em] text-sun-400 uppercase">
             Secciones
           </h2>
-          <ul className="mt-4 grid text-white/80">
+          <ul className="mt-4 grid grid-cols-2 gap-x-6 text-white/80 sm:grid-cols-1">
             {navLinks.map((item) => (
               <li key={item.href}>
                 <a href={item.href} className={link}>
@@ -48,14 +50,40 @@ export function Footer() {
             Contacto
           </h2>
           <ul className="mt-4 grid gap-1 text-white/80">
+            <li>
+              <a href={club.mapsUrl} className={link}>
+                <MapPin aria-hidden="true" className="size-4 shrink-0" />
+                <address className="not-italic">{club.address}</address>
+              </a>
+            </li>
             <li className="flex min-h-11 items-center gap-2 sm:min-h-9">
-              <MapPin aria-hidden="true" className="size-4 shrink-0" />
-              {club.location}
+              <Clock3 aria-hidden="true" className="size-4 shrink-0" />
+              {club.hours}
             </li>
             <li>
               <a href={club.whatsappUrl} className={link}>
                 <MessageCircle aria-hidden="true" className="size-4 shrink-0" />
                 WhatsApp {club.phone}
+              </a>
+            </li>
+          </ul>
+          <ul aria-label="Redes sociales" className="mt-4 flex gap-2">
+            <li>
+              <a
+                href={club.instagramUrl}
+                aria-label="Instagram del club"
+                className="grid size-11 place-items-center rounded-full bg-white/10 transition-colors hover:bg-sun-400 hover:text-navy-950"
+              >
+                <InstagramIcon className="size-5" />
+              </a>
+            </li>
+            <li>
+              <a
+                href={club.facebookUrl}
+                aria-label="Facebook del club"
+                className="grid size-11 place-items-center rounded-full bg-white/10 transition-colors hover:bg-sun-400 hover:text-navy-950"
+              >
+                <FacebookIcon className="size-5" />
               </a>
             </li>
           </ul>
