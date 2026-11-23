@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Plus, Tags, X } from 'lucide-react'
+import { Plus, Tags } from 'lucide-react'
 import { useAccess } from '../../hooks/useAccess'
 import { useConfirm } from '../../hooks/useConfirm'
 import {
@@ -56,40 +56,12 @@ export function CategoriesManager({
   }
   return (
     <TournamentDialog
-      labelledBy="categories-title"
-      describedBy="categories-description"
+      title="Categorías de torneos"
+      description="Senior, Cadetes, Damas… Cada torneo usa una o varias, y cada una tiene su tabla de posiciones. Solo se pueden eliminar las que ningún torneo usa; las demás se archivan."
+      icon={<Tags size={19} />}
+      closeLabel="Cerrar categorías"
       onClose={onClose}
     >
-      <div className="sticky top-0 z-10 flex items-start gap-3 border-b border-navy-900/10 bg-mist-50 px-5 py-4 sm:px-6">
-        <span
-          aria-hidden="true"
-          className="grid size-10 shrink-0 place-items-center rounded-full bg-river-600/10 text-river-600"
-        >
-          <Tags size={19} />
-        </span>
-        <div className="min-w-0 flex-1">
-          <h2 id="categories-title" className="text-base font-extrabold">
-            Categorías de torneos
-          </h2>
-          <p
-            id="categories-description"
-            className="mt-0.5 text-sm text-ink-600"
-          >
-            Senior, Cadetes, Damas… Cada torneo usa una o varias, y cada una
-            tiene su tabla de posiciones. Solo se pueden eliminar las que ningún
-            torneo usa; las demás se archivan.
-          </p>
-        </div>
-        <button
-          type="button"
-          autoFocus
-          aria-label="Cerrar categorías"
-          className="grid size-11 shrink-0 place-items-center rounded-lg text-ink-600 hover:bg-mist-50 hover:text-navy-900"
-          onClick={onClose}
-        >
-          <X size={18} aria-hidden="true" />
-        </button>
-      </div>
       {manage && (
         <form
           className="flex flex-wrap gap-2 border-b border-navy-900/10 p-4 sm:px-6"

@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from '@testing-library/react'
+import { fireEvent, render, screen, within } from '@testing-library/react'
 import { MemoryRouter } from 'react-router'
 import { describe, expect, it, vi } from 'vitest'
 import { mockResponse, newsRows, requestUrl } from '@/test/content-api'
@@ -63,8 +63,10 @@ describe('reading a news article', () => {
     expect(zoomed.querySelector('img')?.getAttribute('src')).toBe(
       newsRows[0]!.image_url,
     )
-    expect(document.documentElement.style.overflow).toBe('hidden')
-    document.documentElement.style.overflow = ''
+    // The page behind is contained with CSS, never by locking <html> (that shifts the layout).
+    expect(document.documentElement.style.overflow).toBe('')
+    fireEvent.click(within(zoomed).getByRole('button', { name: 'Cerrar' }))
+    expect(zoomed.hasAttribute('open')).toBe(false)
     fireEvent.click(
       screen.getByRole('link', { name: 'Volver a todas las noticias' }),
     )

@@ -19,6 +19,8 @@ export function PagerNav({
   onNext,
   busyMessage,
 }: Props) {
+  // A single page has nowhere to go: two disabled buttons would only be noise.
+  if (!canPrevious && !canNext && !busyMessage) return null
   return (
     <>
       <nav
