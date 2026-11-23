@@ -101,6 +101,23 @@ describe('administrative user deletion', () => {
     expect((await account(viewer)).deleted_at).toBeNull()
   })
 
+  it('lets managers edit only accounts whose current access they could have granted', async () => {
+    // Stripping roles or deactivating is as sensitive as deleting.
+    await expect(
+      run(manager, 'select public.admin_save_user($1,$2,false,$3)', [
+        editor,
+        [roles.viewer],
+        (await account(editor)).updated_at,
+      ]),
+    ).rejects.toThrow(/permisos que ya tenés/)
+    expect((await account(editor)).active).toBe(true)
+    const editorRoles = await db.query(
+      'select role_id from public.user_roles where user_id=$1',
+      [editor],
+    )
+    expect(editorRoles.rows).toEqual([{ role_id: roles.editor }])
+  })
+
   it('lets managers delete only accounts whose access they could have granted', async () => {
     await expect(remove(manager, general)).rejects.toThrow(/Solo podés/)
     await expect(remove(manager, editor)).rejects.toThrow(/permisos/)
