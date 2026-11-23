@@ -4,7 +4,7 @@ import logo from '@/shared/assets/images/logo-192.webp'
 
 export function AccessFrame({ children }: { children: ReactNode }) {
   return (
-    <main className="grid min-h-dvh bg-mist-50 lg:grid-cols-2">
+    <main className="grid min-h-dvh grid-cols-[minmax(0,1fr)] bg-mist-50 lg:grid-cols-2">
       <section className="relative flex flex-col justify-center bg-navy-950 px-8 py-10 text-white sm:px-16 lg:py-20">
         <Link to="/" className="mb-12 flex items-center gap-4">
           <img src={logo} width="64" height="64" alt="" />

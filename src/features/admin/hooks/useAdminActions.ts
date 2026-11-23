@@ -19,11 +19,26 @@ export function useAdminAction<T, R>(action: (input: T) => Promise<R>) {
 export function useAuthActions() {
   return {
     login: useAdminAction(
-      ({ email, password }: { email: string; password: string }) =>
-        auth.signIn(email, password),
+      ({
+        email,
+        password,
+        captchaToken,
+      }: {
+        email: string
+        password: string
+        captchaToken: string | null
+      }) => auth.signIn(email, password, captchaToken),
     ),
     logout: useAdminAction((others: boolean) => auth.signOut(others)),
-    recover: useAdminAction(auth.recoverPassword),
+    recover: useAdminAction(
+      ({
+        email,
+        captchaToken,
+      }: {
+        email: string
+        captchaToken: string | null
+      }) => auth.recoverPassword(email, captchaToken),
+    ),
     password: useAdminAction(auth.updatePassword),
     email: useAdminAction(auth.updateEmail),
     enroll: useAdminAction(() => auth.enrollFactor()),

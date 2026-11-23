@@ -2,13 +2,25 @@ import { useState } from 'react'
 import { Link } from 'react-router'
 import { formText } from '../form-utils'
 import { useAuthActions } from '../hooks/useAdminActions'
+import { useCaptcha } from '../hooks/useCaptcha'
 import { AccessFrame } from './AccessFrame'
 import { Feedback, Field, inputClass, primaryClass } from './ui'
 
 export function LoginScreen() {
   const actions = useAuthActions()
+  // Destructured: `container` is a callback ref, the rest is plain render state.
+  const {
+    required: captchaRequired,
+    container: captchaContainer,
+    token: captchaToken,
+    failed: captchaFailed,
+    reset: resetCaptcha,
+  } = useCaptcha()
   const [recovering, setRecovering] = useState(false)
   const operation = recovering ? actions.recover : actions.login
+  const waitingCaptcha = captchaRequired && !captchaToken
+  // Every attempt spends the token, whether Auth accepted it or not.
+  const settled = { onSettled: resetCaptcha }
   return (
     <AccessFrame>
       <h2 className="text-2xl font-extrabold">
@@ -23,14 +35,21 @@ export function LoginScreen() {
         className="grid gap-5"
         onSubmit={(event) => {
           event.preventDefault()
+          if (waitingCaptcha) return
           const form = new FormData(event.currentTarget)
           const email = formText(form.get('email'))
-          if (recovering) actions.recover.mutate(email)
+
+          if (recovering)
+            actions.recover.mutate({ email, captchaToken }, settled)
           else
-            actions.login.mutate({
-              email,
-              password: formText(form.get('password')),
-            })
+            actions.login.mutate(
+              {
+                email,
+                password: formText(form.get('password')),
+                captchaToken,
+              },
+              settled,
+            )
         }}
       >
         <Field label="Correo electrónico">
@@ -55,6 +74,18 @@ export function LoginScreen() {
             />
           </Field>
         )}
+        {captchaRequired && (
+          // Fixed height so the form does not jump when the check appears.
+          <div className="grid gap-2">
+            <div ref={captchaContainer} className="min-h-[65px]" />
+            {captchaFailed && (
+              <p role="alert" className="text-sm text-red-700">
+                No se pudo completar la verificación de seguridad. Recargá la
+                página; si sigue fallando, probá con otra conexión o navegador.
+              </p>
+            )}
+          </div>
+        )}
         <Feedback
           error={operation.error}
           success={
@@ -63,12 +94,17 @@ export function LoginScreen() {
               : null
           }
         />
-        <button className={primaryClass} disabled={operation.isPending}>
+        <button
+          className={primaryClass}
+          disabled={operation.isPending || waitingCaptcha}
+        >
           {operation.isPending
             ? 'Procesando…'
-            : recovering
-              ? 'Enviar instrucciones'
-              : 'Ingresar'}
+            : waitingCaptcha
+              ? 'Verificando la conexión…'
+              : recovering
+                ? 'Enviar instrucciones'
+                : 'Ingresar'}
         </button>
         <button
           type="button"

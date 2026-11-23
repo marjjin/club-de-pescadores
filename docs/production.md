@@ -13,6 +13,21 @@ La configuración de este repositorio prepara el sitio público. Un build local 
 5. Ejecutar `npm run check` y `npm audit --omit=dev`. Desplegar el código completo del repositorio, incluido `vercel.json`, mediante el proyecto Vercel existente. El build es `npm run build`, la salida es `dist/` y Node es 24.
 6. Verificar la versión publicada: inicio, `/noticias`, `/eventos`, navegación móvil, errores de red, `/robots.txt`, `/sitemap.xml`, `/og-image.jpg`, una dirección inexistente (debe responder 404) y cabeceras CSP. `npm run site:check` verifica todo esto contra el sitio publicado. Revisar en navegador la consola y la pestaña de red; comprobar que las consultas van al proyecto Supabase correcto.
 
+## CAPTCHA del panel (Cloudflare Turnstile)
+
+El ingreso y la recuperación de contraseña del panel envían un token de Turnstile a Supabase Auth. Sin él, un bot puede pedir correos de recuperación y agotar el cupo de envío del proyecto, lo que bloquea las invitaciones. El script de Turnstile se carga solo en `/admin`.
+
+El orden importa: si se activa el CAPTCHA en Supabase antes de publicar la clave en el sitio, nadie puede ingresar al panel.
+
+1. En Cloudflare → Turnstile, crear un widget en modo «Managed» con el hostname `clubdepescadores.com` (incluye `www`).
+2. En Vercel, cargar `VITE_TURNSTILE_SITE_KEY` (la clave pública, empieza con `0x`) solo para **Production**. Las vistas previas usan otro dominio que el widget no acepta, así que ahí el panel ingresa sin CAPTCHA mientras Supabase no lo exija.
+3. Redesplegar y comprobar que `/admin` muestra la verificación y que el botón «Ingresar» se habilita.
+4. Recién entonces, en Supabase → Authentication → Attack Protection, activar el CAPTCHA con Turnstile y la **clave secreta**. La clave secreta nunca va en Vercel ni en el repositorio.
+
+Para desactivarlo, hacer los pasos al revés: primero apagarlo en Supabase y después quitar la variable.
+
+En desarrollo local se puede probar con la clave de prueba de Cloudflare `1x00000000000000000000AA`, que siempre aprueba. El build de producción la rechaza.
+
 Si se usa el SQL Editor como alternativa al mecanismo de migraciones, ejecutar el archivo completo una sola vez y registrar después esa versión como aplicada con la CLI antes de introducir nuevas migraciones. No ejecutar `db reset` sobre la base remota.
 
 ## Qué protege el despliegue

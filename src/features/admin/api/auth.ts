@@ -41,10 +41,19 @@ export function subscribeAuth(listener: (userId: string | null) => void) {
   return () => data.subscription.unsubscribe()
 }
 
-export async function signIn(email: string, password: string) {
+// Supabase Auth checks the CAPTCHA token on these two calls once it is enabled there.
+const captcha = (captchaToken: string | null) =>
+  captchaToken ? { captchaToken } : {}
+
+export async function signIn(
+  email: string,
+  password: string,
+  captchaToken: string | null = null,
+) {
   const { error } = await getAdminSupabase().auth.signInWithPassword({
     email,
     password,
+    options: captcha(captchaToken),
   })
   if (error)
     throw new Error(
@@ -59,9 +68,13 @@ export async function signOut(others = false) {
   })
   if (error) throw adminError(error)
 }
-export async function recoverPassword(email: string) {
+export async function recoverPassword(
+  email: string,
+  captchaToken: string | null = null,
+) {
   const { error } = await getAdminSupabase().auth.resetPasswordForEmail(email, {
     redirectTo: `${window.location.origin}/admin/establecer-clave`,
+    ...captcha(captchaToken),
   })
   if (error)
     throw new Error(
