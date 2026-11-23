@@ -30,5 +30,12 @@ export function productionConfig() {
       )
     }
   }
-  return { ...supabase, siteUrl: site.origin }
+  const captcha = environment.VITE_TURNSTILE_SITE_KEY?.trim()
+  // Cloudflare's test keys (1x…, 2x…, 3x…) always pass or always fail: never in production.
+  if (captcha && !/^0x[\w-]{10,}$/.test(captcha)) {
+    throw new Error(
+      'VITE_TURNSTILE_SITE_KEY debe ser la clave pública de un widget real de Turnstile (empieza con 0x).',
+    )
+  }
+  return { ...supabase, siteUrl: site.origin, turnstile: Boolean(captcha) }
 }

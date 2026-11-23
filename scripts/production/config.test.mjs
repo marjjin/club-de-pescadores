@@ -28,3 +28,13 @@ it('rejects private credentials accidentally placed in public variables', () => 
   vi.stubEnv('VITE_SERVICE_ROLE_KEY', 'private_test_fixture')
   expect(() => productionConfig()).toThrow('VITE_SERVICE_ROLE_KEY')
 })
+
+it('accepts only a real Turnstile site key in production', () => {
+  vi.stubEnv('VITE_TURNSTILE_SITE_KEY', '0x4AAAAAAAexampleKey')
+  expect(productionConfig()).toMatchObject({ turnstile: true })
+  // Cloudflare's test keys always pass (or always fail) the challenge.
+  vi.stubEnv('VITE_TURNSTILE_SITE_KEY', '1x00000000000000000000AA')
+  expect(() => productionConfig()).toThrow('VITE_TURNSTILE_SITE_KEY')
+  vi.stubEnv('VITE_TURNSTILE_SITE_KEY', '')
+  expect(productionConfig()).toMatchObject({ turnstile: false })
+})
