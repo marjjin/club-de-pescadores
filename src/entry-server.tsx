@@ -27,8 +27,25 @@ async function once(url: string) {
   // A page that fails here would ship broken markup: stop the build instead.
   if (errors.length)
     throw errors[0] instanceof Error ? errors[0] : new Error(String(errors[0]))
-  // React leaves title and meta out of a body-only render; the page head already has them.
-  return new Response(prelude).text()
+  return withoutHeadTags(await new Response(prelude).text())
+}
+
+// A body-only render still starts with the page's <title>, description and canonical.
+// The served <head> already has them (marked data-seo), a copy in <body> is invalid and
+// Google ignores a canonical there; on hydration React puts its own into <head> anyway.
+const leadingHoisted =
+  /^(?:<link [^>]*\/>|<meta [^>]*\/>|<title>[^<]*<\/title>)+/
+const headOnly = /^(?:<title>|<meta |<link rel="canonical")/
+
+function withoutHeadTags(html: string) {
+  const lead = leadingHoisted.exec(html)?.[0] ?? ''
+  const kept = lead.match(
+    /<link [^>]*\/>|<meta [^>]*\/>|<title>[^<]*<\/title>/g,
+  )
+  return (
+    (kept ?? []).filter((tag) => !headOnly.test(tag)).join('') +
+    html.slice(lead.length)
+  )
 }
 
 export async function render(url: string) {

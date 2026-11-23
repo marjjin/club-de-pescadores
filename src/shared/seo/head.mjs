@@ -104,8 +104,29 @@ export function clubJsonLd(siteUrl) {
         image: `${siteUrl}/og-image.jpg`,
         telephone: CLUB.telephone,
         sport: 'Pesca deportiva',
+        sameAs: CLUB.profiles,
+        ...(CLUB.openAllDay
+          ? {
+              openingHoursSpecification: {
+                '@type': 'OpeningHoursSpecification',
+                dayOfWeek: [
+                  'Monday',
+                  'Tuesday',
+                  'Wednesday',
+                  'Thursday',
+                  'Friday',
+                  'Saturday',
+                  'Sunday',
+                ],
+                opens: '00:00',
+                closes: '23:59',
+              },
+            }
+          : {}),
         address: {
           '@type': 'PostalAddress',
+          streetAddress: CLUB.street,
+          postalCode: CLUB.postalCode,
           addressLocality: CLUB.locality,
           addressRegion: CLUB.region,
           addressCountry: CLUB.country,
@@ -171,6 +192,10 @@ export function tournamentJsonLd(siteUrl, tournament) {
       name: tournament.place || CLUB.name,
       address: {
         '@type': 'PostalAddress',
+        // Without a place of its own the tournament is at the club, whose street is known.
+        ...(tournament.place
+          ? {}
+          : { streetAddress: CLUB.street, postalCode: CLUB.postalCode }),
         addressLocality: CLUB.locality,
         addressRegion: CLUB.region,
         addressCountry: CLUB.country,

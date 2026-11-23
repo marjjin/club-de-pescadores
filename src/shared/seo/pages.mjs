@@ -7,11 +7,19 @@ export const SITE_LOCALE = 'es_AR'
 /** Facts shown on the site; nothing here may be invented for search engines. */
 export const CLUB = {
   name: SITE_NAME,
+  street: 'Leandro Alem 1352',
+  postalCode: '2900',
   locality: 'San Nicolás de los Arroyos',
   region: 'Buenos Aires',
   country: 'AR',
   telephone: '+54 9 336 425-0033',
   whatsapp: 'https://wa.me/5493364250033',
+  // Confirmed by the club on 17/11/2026: open every day, all day.
+  openAllDay: true,
+  profiles: [
+    'https://www.instagram.com/clubdepescadores.sn/',
+    'https://www.facebook.com/ClubDePescadoresSN',
+  ],
 }
 
 export const PAGES = {
