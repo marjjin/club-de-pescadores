@@ -4,6 +4,7 @@ import { optimizeImage } from '../image-optimizer'
 import { readVideo, videoExtension, VIDEO_TYPES } from '../video-metadata'
 import type { MediaInput } from '../schemas/media'
 import { adminError } from './errors'
+import { UPLOAD_CACHE_CONTROL } from './storage-cache'
 
 const bucket = 'club-media'
 // Without alt the upload is not attachable yet; the caller fills it before saving.
@@ -25,7 +26,7 @@ async function put(owner: string, blob: Blob, extension: string) {
     .upload(path, blob, {
       contentType: blob.type,
       upsert: false,
-      cacheControl: '31536000',
+      cacheControl: UPLOAD_CACHE_CONTROL,
     })
   if (error) throw adminError(error)
   return path

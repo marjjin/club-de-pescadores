@@ -2,6 +2,7 @@ import { getAdminSupabase } from '@/lib/supabase/admin-client'
 import { randomUuid } from '@/shared/lib/random-id'
 import { optimizeImage } from '../image-optimizer'
 import { adminError } from './errors'
+import { UPLOAD_CACHE_CONTROL } from './storage-cache'
 
 export async function uploadNewsImage(file: File) {
   const { blob } = await optimizeImage(file)
@@ -15,7 +16,7 @@ export async function uploadNewsImage(file: File) {
     .upload(path, blob, {
       contentType: blob.type,
       upsert: false,
-      cacheControl: '31536000',
+      cacheControl: UPLOAD_CACHE_CONTROL,
     })
   if (error) throw adminError(error)
   return client.storage.from('news-images').getPublicUrl(path).data.publicUrl
