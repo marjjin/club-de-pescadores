@@ -1,4 +1,5 @@
 import { Clock3, MapPin, MessageCircle } from 'lucide-react'
+import { Link } from 'react-router'
 import logo192 from '@/shared/assets/images/logo-192.webp'
 import { club } from '@/shared/config/club'
 import { container } from '@/shared/ui/layout'
@@ -97,6 +98,12 @@ export function Footer() {
           <p>
             © {new Date().getFullYear()} {club.name}
           </p>
+          <Link
+            to="/privacidad"
+            className="inline-flex min-h-11 items-center underline-offset-4 hover:text-sun-400 hover:underline sm:min-h-0"
+          >
+            Privacidad
+          </Link>
         </div>
       </div>
     </footer>

@@ -113,6 +113,10 @@ await writeFile(
   'dist/_pages/torneos.html',
   await withBody(section(PAGES.tournaments, 'Torneos'), '/torneos'),
 )
+await writeFile(
+  'dist/_pages/privacidad.html',
+  await withBody(section(PAGES.privacy, 'Privacidad'), '/privacidad'),
+)
 // Unknown addresses answer 404 with this page; the app then shows its own "not found".
 await writeFile('dist/404.html', page(PAGES.notFound, { index: false }))
 

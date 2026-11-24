@@ -77,6 +77,21 @@ describe('public routes', () => {
     expect(screen.queryByRole('button', { name: 'Siguiente' })).toBeNull()
   })
 
+  it('renders the privacy page and links to it from the footer', async () => {
+    mount('/privacidad')
+    expect(
+      await screen.findByRole('heading', { level: 1, name: 'Privacidad' }),
+    ).toBeTruthy()
+    expect(
+      screen.getByRole('heading', {
+        name: 'Cómo pedir que corrijamos o quitemos un dato',
+      }),
+    ).toBeTruthy()
+    expect(
+      screen.getByRole('link', { name: 'Privacidad' }).getAttribute('href'),
+    ).toBe('/privacidad')
+  })
+
   it('navigates news cursor pages and restores the previous page', async () => {
     mount('/noticias')
     const rows = Array.from({ length: 15 }, (_, index) => ({

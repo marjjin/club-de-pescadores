@@ -55,6 +55,7 @@
     { "src": "^/noticias$", "dest": "/_pages/noticias.html" },
     { "src": "^/eventos$", "dest": "/_pages/eventos.html" },
     { "src": "^/torneos$", "dest": "/_pages/torneos.html" },
+    { "src": "^/privacidad$", "dest": "/_pages/privacidad.html" },
     {
       "src": "^/noticias/(?<id>[^/]+)$",
       "dest": "/api/seo?kind=news&id=$id"
