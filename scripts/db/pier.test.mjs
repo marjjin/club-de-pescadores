@@ -26,6 +26,14 @@ const store = (name, owner = staff, age = '0 hours') =>
      values ('club-media',$1,$2,now() - $3::interval)`,
     [name, owner, age],
   )
+const checked = (n, ext) =>
+  `${staff}/4000000${n}-0000-4000-8000-000000000000.${ext}`
+const upload = (user, name, mimetype) =>
+  run(
+    user,
+    "insert into storage.objects(bucket_id,name,metadata) values ('club-media',$1,$2)",
+    [name, mimetype === undefined ? null : { mimetype }],
+  )
 const image = (path, alt = 'Muelle') => ({
   kind: 'image',
   path,
@@ -88,6 +96,25 @@ afterAll(async () => {
 })
 
 describe('pier reports', () => {
+  it('ties a club media extension to the type Storage records for it', async () => {
+    await upload(staff, checked(0, 'webp'))
+    await upload(staff, checked(1, 'jpg'), 'image/jpeg')
+    await upload(staff, checked(2, 'mp4'), 'video/mp4')
+    await upload(staff, checked(3, 'webm'), 'video/webm')
+    await upload(staff, checked(4, 'mov'), 'video/quicktime')
+    for (const [n, ext, mimetype] of [
+      [5, 'jpg', 'video/mp4'],
+      [6, 'mp4', 'image/jpeg'],
+      [7, 'mov', 'video/mp4'],
+    ])
+      await expect(
+        upload(staff, checked(n, ext), mimetype),
+      ).rejects.toMatchObject({ code: '42501' })
+    await db.query('delete from storage.objects where name like $1', [
+      checked('%', '%'),
+    ])
+  })
+
   it('routes staff to the pier workspace through the session context', async () => {
     const context = (await run(staff, 'select public.admin_context() as c'))
       .rows[0].c

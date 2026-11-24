@@ -474,6 +474,32 @@ it('restricts Storage uploads to an authorized user folder and blocks overwrites
   ).toHaveLength(0)
 })
 
+it('ties a news image extension to the type Storage records for it', async () => {
+  let n = 10
+  const upload = (ext, mimetype) =>
+    run(
+      root,
+      "insert into storage.objects(bucket_id,name,metadata) values ('news-images',$1,$2)",
+      [
+        `${root}/20000000-0000-4000-8000-0000000000${n++}.${ext}`,
+        mimetype === undefined ? null : { mimetype },
+      ],
+    )
+  // Storage probes the policy without metadata before the upload.
+  await upload('webp')
+  await upload('webp', 'image/webp')
+  await upload('jpg', 'image/jpeg')
+  await upload('png', 'IMAGE/PNG')
+  for (const [ext, mimetype] of [
+    ['jpg', 'image/png'],
+    ['webp', 'video/mp4'],
+    ['png', 'text/html'],
+  ])
+    await expect(upload(ext, mimetype)).rejects.toMatchObject({
+      code: '42501',
+    })
+})
+
 it('all administrative tables have RLS and no writable browser grants', async () => {
   const tables = [
     'roles',
