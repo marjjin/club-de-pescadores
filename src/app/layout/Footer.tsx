@@ -95,15 +95,20 @@ export function Footer() {
         <div
           className={`${container} flex flex-wrap justify-between gap-2 pr-20 sm:pr-20 min-[1440px]:pr-6`}
         >
-          <p>
-            © {new Date().getFullYear()} {club.name}
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+            <p>
+              © {new Date().getFullYear()} {club.name}
+            </p>
+            <Link
+              to="/privacidad"
+              className="inline-flex min-h-11 items-center underline-offset-4 hover:text-sun-400 hover:underline sm:min-h-0"
+            >
+              Privacidad
+            </Link>
+          </div>
+          <p className="self-center">
+            Desarrollado por CARCO DESARROLLO DE SOFTWARE
           </p>
-          <Link
-            to="/privacidad"
-            className="inline-flex min-h-11 items-center underline-offset-4 hover:text-sun-400 hover:underline sm:min-h-0"
-          >
-            Privacidad
-          </Link>
         </div>
       </div>
     </footer>
