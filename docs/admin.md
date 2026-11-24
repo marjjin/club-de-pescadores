@@ -108,6 +108,20 @@ El trigger de la migración `006` escucha únicamente cambios en `auth.users.ema
 
 Este comportamiento usa el [flujo oficial de cambio de usuario de Supabase](https://supabase.com/docs/reference/javascript/auth-updateuser). Si el cambio corresponde a otra persona que asumirá la administración, es preferible invitarla con su propia cuenta para conservar la atribución individual de la auditoría.
 
+## Quitar una foto a pedido de una persona
+
+La Ley 25.326 da derecho a pedir que se quite una foto en la que alguien aparece. Los buckets `news-images` y `club-media` son públicos: cualquier archivo se descarga si se conoce su URL, también el de un borrador, una noticia en la papelera o un parte despublicado. Despublicar o mandar a la papelera **no alcanza**: hay que borrar el archivo.
+
+- **Noticia:** mandarla a la papelera y después «Eliminar definitivamente». Se borra también la imagen, salvo que otra noticia la use.
+- **Parte del muelle:** «Borrar parte» en el historial. Sus fotos y videos dejan de estar en uso y se borran en la limpieza siguiente.
+- **Instalaciones:** reemplazar o quitar la foto y guardar. La anterior se borra en la limpieza siguiente.
+
+La limpieza no corre sola: se ejecuta cuando alguien con permiso abre la sección Muelle o Instalaciones del panel, y borra los archivos sin uso subidos hace más de 24 h. Después de borrar, abrí esa sección una vez para que corra.
+
+La CDN de Supabase en el plan gratuito no se vacía al borrar un archivo: sigue sirviendo su copia hasta que vence la caché. Desde el 23/11/2026 los archivos se suben con caché de un día (`src/features/admin/api/storage-cache.ts`), así que una foto borrada deja de verse por su URL en menos de 24 h. Los 11 archivos subidos antes de esa fecha tienen caché de un año; si alguno debe quitarse, borrarlo igual y consultar al soporte de Supabase si puede vaciar la caché de esa URL. La Smart CDN de los planes pagos la vacía sola.
+
+No subir a un borrador material que todavía no se pueda mostrar: aunque no esté publicado, su URL es pública.
+
 ## Verificación antes de habilitar producción
 
 - Ejecutar `npm run check`. Prueba el esquema local con roles reales de PostgreSQL aislado, los RPC, Storage RLS, el handler HTTP y los flujos de interfaz con Auth/API simulados.
