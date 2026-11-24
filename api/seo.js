@@ -223,9 +223,13 @@ const xmlEscape = (value) =>
 
 async function sitemap(config, fetchImpl, now) {
   const { site } = config
-  const entries = [PAGES.home, PAGES.news, PAGES.events, PAGES.tournaments].map(
-    (meta) => ({ path: meta.path }),
-  )
+  const entries = [
+    PAGES.home,
+    PAGES.news,
+    PAGES.events,
+    PAGES.tournaments,
+    PAGES.privacy,
+  ].map((meta) => ({ path: meta.path }))
   // One failing list still leaves the others (and the fixed pages) in the sitemap.
   const lists = await Promise.allSettled([
     rest(

@@ -22,6 +22,7 @@ export declare const PAGES: {
   readonly news: PageMeta
   readonly events: PageMeta
   readonly tournaments: PageMeta
+  readonly privacy: PageMeta
   readonly notFound: PageMeta
 }
 export declare function pageTitle(name: string | null | undefined): string

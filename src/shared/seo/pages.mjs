@@ -47,6 +47,12 @@ export const PAGES = {
     description:
       'Torneos de pesca del Club de Pescadores San Nicolás: tablas de posiciones en vivo, resultados y tablas anuales por categoría.',
   },
+  privacy: {
+    path: '/privacidad',
+    title: 'Privacidad | Club de Pescadores San Nicolás',
+    description:
+      'Qué datos personales publica y guarda el Club de Pescadores San Nicolás en su sitio y cómo pedir que los corrija o los quite.',
+  },
   notFound: {
     path: '/404',
     title: 'Página no encontrada | Club de Pescadores San Nicolás',
