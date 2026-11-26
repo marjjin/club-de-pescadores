@@ -106,9 +106,7 @@ export function Footer() {
               Privacidad
             </Link>
           </div>
-          <p className="self-center">
-            Desarrollado por CARCO DESARROLLO DE SOFTWARE
-          </p>
+          <p className="self-center">Desarrollado por CARCCO IT</p>
         </div>
       </div>
     </footer>
