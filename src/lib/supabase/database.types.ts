@@ -235,6 +235,66 @@ export type Database = {
         }
         Relationships: []
       }
+      fee_schedules: {
+        Row: {
+          id: number
+          valid_from: string
+          note: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: number
+          valid_from: string
+          note?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: number
+          valid_from?: string
+          note?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      fees: {
+        Row: {
+          id: string
+          kind: string
+          position: number
+          name: string
+          detail: string | null
+          icon: string
+          price_cents: number
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          kind: string
+          position: number
+          name: string
+          detail?: string | null
+          icon: string
+          price_cents: number
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          kind?: string
+          position?: number
+          name?: string
+          detail?: string | null
+          icon?: string
+          price_cents?: number
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       media_items: {
         Row: {
           id: string
@@ -674,6 +734,7 @@ export type Database = {
         Returns: undefined
       }
       admin_get_facilities: { Args: Record<never, never>; Returns: Json }
+      admin_get_fees: { Args: Record<never, never>; Returns: Json }
       admin_get_river_level: { Args: Record<never, never>; Returns: Json }
       admin_invitation_target: {
         Args: { p_email: string | null; p_roles: string[] | null }
@@ -701,6 +762,10 @@ export type Database = {
         Returns: Json
       }
       admin_save_facilities: {
+        Args: { p_data: Json | null; p_version: string | null }
+        Returns: Json
+      }
+      admin_save_fees: {
         Args: { p_data: Json | null; p_version: string | null }
         Returns: Json
       }

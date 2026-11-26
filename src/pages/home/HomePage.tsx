@@ -1,6 +1,7 @@
 import { lazy, Suspense } from 'react'
 import { EventsSection } from '@/features/events'
 import { FacilitiesSection } from '@/features/facilities'
+import { FeesSection } from '@/features/fees'
 import { HeroSection } from '@/features/hero'
 import { JoinSection } from '@/features/membership'
 import { NewsSection } from '@/features/news'
@@ -51,6 +52,9 @@ export function HomePage() {
       </Reveal>
       <Reveal>
         <PoolSection />
+      </Reveal>
+      <Reveal>
+        <FeesSection />
       </Reveal>
       <Reveal>
         <NewsSection />

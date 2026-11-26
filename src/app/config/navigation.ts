@@ -9,6 +9,7 @@ export const navLinks: readonly NavLink[] = [
   { label: 'Instalaciones', href: '/#instalaciones' },
   { label: 'Eventos', href: '/#eventos', page: '/eventos' },
   { label: 'Pileta', href: '/#pileta' },
+  { label: 'Tarifas', href: '/#tarifas' },
   { label: 'Noticias', href: '/#noticias', page: '/noticias' },
   { label: 'Contacto', href: '/#contacto' },
   { label: 'Torneos', href: '/torneos', page: '/torneos' },
