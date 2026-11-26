@@ -1,6 +1,7 @@
 import { lazy, Suspense } from 'react'
 import { EventsSection } from '@/features/events'
 import { FacilitiesSection } from '@/features/facilities'
+import { FeesSection } from '@/features/fees'
 import { HeroSection } from '@/features/hero'
 import { JoinSection } from '@/features/membership'
 import { NewsSection } from '@/features/news'
@@ -43,17 +44,22 @@ export function HomePage() {
           <PierReportSection />
         </Suspense>
       </Reveal>
+      {/* What is going on at the club first; then what a new member gets and pays,
+          right before the call to join. */}
       <Reveal>
-        <FacilitiesSection />
+        <NewsSection />
       </Reveal>
       <Reveal>
         <EventsSection />
       </Reveal>
       <Reveal>
+        <FacilitiesSection />
+      </Reveal>
+      <Reveal>
         <PoolSection />
       </Reveal>
       <Reveal>
-        <NewsSection />
+        <FeesSection />
       </Reveal>
       <Reveal>
         <JoinSection />

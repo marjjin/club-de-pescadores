@@ -19,6 +19,10 @@ const modules: Record<string, { title: string; description: string }> = {
     title: 'Tarifas de pileta',
     description: 'Precios, condiciones y vigencias.',
   },
+  cuotas: {
+    title: 'Tarifas del club',
+    description: 'Cuotas sociales y precios de servicios.',
+  },
   muelle: {
     title: 'Parte del muelle',
     description: 'Altura del río, condiciones y fotos o videos del día.',
@@ -48,6 +52,7 @@ const contentModules = [
   'usuarios',
   'torneos',
   'instalaciones',
+  'cuotas',
 ]
 const retiredModules = new Set(['pileta', 'porteria', 'portería'])
 const isAssignablePermission = (permission: RolePermission) =>
@@ -76,8 +81,10 @@ export function groupRolePermissions(
     'noticias',
     'eventos',
     'tarifas',
+    'cuotas',
     'muelle',
     'torneos',
+    'instalaciones',
     'usuarios',
     'auditoria',
   ]

@@ -11,7 +11,8 @@ import { NewsList } from './NewsList'
 export function NewsSection() {
   const query = useLatestNews()
   return (
-    <section id="noticias" className={`bg-mist-50 ${section}`}>
+    // White: it sits between the pier report and events, both on mist.
+    <section id="noticias" className={section}>
       <div className={container}>
         <SectionHeading
           title="Últimas noticias"

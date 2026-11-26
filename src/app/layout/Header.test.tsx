@@ -25,7 +25,7 @@ describe('mobile navigation', () => {
     fireEvent.click(toggle)
     expect(toggle.getAttribute('aria-expanded')).toBe('true')
     expect(document.body.style.overflow).toBe('hidden')
-    expect(document.activeElement?.textContent).toBe('Instalaciones')
+    expect(document.activeElement?.textContent).toBe('Noticias')
     const menu = screen.getByRole('navigation', { name: 'Principal móvil' })
     const last = menu
       .querySelectorAll('a')

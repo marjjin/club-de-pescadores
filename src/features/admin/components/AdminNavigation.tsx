@@ -7,6 +7,7 @@ import {
   History,
   LayoutDashboard,
   Newspaper,
+  ReceiptText,
   ShieldCheck,
   Trophy,
   UserRound,
@@ -36,6 +37,12 @@ const links = [
     label: 'Tarifas de pileta',
     icon: Waves,
     permission: sectionPermissions.tarifas,
+  },
+  {
+    path: '/admin/cuotas',
+    label: 'Tarifas del club',
+    icon: ReceiptText,
+    permission: sectionPermissions.cuotas,
   },
   {
     path: '/admin/muelle',
