@@ -29,7 +29,7 @@ export function PoolSection() {
             {(items) => (
               // Each card spans three shared rows (title, prices, note): side by side,
               // their titles and prices line up even when one wraps to more lines.
-              <ul className="grid gap-6 md:grid-cols-2">
+              <ul className="reveal-stagger grid gap-6 md:grid-cols-2">
                 {items.map((rate) => (
                   <li
                     key={rate.id}

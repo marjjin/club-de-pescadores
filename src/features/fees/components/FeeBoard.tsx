@@ -37,7 +37,7 @@ export function FeeBoard({
             >
               {title}
             </h3>
-            <dl className="mt-2">
+            <dl className="reveal-stagger mt-2">
               {items.map((fee) => {
                 const Icon = feeIcons[fee.icon].icon
                 return (
@@ -64,7 +64,7 @@ export function FeeBoard({
                       {/* The leader ties each name to its price, like the printed notice. */}
                       <span
                         aria-hidden="true"
-                        className="mb-1.5 min-w-4 flex-1 border-b-2 border-dotted border-white/25"
+                        className="reveal-leader mb-1.5 min-w-4 flex-1 border-b-2 border-dotted border-white/25"
                       />
                     </dt>
                     <dd className="shrink-0 font-display text-2xl leading-none tracking-wide text-white tabular-nums sm:text-[1.7rem]">

@@ -22,10 +22,11 @@ export function SectionHeading({
         {/* The short yellow band echoes the club's façade; it is the site's only graphic motif. */}
         <span
           aria-hidden="true"
-          className="mb-4 block h-1 w-10 rounded-full bg-sun-400"
+          className="reveal-band mb-4 block h-1 w-10 rounded-full bg-sun-400"
         />
+        {/* reveal-* classes only animate inside <Reveal> (see index.css). */}
         <Heading
-          className={`font-display text-4xl leading-[1.05] tracking-wide uppercase sm:text-5xl ${
+          className={`reveal-text font-display text-4xl leading-[1.05] tracking-wide uppercase sm:text-5xl ${
             inverted ? 'text-white' : 'text-navy-900'
           }`}
         >
@@ -33,7 +34,7 @@ export function SectionHeading({
         </Heading>
         {description && (
           <p
-            className={`mt-3 text-lg leading-7 ${
+            className={`reveal-text mt-3 text-lg leading-7 ${
               inverted ? 'text-white/80' : 'text-ink-600'
             }`}
           >
@@ -41,7 +42,7 @@ export function SectionHeading({
           </p>
         )}
       </div>
-      {action}
+      {action && <div className="reveal-text">{action}</div>}
     </div>
   )
 }

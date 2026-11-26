@@ -11,14 +11,17 @@ export function JoinSection() {
         className={`${container} flex flex-col gap-6 text-navy-950 sm:flex-row sm:items-center sm:justify-between`}
       >
         <div>
-          <h2 className="font-display text-4xl leading-none tracking-wide uppercase sm:text-6xl">
+          <h2 className="reveal-text font-display text-4xl leading-none tracking-wide uppercase sm:text-6xl">
             Sumate al club
           </h2>
-          <p className="mt-3 text-lg font-semibold text-navy-950/80">
+          <p className="reveal-text mt-3 text-lg font-semibold text-navy-950/80">
             La pesca nos une, la naturaleza nos inspira.
           </p>
         </div>
-        <a href={club.whatsappUrl} className={`${button.secondary} shrink-0`}>
+        <a
+          href={club.whatsappUrl}
+          className={`reveal-text ${button.secondary} shrink-0`}
+        >
           <MessageCircle aria-hidden="true" className="size-5" />
           Hacete socio
         </a>
