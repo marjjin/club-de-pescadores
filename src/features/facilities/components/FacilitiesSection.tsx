@@ -25,7 +25,7 @@ export function FacilitiesSection() {
             <ul
               tabIndex={0}
               aria-label="Instalaciones del club"
-              className={listClass}
+              className={`reveal-stagger ${listClass}`}
             >
               {content.cards.map((facility) => (
                 <FacilityCard

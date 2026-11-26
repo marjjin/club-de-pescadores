@@ -8,7 +8,7 @@ export const eventsGrid =
 
 export function EventsList({ items }: { items: ClubEvent[] }) {
   return (
-    <ul className={eventsGrid}>
+    <ul className={`reveal-stagger ${eventsGrid}`}>
       {items.map((event) => {
         const { day, month } = formatDayMonth(event.startsOn)
         const tournament = event.tournamentId
