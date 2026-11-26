@@ -72,7 +72,13 @@ body {
 @layer components {
   @media (prefers-reduced-motion: no-preference) {
     [data-reveal='pending']
-      :is(.reveal-band, .reveal-text, .reveal-stagger > *) {
+      :is(
+        .reveal-band,
+        .reveal-text,
+        .reveal-card,
+        .reveal-pop,
+        .reveal-stagger > *
+      ) {
       opacity: 0;
     }
     [data-reveal='pending'] .reveal-leader {
@@ -93,7 +99,19 @@ body {
     [data-reveal='shown'] .reveal-stagger > * {
       --reveal-step: 45ms;
       animation: reveal-rise 500ms cubic-bezier(0.2, 0.7, 0.2, 1) both;
-      animation-delay: 185ms;
+      animation-delay: calc(var(--reveal-offset, 0ms) + 185ms);
+    }
+    /* A single card (the pier report) rises after the heading; what it contains
+       waits for it through --reveal-offset. */
+    [data-reveal='shown'] .reveal-card {
+      --reveal-offset: 380ms;
+      animation: reveal-rise 650ms cubic-bezier(0.2, 0.7, 0.2, 1) both;
+      animation-delay: 160ms;
+    }
+    /* The one status that matters most (can people fish today) lands last. */
+    [data-reveal='shown'] .reveal-pop {
+      animation: reveal-pop 450ms cubic-bezier(0.3, 1.4, 0.5, 1) both;
+      animation-delay: 480ms;
     }
     /* The dotted leaders of the fee board draw toward each price. */
     [data-reveal='shown'] .reveal-leader {
@@ -106,31 +124,32 @@ body {
     @supports (animation-delay: calc(sibling-index() * 0.1s)) {
       [data-reveal='shown'] .reveal-stagger > * {
         animation-delay: calc(
-          140ms + min(sibling-index(), 8) * var(--reveal-step)
+          var(--reveal-offset, 0ms) + 140ms + min(sibling-index(), 8) *
+            var(--reveal-step)
         );
       }
     }
     @supports not (animation-delay: calc(sibling-index() * 0.1s)) {
       [data-reveal='shown'] .reveal-stagger > :nth-child(2) {
-        animation-delay: 230ms;
+        animation-delay: calc(var(--reveal-offset, 0ms) + 230ms);
       }
       [data-reveal='shown'] .reveal-stagger > :nth-child(3) {
-        animation-delay: 275ms;
+        animation-delay: calc(var(--reveal-offset, 0ms) + 275ms);
       }
       [data-reveal='shown'] .reveal-stagger > :nth-child(4) {
-        animation-delay: 320ms;
+        animation-delay: calc(var(--reveal-offset, 0ms) + 320ms);
       }
       [data-reveal='shown'] .reveal-stagger > :nth-child(5) {
-        animation-delay: 365ms;
+        animation-delay: calc(var(--reveal-offset, 0ms) + 365ms);
       }
       [data-reveal='shown'] .reveal-stagger > :nth-child(6) {
-        animation-delay: 410ms;
+        animation-delay: calc(var(--reveal-offset, 0ms) + 410ms);
       }
       [data-reveal='shown'] .reveal-stagger > :nth-child(7) {
-        animation-delay: 455ms;
+        animation-delay: calc(var(--reveal-offset, 0ms) + 455ms);
       }
       [data-reveal='shown'] .reveal-stagger > :nth-child(n + 8) {
-        animation-delay: 500ms;
+        animation-delay: calc(var(--reveal-offset, 0ms) + 500ms);
       }
     }
   }
@@ -144,6 +163,16 @@ body {
   to {
     opacity: 1;
     translate: 0 0;
+  }
+}
+@keyframes reveal-pop {
+  from {
+    opacity: 0;
+    scale: 0.85;
+  }
+  to {
+    opacity: 1;
+    scale: 1;
   }
 }
 @keyframes reveal-draw {

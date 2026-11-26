@@ -23,10 +23,13 @@ const PierReportSection = lazy(() =>
 const pierPlaceholder = (
   <section aria-hidden="true" className={`bg-mist-50 ${section}`}>
     <div className={container}>
-      <SectionHeading
-        title="Hoy en el muelle"
-        description="El último parte del personal del club: altura del río, condiciones y fotos."
-      />
+      {/* Invisible: the real heading plays the entrance once it mounts, without a repeat. */}
+      <div className="invisible">
+        <SectionHeading
+          title="Hoy en el muelle"
+          description="El último parte del personal del club: altura del río, condiciones y fotos."
+        />
+      </div>
       <div className="mt-8 h-96 rounded-2xl bg-white motion-safe:animate-pulse" />
     </div>
   </section>
