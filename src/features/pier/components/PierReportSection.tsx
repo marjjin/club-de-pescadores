@@ -64,7 +64,7 @@ export function PierReportSection() {
             </StatusMessage>
           </div>
         ) : (
-          <article className="mt-8 overflow-hidden rounded-2xl border border-navy-900/10 border-t-4 border-t-sun-400 bg-white shadow-card">
+          <article className="reveal-card mt-8 overflow-hidden rounded-2xl border border-navy-900/10 border-t-4 border-t-sun-400 bg-white shadow-card">
             <div className="grid gap-6 p-6 sm:p-8 md:grid-cols-[auto_minmax(0,1fr)] md:items-center md:gap-10">
               <div className="min-w-0">
                 <p className="flex items-center gap-2 text-sm font-bold text-ink-600">
@@ -98,7 +98,7 @@ export function PierReportSection() {
               <div className="min-w-0 md:border-l md:border-navy-900/10 md:pl-10">
                 {conditions.fishing && (
                   <p
-                    className={`inline-flex items-center gap-3 rounded-full py-1.5 pr-5 pl-1.5 text-lg font-extrabold ring-1 ${canFish ? 'bg-emerald-50 text-emerald-800 ring-emerald-200' : 'bg-red-50 text-red-800 ring-red-200'}`}
+                    className={`reveal-pop inline-flex items-center gap-3 rounded-full py-1.5 pr-5 pl-1.5 text-lg font-extrabold ring-1 ${canFish ? 'bg-emerald-50 text-emerald-800 ring-emerald-200' : 'bg-red-50 text-red-800 ring-red-200'}`}
                   >
                     <span
                       className={`grid size-9 shrink-0 place-items-center rounded-full text-white ${canFish ? 'bg-emerald-700' : 'bg-red-700'}`}
@@ -115,7 +115,7 @@ export function PierReportSection() {
                 {conditions.others.length > 0 && (
                   <ul
                     aria-label="Condiciones"
-                    className="mt-4 flex flex-wrap gap-2"
+                    className="reveal-stagger mt-4 flex flex-wrap gap-2"
                   >
                     {conditions.others.map((item) => (
                       <li
