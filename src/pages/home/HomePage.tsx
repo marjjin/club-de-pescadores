@@ -44,20 +44,22 @@ export function HomePage() {
           <PierReportSection />
         </Suspense>
       </Reveal>
+      {/* What is going on at the club first; then what a new member gets and pays,
+          right before the call to join. */}
       <Reveal>
-        <FacilitiesSection />
+        <NewsSection />
       </Reveal>
       <Reveal>
         <EventsSection />
+      </Reveal>
+      <Reveal>
+        <FacilitiesSection />
       </Reveal>
       <Reveal>
         <PoolSection />
       </Reveal>
       <Reveal>
         <FeesSection />
-      </Reveal>
-      <Reveal>
-        <NewsSection />
       </Reveal>
       <Reveal>
         <JoinSection />

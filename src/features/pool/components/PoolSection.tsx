@@ -18,7 +18,7 @@ export function PoolSection() {
   const rates = usePoolRates()
 
   return (
-    <section id="pileta" className={section}>
+    <section id="pileta" className={`bg-mist-50 ${section}`}>
       <div className={container}>
         <SectionHeading title="Temporada de pileta" />
         <div className="mt-10">
