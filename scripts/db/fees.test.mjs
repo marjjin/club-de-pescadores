@@ -100,6 +100,15 @@ describe('club fees', () => {
     )
     expect(fees.rows.filter((row) => row.kind === 'membership')).toHaveLength(9)
     expect(fees.rows.filter((row) => row.kind === 'service')).toHaveLength(6)
+    const cadet = await run(
+      null,
+      "select icon, detail from public.fees where name = 'Cadete'",
+      [],
+      'anon',
+    )
+    expect(cadet.rows).toEqual([
+      { icon: 'youth', detail: 'Menores de 16 años' },
+    ])
     expect(fees.rows[0]).toEqual({
       kind: 'membership',
       name: 'Social',

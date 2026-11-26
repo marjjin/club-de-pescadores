@@ -1,5 +1,6 @@
 import {
   Anchor,
+  Backpack,
   Caravan,
   Fence,
   Glasses,
@@ -31,4 +32,5 @@ export const feeIcons: Record<FeeIcon, { icon: LucideIcon; label: string }> = {
   caravan: { icon: Caravan, label: 'Casilla rodante' },
   motorhome: { icon: Van, label: 'Motorhome' },
   ticket: { icon: Ticket, label: 'Entrada' },
+  youth: { icon: Backpack, label: 'Menor' },
 }

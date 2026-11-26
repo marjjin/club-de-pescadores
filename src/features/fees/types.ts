@@ -16,6 +16,7 @@ export const FEE_ICONS = [
   'caravan',
   'motorhome',
   'ticket',
+  'youth',
 ] as const
 export type FeeIcon = (typeof FEE_ICONS)[number]
 
