@@ -5,9 +5,11 @@ import { button } from '@/shared/ui/button'
 
 export function HeroSection() {
   return (
+    // The logo links to /#inicio. A margin taller than everything above the hero makes
+    // that jump clamp to the very top, so the river bar is never left under the header.
     <section
       id="inicio"
-      className="relative isolate flex min-h-[560px] items-end overflow-hidden bg-navy-950 lg:h-[min(42vw,calc(100vh-5rem))]"
+      className="relative isolate flex scroll-mt-[100vh] min-h-[560px] items-end overflow-hidden bg-navy-950 lg:h-[min(42vw,calc(100vh-5rem))]"
     >
       {/* Phones show a 560px-tall slice of the photo: they get that crop, a third of the
           weight. The build preloads the same files (scripts/production/prepare-public.mjs). */}
