@@ -216,6 +216,46 @@ body {
   }
 }
 
+/*
+ * Page changes, through React's <ViewTransition> (app/layout/PublicLayout) for
+ * router links and @view-transition for plain links that reload the page.
+ *
+ * The old page is dropped at once and the new one fades in, rising a little.
+ * Fading both together showed the old page (often scrolled elsewhere) ghosted on
+ * top of the new one. The header and the WhatsApp button are named elsewhere, so
+ * they stay put. Reloading links (cross-document) get the same treatment.
+ */
+@view-transition {
+  navigation: auto;
+}
+@media (prefers-reduced-motion: no-preference) {
+  ::view-transition-group(.page) {
+    animation: none;
+  }
+  ::view-transition-old(root),
+  ::view-transition-old(.page) {
+    animation: none;
+    opacity: 0;
+  }
+  ::view-transition-new(root),
+  ::view-transition-new(.page) {
+    animation: page-in 400ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    animation: none !important;
+  }
+}
+@keyframes page-in {
+  from {
+    opacity: 0;
+    translate: 0 0.5rem;
+  }
+}
+
 /* Start offset and scale come from the variant variables above. */
 @keyframes reveal-rise {
   from {

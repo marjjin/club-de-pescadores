@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useLayoutEffect, ViewTransition } from 'react'
 import { Outlet, useLocation } from 'react-router'
 import { Footer } from './Footer'
 import { Header } from './Header'
@@ -8,7 +8,9 @@ import { RiverLevelBar } from '@/features/river'
 export function PublicLayout() {
   const { pathname, hash } = useLocation()
 
-  useEffect(() => {
+  // Layout effect: it runs inside the page-change transition, so the new page is
+  // captured already scrolled to its place instead of jumping after the fade.
+  useLayoutEffect(() => {
     // The target exists only after the lazy page has mounted.
     if (hash) document.getElementById(hash.slice(1))?.scrollIntoView()
     else window.scrollTo({ top: 0, left: 0, behavior: 'instant' })
@@ -24,8 +26,15 @@ export function PublicLayout() {
       </a>
       <Header key={pathname} />
       <main id="contenido" tabIndex={-1}>
-        <RiverLevelBar />
-        <Outlet />
+        {/* Router navigations run in a transition, so the new page fades in (index.css).
+            One element with the river bar inside: it moves with the page, and fading
+            it apart from it ghosted the bar where it sat on the old, scrolled page. */}
+        <ViewTransition default="page">
+          <div>
+            <RiverLevelBar />
+            <Outlet />
+          </div>
+        </ViewTransition>
       </main>
       <Footer />
       <WhatsAppButton />
