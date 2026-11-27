@@ -1,8 +1,9 @@
+import { useState } from 'react'
 import { LoaderCircle, Save } from 'lucide-react'
 import { FeeBoard, formatValidFrom } from '@/features/fees'
-import { fieldToCents } from '../../fee-editor'
+import { feeRowChanged, fieldToCents, toFeesDraft } from '../../fee-editor'
 import { useFeesEditor } from '../../hooks/useFeesEditor'
-import type { AdminFees } from '../../schemas/fees'
+import type { AdminFees, FeeDraft } from '../../schemas/fees'
 import {
   Feedback,
   Field,
@@ -26,6 +27,19 @@ export function FeesEditor({
 }) {
   const editor = useFeesEditor(data, userId, onSaved)
   const { draft, errors } = editor
+  // What is on the site now, to mark changed rows and count what will be published.
+  const [base] = useState(() => toFeesDraft(data))
+  const [published] = useState(
+    () => new Map(base.fees.map((fee) => [fee.key, fee] as const)),
+  )
+  const changes = countChanges(base, draft, published)
+  const errorCount = Object.keys(errors).length
+  const showBar =
+    editable &&
+    (editor.dirty ||
+      editor.busy ||
+      errorCount > 0 ||
+      Boolean(editor.save.error))
   const since = formatValidFrom(`${draft.month}-01`)
   // The preview shows what would be published; unreadable prices show as $ 0.
   const preview = draft.fees.map((fee) => ({
@@ -40,6 +54,7 @@ export function FeesEditor({
     <FeeListEditor
       kind={kind}
       fees={draft.fees.filter((fee) => fee.kind === kind)}
+      published={published}
       errors={errors}
       editable={editable}
       onChange={editor.changeRow}
@@ -127,29 +142,46 @@ export function FeesEditor({
           </div>
         </aside>
       </div>
-      {editable && (
-        <div className="sticky bottom-0 z-10 mt-6 rounded-xl border border-navy-900/10 bg-white/95 p-4 shadow-card backdrop-blur-sm">
-          {Object.keys(errors).length > 0 && (
+      {/* Only while there is something to publish: a bar that is always there takes a
+          quarter of a phone screen and covers the preview for nothing. */}
+      {showBar && (
+        <div className="sticky bottom-0 z-10 mt-6 rounded-xl border border-navy-900/10 bg-white/95 p-3 shadow-raised backdrop-blur-sm sm:p-4">
+          {errorCount > 0 && (
             <p role="alert" className="mb-3 text-sm font-semibold text-red-700">
               Revisá los campos marcados antes de publicar.
             </p>
           )}
           <Feedback error={editor.save.error} />
-          <div className="mt-2 flex flex-wrap items-center justify-between gap-4">
-            <p className="text-xs text-ink-600">
-              {editor.dirty ? 'Cambios sin publicar' : 'Sin cambios pendientes'}
+          <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
+            <p className="flex items-center gap-2 text-sm font-bold text-navy-900">
+              <span
+                aria-hidden="true"
+                className="size-2 rounded-full bg-sun-400"
+              />
+              {changes === 0
+                ? editor.dirty
+                  ? 'Cambió el orden'
+                  : 'Sin cambios'
+                : changes === 1
+                  ? '1 cambio sin publicar'
+                  : `${changes} cambios sin publicar`}
             </p>
-            <div className="flex flex-wrap gap-2">
+            <div className="grid w-full grid-cols-2 gap-2 sm:flex sm:w-auto">
               <button
                 type="button"
                 className={secondaryClass}
                 disabled={!editor.dirty || editor.busy}
                 onClick={editor.discard}
+                aria-label="Descartar cambios"
               >
-                Descartar cambios
+                <span className="sm:hidden">Descartar</span>
+                <span className="max-sm:hidden">Descartar cambios</span>
               </button>
               <button
                 type="submit"
+                aria-label={
+                  editor.save.isPending ? 'Publicando…' : 'Publicar valores'
+                }
                 className={primaryClass}
                 disabled={!editor.dirty || editor.busy}
               >
@@ -162,12 +194,39 @@ export function FeesEditor({
                 ) : (
                   <Save size={16} aria-hidden="true" />
                 )}
-                {editor.save.isPending ? 'Publicando…' : 'Publicar valores'}
+                {editor.save.isPending ? (
+                  'Publicando…'
+                ) : (
+                  <>
+                    <span className="sm:hidden">Publicar</span>
+                    <span className="max-sm:hidden">Publicar valores</span>
+                  </>
+                )}
               </button>
             </div>
           </div>
         </div>
       )}
     </form>
+  )
+}
+
+/** Rows added, removed or edited, plus the validity month and the note. */
+function countChanges(
+  base: ReturnType<typeof toFeesDraft>,
+  draft: ReturnType<typeof toFeesDraft>,
+  published: Map<string, FeeDraft>,
+) {
+  const kept = new Set(draft.fees.flatMap((fee) => fee.id ?? []))
+  const edited = draft.fees.filter((fee) => {
+    const before = fee.id ? published.get(fee.id) : undefined
+    return !before || feeRowChanged(fee, before)
+  }).length
+  const removed = base.fees.filter((fee) => !kept.has(fee.key)).length
+  return (
+    edited +
+    removed +
+    Number(draft.month !== base.month) +
+    Number(draft.note !== base.note)
   )
 }

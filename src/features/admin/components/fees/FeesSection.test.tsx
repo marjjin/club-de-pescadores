@@ -153,3 +153,22 @@ it('shows the values read-only to roles without edit permission', async () => {
     memberships().getAllByLabelText('Precio')[0]!.matches(':disabled'),
   ).toBe(true)
 })
+
+it('shows the publish bar only with changes, with how many and the old price', async () => {
+  mount()
+  await screen.findAllByLabelText('Precio')
+  expect(screen.queryByRole('button', { name: 'Publicar valores' })).toBeNull()
+  // Same value written another way is not a change.
+  fireEvent.change(memberships().getAllByLabelText('Precio')[1]!, {
+    target: { value: '30000' },
+  })
+  expect(screen.queryByText(/sin publicar/)).toBeNull()
+  fireEvent.change(memberships().getAllByLabelText('Precio')[0]!, {
+    target: { value: '35.000' },
+  })
+  fireEvent.click(screen.getByRole('button', { name: 'Agregar cuota' }))
+  expect(screen.getByText('2 cambios sin publicar')).toBeTruthy()
+  expect(memberships().getByText('$ 30.000')).toBeTruthy()
+  expect(memberships().getByText('Nueva')).toBeTruthy()
+  expect(screen.getByRole('button', { name: 'Publicar valores' })).toBeTruthy()
+})

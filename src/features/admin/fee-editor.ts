@@ -111,3 +111,13 @@ export const kindLabels: Record<FeeKind, { title: string; item: string }> = {
   membership: { title: 'Cuotas', item: 'cuota' },
   service: { title: 'Servicios', item: 'servicio' },
 }
+
+/** Whether a row differs from its published version; prices compare by value. */
+export function feeRowChanged(row: FeeDraft, published: FeeDraft) {
+  return (
+    row.name !== published.name ||
+    row.detail !== published.detail ||
+    row.icon !== published.icon ||
+    fieldToCents(row.price) !== fieldToCents(published.price)
+  )
+}

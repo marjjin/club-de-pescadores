@@ -5,12 +5,13 @@ import { kindLabels } from '../../fee-editor'
 import type { FeeErrors } from '../../fee-editor'
 import type { FeeDraft } from '../../schemas/fees'
 import { secondaryClass } from '../ui'
-import { FeeRowEditor } from './FeeRowEditor'
+import { FeeRowEditor, feeRowColumns } from './FeeRowEditor'
 import type { FeeRowField } from './FeeRowEditor'
 
 export function FeeListEditor({
   kind,
   fees,
+  published,
   errors,
   editable,
   onChange,
@@ -20,6 +21,8 @@ export function FeeListEditor({
 }: {
   kind: FeeKind
   fees: FeeDraft[]
+  /** Rows as they are on the site, by id: to mark what changed. */
+  published: Map<string, FeeDraft>
   errors: FeeErrors
   editable: boolean
   onChange: (key: string, name: FeeRowField, value: string) => void
@@ -61,21 +64,34 @@ export function FeeListEditor({
         </p>
       )}
       {fees.length ? (
-        <ol className="mt-2" aria-labelledby={headingId}>
-          {fees.map((fee, index) => (
-            <FeeRowEditor
-              key={fee.key}
-              fee={fee}
-              index={index}
-              total={fees.length}
-              errors={errors}
-              editable={editable}
-              onChange={(name, value) => onChange(fee.key, name, value)}
-              onMove={(step) => onMove(fee.key, step)}
-              onRemove={() => onRemove(fee.key)}
-            />
-          ))}
-        </ol>
+        <>
+          {/* One header for the columns instead of a label on every field;
+              each field keeps its own label for screen readers. */}
+          <div
+            aria-hidden="true"
+            className={`mt-4 hidden gap-x-3 border-b border-navy-900/10 pb-2 text-xs font-bold text-ink-600 sm:grid ${feeRowColumns}`}
+          >
+            <span>Ícono</span>
+            <span>Nombre</span>
+            <span className="text-right">Precio</span>
+          </div>
+          <ol className="mt-1 sm:mt-0" aria-labelledby={headingId}>
+            {fees.map((fee, index) => (
+              <FeeRowEditor
+                key={fee.key}
+                fee={fee}
+                published={(fee.id && published.get(fee.id)) || null}
+                index={index}
+                total={fees.length}
+                errors={errors}
+                editable={editable}
+                onChange={(name, value) => onChange(fee.key, name, value)}
+                onMove={(step) => onMove(fee.key, step)}
+                onRemove={() => onRemove(fee.key)}
+              />
+            ))}
+          </ol>
+        </>
       ) : (
         <p className="mt-4 rounded-lg border border-dashed border-navy-900/15 p-4 text-sm text-ink-600">
           Esta lista no se muestra en el sitio mientras esté vacía.
