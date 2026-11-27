@@ -3,8 +3,13 @@ import { useLocation } from 'react-router'
 import { useActiveSection } from '@/shared/hooks/useActiveSection'
 import { currentNav, navLinks } from '../config/navigation'
 
-// Only home anchors are tracked by scroll; page links are not sections.
-const sectionIds = navLinks.flatMap((link) => link.href.split('#')[1] ?? [])
+// Only home anchors are tracked by scroll; page links are not sections. The hero
+// (#inicio) is tracked too though it has no link: back at the top, it becomes the
+// active section and nothing is marked, instead of the last section scrolled past.
+const sectionIds = [
+  'inicio',
+  ...navLinks.flatMap((link) => link.href.split('#')[1] ?? []),
+]
 
 const linkClass = (current: boolean) =>
   `inline-flex min-h-11 items-center rounded-lg px-3 transition-colors hover:bg-mist-50 hover:text-river-600 ${
