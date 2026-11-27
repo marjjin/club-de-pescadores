@@ -6,6 +6,7 @@ import { SectionHeading } from '@/shared/ui/SectionHeading'
 import { formatValidFrom } from '../format'
 import { useFees } from '../hooks/useFees'
 import { FeeBoard } from './FeeBoard'
+import { ExternalLink } from '@/shared/ui/ExternalLink'
 
 const board =
   'mt-10 rounded-3xl border border-white/10 bg-navy-900 p-5 sm:p-8 lg:p-10'
@@ -89,10 +90,10 @@ export function FeesSection() {
         )}
         <p className="mt-6 flex flex-wrap items-center gap-x-3 text-white/80">
           ¿Tenés dudas sobre qué cuota te corresponde?
-          <a href={club.whatsappUrl} className={linkOnDark}>
+          <ExternalLink href={club.whatsappUrl} className={linkOnDark}>
             <MessageCircle aria-hidden="true" className="size-4" />
             Consultar por WhatsApp
-          </a>
+          </ExternalLink>
         </p>
       </div>
     </section>

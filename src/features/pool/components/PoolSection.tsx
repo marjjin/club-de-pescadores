@@ -5,6 +5,7 @@ import { container, section } from '@/shared/ui/layout'
 import { QueryBoundary } from '@/shared/ui/QueryBoundary'
 import { SectionHeading } from '@/shared/ui/SectionHeading'
 import { usePoolRates } from '../hooks/usePoolRates'
+import { ExternalLink } from '@/shared/ui/ExternalLink'
 
 const price = new Intl.NumberFormat('es-AR', {
   style: 'currency',
@@ -75,10 +76,10 @@ export function PoolSection() {
         </div>
         <p className="mt-6 flex flex-wrap items-center gap-x-3 text-ink-600">
           Consultá disponibilidad y condiciones de ingreso.
-          <a href={club.whatsappUrl} className={textLink}>
+          <ExternalLink href={club.whatsappUrl} className={textLink}>
             <MessageCircle aria-hidden="true" className="size-4" />
             Consultar por WhatsApp
-          </a>
+          </ExternalLink>
         </p>
       </div>
     </section>
