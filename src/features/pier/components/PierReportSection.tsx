@@ -1,9 +1,5 @@
 import { Check, Clock3, Waves, X } from 'lucide-react'
-import {
-  formatRiverDate,
-  formatRiverHeight,
-  isRiverReadingOld,
-} from '@/features/river'
+import { formatRiverDate, isRiverReadingOld } from '@/features/river'
 import { formatRelative } from '@/shared/lib/dates'
 import { MediaGallery } from '@/shared/ui/MediaGallery'
 import { buttonClass } from '@/shared/ui/button'
@@ -13,6 +9,7 @@ import { StatusMessage } from '@/shared/ui/StatusMessage'
 import { readConditions } from '../conditions'
 import type { ConditionTone } from '../conditions'
 import { useLatestPierReport } from '../hooks/useLatestPierReport'
+import { RiverHeight } from './RiverHeight'
 
 const tones: Record<ConditionTone, string> = {
   good: 'bg-emerald-50 text-emerald-800 ring-emerald-200',
@@ -75,9 +72,10 @@ export function PierReportSection() {
                   />
                   Altura del río
                 </p>
-                <p className="mt-1 text-5xl font-extrabold tracking-tight tabular-nums text-navy-900 sm:text-6xl">
-                  {formatRiverHeight(report.heightCm)}
-                </p>
+                <RiverHeight
+                  heightCm={report.heightCm}
+                  className="mt-1 text-5xl font-extrabold tracking-tight tabular-nums text-navy-900 sm:text-6xl"
+                />
                 <p className="mt-2 text-sm text-ink-600">
                   Parte{' '}
                   <time
