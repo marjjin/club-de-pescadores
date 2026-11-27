@@ -1,4 +1,4 @@
-import { render, screen, within } from '@testing-library/react'
+import { fireEvent, render, screen, within } from '@testing-library/react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { afterEach, expect, it, vi } from 'vitest'
 import { requestUrl } from '@/test/content-api'
@@ -113,4 +113,28 @@ it('never renders rows that break the expected shape', async () => {
       name: 'Un espacio pensado para los socios',
     }),
   ).toBeTruthy()
+})
+
+it('opens a facility in a window and steps to the next one', async () => {
+  stub((table) => json(table === 'facility_sections' ? section : cards))
+  mount()
+  fireEvent.click(
+    await screen.findByRole('button', { name: 'Ampliar foto: Pileta' }),
+  )
+  const viewer = await screen.findByRole('dialog', { name: 'Pileta' })
+  expect(viewer.getAttribute('aria-describedby')).toBeTruthy()
+  expect(within(viewer).getByText('Para el verano.')).toBeTruthy()
+  expect(
+    within(viewer).getByRole('img', { name: 'Pileta del club' }),
+  ).toBeTruthy()
+  fireEvent.click(
+    within(viewer).getByRole('button', { name: 'Siguiente: Muelle' }),
+  )
+  expect(within(viewer).getByRole('heading', { name: 'Muelle' })).toBeTruthy()
+  expect(within(viewer).getByText('Sobre el río.')).toBeTruthy()
+  expect(
+    within(viewer)
+      .getByRole('button', { name: 'Muelle' })
+      .getAttribute('aria-current'),
+  ).toBe('true')
 })

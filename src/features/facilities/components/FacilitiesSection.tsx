@@ -1,8 +1,10 @@
+import { useState } from 'react'
 import { container, section } from '@/shared/ui/layout'
 import { SectionHeading } from '@/shared/ui/SectionHeading'
 import { defaultFacilities } from '../content'
 import { useFacilities } from '../hooks/useFacilities'
 import { FacilityCard } from './FacilityCard'
+import { FacilityViewer } from './FacilityViewer'
 
 // En móvil es un carrusel: cuatro fotos altas apiladas alargan demasiado la página.
 const listClass =
@@ -13,6 +15,7 @@ export function FacilitiesSection() {
   const query = useFacilities()
   // A failed or empty read keeps the original content instead of an empty section.
   const content = query.isPending ? null : (query.data ?? defaultFacilities)
+  const [viewer, setViewer] = useState({ index: 0, open: false })
   return (
     <section id="instalaciones" className={section} aria-busy={query.isPending}>
       <div className={container}>
@@ -27,14 +30,22 @@ export function FacilitiesSection() {
               aria-label="Instalaciones del club"
               className={`reveal-stagger ${listClass}`}
             >
-              {content.cards.map((facility) => (
+              {content.cards.map((facility, index) => (
                 <FacilityCard
                   key={facility.id}
                   facility={facility}
                   className={itemClass}
+                  onOpen={() => setViewer({ index, open: true })}
                 />
               ))}
             </ul>
+            <FacilityViewer
+              facilities={content.cards}
+              index={viewer.index}
+              onIndexChange={(index) => setViewer({ index, open: true })}
+              open={viewer.open}
+              onClose={() => setViewer((state) => ({ ...state, open: false }))}
+            />
           </>
         ) : (
           // Same footprint as the loaded section, so nothing shifts when it arrives.

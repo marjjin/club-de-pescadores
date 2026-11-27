@@ -120,8 +120,10 @@ export function Lightbox({
             // The empty area around the photo works like the backdrop of a smaller window.
             if (event.target === event.currentTarget) requestClose()
           }}
-          // Swipes are ours; pinch-zoom stays with the browser.
-          className="relative grid min-h-0 place-items-center [touch-action:pinch-zoom] sm:px-20"
+          // Swipes are ours; pinch-zoom stays with the browser. The explicit row gives
+          // the photo a definite height to fit, so tall (portrait) photos never spill
+          // past the screen.
+          className="relative grid min-h-0 grid-rows-[minmax(0,1fr)] place-items-center [touch-action:pinch-zoom] sm:px-20"
         >
           {current &&
             (current.kind === 'video' ? (

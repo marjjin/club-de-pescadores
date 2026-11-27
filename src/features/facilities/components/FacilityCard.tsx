@@ -1,14 +1,18 @@
+import { Expand } from 'lucide-react'
 import type { Facility } from '../types'
 
 export function FacilityCard({
   facility,
   as: Tag = 'li',
   className = '',
+  onOpen,
 }: {
   facility: Pick<Facility, 'name' | 'description' | 'imageUrl' | 'imageAlt'>
   /** The admin preview renders a single card outside a list. */
   as?: 'li' | 'div'
   className?: string
+  /** Opens the photo enlarged. Without it (admin preview) the card is static. */
+  onOpen?: () => void
 }) {
   return (
     <Tag
@@ -32,6 +36,22 @@ export function FacilityCard({
           {facility.description}
         </p>
       </div>
+      {onOpen && (
+        // Covers the whole card, so a tap anywhere opens it; the icon shows that it can.
+        <button
+          type="button"
+          onClick={onOpen}
+          aria-label={`Ampliar foto: ${facility.name}`}
+          className="absolute inset-0 z-10 cursor-zoom-in rounded-2xl focus-visible:outline-offset-[-3px]"
+        >
+          <span
+            aria-hidden="true"
+            className="absolute top-3 right-3 grid size-10 place-items-center rounded-full bg-navy-950/55 text-white backdrop-blur-sm transition-[background-color,scale] duration-200 group-hover:scale-110 group-hover:bg-navy-950/80 motion-reduce:transition-none"
+          >
+            <Expand size={18} />
+          </span>
+        </button>
+      )}
     </Tag>
   )
 }
