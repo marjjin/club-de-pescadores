@@ -182,6 +182,121 @@ body {
   }
 }
 
+/*
+ * Opening of the home page (features/hero). The photo settles from a slight zoom
+ * while the title, the club name, the tagline and the buttons arrive one after
+ * another. Only transform on the photo: it is the LCP element and must paint at once.
+ */
+@layer components {
+  @media (prefers-reduced-motion: no-preference) {
+    .hero-photo {
+      animation: hero-settle 2.8s cubic-bezier(0.22, 1, 0.36, 1) both;
+    }
+    .hero-in {
+      animation: reveal-rise 1000ms cubic-bezier(0.22, 1, 0.36, 1) both;
+      animation-delay: 150ms;
+    }
+    .hero-in .hero-in {
+      animation-delay: 350ms;
+    }
+    .hero-in + .hero-in {
+      animation-delay: 550ms;
+    }
+    .hero-in + .hero-in + .hero-in {
+      animation-delay: 750ms;
+    }
+  }
+}
+@keyframes hero-settle {
+  from {
+    scale: 1.08;
+  }
+  to {
+    scale: 1;
+  }
+}
+
+/*
+ * River level bar (features/river). While the reading loads, the bars shimmer like
+ * light on water; when it arrives, each piece fades in. Without motion the bars
+ * stay as plain, still placeholders.
+ */
+@layer components {
+  .river-skeleton {
+    background-color: rgb(255 255 255 / 0.1);
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    .river-skeleton {
+      background-image: linear-gradient(
+        90deg,
+        transparent 0%,
+        rgb(255 255 255 / 0.18) 50%,
+        transparent 100%
+      );
+      background-size: 200% 100%;
+      background-repeat: no-repeat;
+      animation: river-shimmer 1.4s ease-in-out infinite;
+    }
+    .river-in {
+      animation: river-in 600ms cubic-bezier(0.22, 1, 0.36, 1) both;
+    }
+  }
+}
+@keyframes river-shimmer {
+  from {
+    background-position: 150% 0;
+  }
+  to {
+    background-position: -50% 0;
+  }
+}
+@keyframes river-in {
+  from {
+    opacity: 0;
+    translate: 0 0.25rem;
+  }
+}
+
+/*
+ * Page changes, through React's <ViewTransition> (app/layout/PublicLayout) for
+ * router links and @view-transition for plain links that reload the page.
+ *
+ * The old page is dropped at once and the new one fades in, rising a little.
+ * Fading both together showed the old page (often scrolled elsewhere) ghosted on
+ * top of the new one. The header and the WhatsApp button are named elsewhere, so
+ * they stay put. Reloading links (cross-document) get the same treatment.
+ */
+@view-transition {
+  navigation: auto;
+}
+@media (prefers-reduced-motion: no-preference) {
+  ::view-transition-group(.page) {
+    animation: none;
+  }
+  ::view-transition-old(root),
+  ::view-transition-old(.page) {
+    animation: none;
+    opacity: 0;
+  }
+  ::view-transition-new(root),
+  ::view-transition-new(.page) {
+    animation: page-in 400ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    animation: none !important;
+  }
+}
+@keyframes page-in {
+  from {
+    opacity: 0;
+    translate: 0 0.5rem;
+  }
+}
+
 /* Start offset and scale come from the variant variables above. */
 @keyframes reveal-rise {
   from {

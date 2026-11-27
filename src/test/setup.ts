@@ -8,6 +8,16 @@ if (typeof Element !== 'undefined') {
 if (typeof window !== 'undefined') {
   window.scrollTo = () => {}
 }
+// React's <ViewTransition> names elements through CSS.escape, which jsdom lacks.
+if (typeof window !== 'undefined' && typeof globalThis.CSS === 'undefined') {
+  Object.defineProperty(globalThis, 'CSS', {
+    configurable: true,
+    value: {
+      escape: (value: string) =>
+        value.replace(/[^\w-]/g, (char) => `\\${char}`),
+    },
+  })
+}
 // jsdom has no modal dialogs nor Web Animations; tests that need more override these.
 if (typeof HTMLDialogElement !== 'undefined') {
   Object.defineProperties(HTMLDialogElement.prototype, {

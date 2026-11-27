@@ -31,24 +31,25 @@ export function HeroSection() {
           height="809"
           fetchPriority="high"
           alt="Muelle y sede del club sobre el río al atardecer"
-          className="absolute inset-0 -z-20 size-full object-cover object-center sm:object-[35%_center] lg:object-center"
+          className="hero-photo absolute inset-0 -z-20 size-full object-cover object-center sm:object-[35%_center] lg:object-center"
         />
       </picture>
       <div
         aria-hidden="true"
         className="absolute inset-0 -z-10 bg-gradient-to-t from-navy-950/70 via-navy-950/25 via-50% to-transparent lg:bg-gradient-to-r lg:from-navy-950/50 lg:via-navy-950/15 lg:via-35% lg:to-55%"
       />
+      {/* hero-* classes: the opening sequence, see index.css. */}
       <div className="mx-auto w-full max-w-7xl px-4 py-12 text-white sm:px-6 lg:py-16">
-        <h1 className="[text-shadow:0_2px_14px_rgb(3_16_36/0.7)] font-display text-5xl leading-none tracking-wide uppercase sm:text-7xl">
+        <h1 className="hero-in [text-shadow:0_2px_14px_rgb(3_16_36/0.7)] font-display text-5xl leading-none tracking-wide uppercase sm:text-7xl">
           Club de Pescadores
-          <span className="mt-1 block font-script text-5xl tracking-normal text-sun-400 normal-case sm:text-7xl">
+          <span className="hero-in mt-1 block font-script text-5xl tracking-normal text-sun-400 normal-case sm:text-7xl">
             San Nicolás
           </span>
         </h1>
-        <p className="mt-4 max-w-md text-lg text-white [text-shadow:0_1px_8px_rgb(3_16_36/0.85)]">
+        <p className="hero-in mt-4 max-w-md text-lg text-white [text-shadow:0_1px_8px_rgb(3_16_36/0.85)]">
           Pesca, naturaleza y amigos sobre el río.
         </p>
-        <div className="mt-6 flex flex-wrap gap-3">
+        <div className="hero-in mt-6 flex flex-wrap gap-3">
           <a href="#sumate" className={button.primary}>
             Hacete socio
           </a>

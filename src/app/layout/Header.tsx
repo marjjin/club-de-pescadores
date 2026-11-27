@@ -20,8 +20,9 @@ export function Header() {
   }
 
   return (
+    // Named so page changes fade only the content: the header stays put.
     <header
-      className={`sticky top-0 z-20 border-b bg-white transition-[box-shadow,border-color] duration-300 motion-reduce:transition-none ${
+      className={`sticky top-0 z-20 border-b [view-transition-name:site-header] bg-white transition-[box-shadow,border-color] duration-300 motion-reduce:transition-none ${
         scrolled || isOpen
           ? 'border-transparent shadow-[0_6px_24px_rgb(7_27_51/0.08)]'
           : 'border-navy-900/10'
