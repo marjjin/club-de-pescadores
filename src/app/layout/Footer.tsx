@@ -5,6 +5,7 @@ import { club } from '@/shared/config/club'
 import { container } from '@/shared/ui/layout'
 import { FacebookIcon, InstagramIcon } from '@/shared/ui/SocialIcons'
 import { navLinks } from '../config/navigation'
+import { ExternalLink } from '@/shared/ui/ExternalLink'
 
 const link =
   'inline-flex min-h-11 items-center gap-2 rounded transition-colors hover:text-sun-400 sm:min-h-9'
@@ -52,40 +53,40 @@ export function Footer() {
           </h2>
           <ul className="mt-4 grid gap-1 text-white/80">
             <li>
-              <a href={club.mapsUrl} className={link}>
+              <ExternalLink href={club.mapsUrl} className={link}>
                 <MapPin aria-hidden="true" className="size-4 shrink-0" />
                 <address className="not-italic">{club.address}</address>
-              </a>
+              </ExternalLink>
             </li>
             <li className="flex min-h-11 items-center gap-2 sm:min-h-9">
               <Clock3 aria-hidden="true" className="size-4 shrink-0" />
               {club.hours}
             </li>
             <li>
-              <a href={club.whatsappUrl} className={link}>
+              <ExternalLink href={club.whatsappUrl} className={link}>
                 <MessageCircle aria-hidden="true" className="size-4 shrink-0" />
                 WhatsApp {club.phone}
-              </a>
+              </ExternalLink>
             </li>
           </ul>
           <ul aria-label="Redes sociales" className="mt-4 flex gap-2">
             <li>
-              <a
+              <ExternalLink
                 href={club.instagramUrl}
                 aria-label="Instagram del club"
                 className="grid size-11 place-items-center rounded-full bg-white/10 transition-colors hover:bg-sun-400 hover:text-navy-950"
               >
                 <InstagramIcon className="size-5" />
-              </a>
+              </ExternalLink>
             </li>
             <li>
-              <a
+              <ExternalLink
                 href={club.facebookUrl}
                 aria-label="Facebook del club"
                 className="grid size-11 place-items-center rounded-full bg-white/10 transition-colors hover:bg-sun-400 hover:text-navy-950"
               >
                 <FacebookIcon className="size-5" />
-              </a>
+              </ExternalLink>
             </li>
           </ul>
         </div>

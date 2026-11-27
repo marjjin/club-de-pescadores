@@ -5,6 +5,7 @@ import { useFocusTrap } from '@/shared/hooks/useFocusTrap'
 import { club } from '@/shared/config/club'
 import { useLocation } from 'react-router'
 import { currentNav, navLinks } from '../config/navigation'
+import { ExternalLink } from '@/shared/ui/ExternalLink'
 
 type Props = {
   id: string
@@ -113,13 +114,13 @@ export function MobileMenu({
             </li>
           ))}
         </ul>
-        <a
+        <ExternalLink
           href={club.whatsappUrl}
           className="flex min-h-12 items-center justify-center gap-2 bg-mist-50 px-4 font-semibold text-ink-600 hover:text-river-600"
         >
           <Phone aria-hidden="true" className="size-4" />
           {club.phone}
-        </a>
+        </ExternalLink>
       </nav>
     </>
   )

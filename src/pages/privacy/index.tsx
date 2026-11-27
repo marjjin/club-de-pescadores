@@ -3,6 +3,7 @@ import { club } from '@/shared/config/club'
 import { PAGES } from '@/shared/seo/pages.mjs'
 import { container } from '@/shared/ui/layout'
 import { PageHeader } from '@/shared/ui/PageHeader'
+import { ExternalLink } from '@/shared/ui/ExternalLink'
 
 // Ley 25.326 (art. 6) asks to tell people who holds their data, what for and how to
 // exercise their rights; Disposición DNPDP 10/2008 asks for the two quoted legends.
@@ -20,9 +21,12 @@ function Block({ title, children }: { title: string; children: ReactNode }) {
 const list = 'grid list-disc gap-2 pl-6'
 function Contact() {
   return (
-    <a href={club.whatsappUrl} className="font-bold text-river-600 underline">
+    <ExternalLink
+      href={club.whatsappUrl}
+      className="font-bold text-river-600 underline"
+    >
       por WhatsApp al {club.phone}
-    </a>
+    </ExternalLink>
   )
 }
 

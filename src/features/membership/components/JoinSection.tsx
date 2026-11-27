@@ -2,6 +2,7 @@ import { MessageCircle } from 'lucide-react'
 import { club } from '@/shared/config/club'
 import { button } from '@/shared/ui/button'
 import { container } from '@/shared/ui/layout'
+import { ExternalLink } from '@/shared/ui/ExternalLink'
 
 // Club yellow (the façade colour) so it reads as the closing call and does not merge with the navy footer.
 export function JoinSection() {
@@ -18,13 +19,13 @@ export function JoinSection() {
             La pesca nos une, la naturaleza nos inspira.
           </p>
         </div>
-        <a
+        <ExternalLink
           href={club.whatsappUrl}
           className={`reveal-text ${button.secondary} shrink-0`}
         >
           <MessageCircle aria-hidden="true" className="size-5" />
           Hacete socio
-        </a>
+        </ExternalLink>
       </div>
     </section>
   )
