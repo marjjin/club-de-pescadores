@@ -1,4 +1,4 @@
-import { useLayoutEffect, ViewTransition } from 'react'
+import { useLayoutEffect, useState, ViewTransition } from 'react'
 import { Outlet, useLocation } from 'react-router'
 import { Footer } from './Footer'
 import { Header } from './Header'
@@ -6,7 +6,12 @@ import { WhatsAppButton } from './WhatsAppButton'
 import { RiverLevelBar } from '@/features/river'
 
 export function PublicLayout() {
-  const { pathname, hash } = useLocation()
+  const { pathname, hash, key } = useLocation()
+  // React also runs view transitions when the first page finishes loading
+  // (hydration, lazy route revealed). Only a real navigation may animate: on a
+  // reload the fade blanked the hero for a moment.
+  const [firstKey] = useState(key)
+  const navigated = key !== firstKey
 
   // Layout effect: it runs inside the page-change transition, so the new page is
   // captured already scrolled to its place instead of jumping after the fade.
@@ -29,7 +34,7 @@ export function PublicLayout() {
         {/* Router navigations run in a transition, so the new page fades in (index.css).
             One element with the river bar inside: it moves with the page, and fading
             it apart from it ghosted the bar where it sat on the old, scrolled page. */}
-        <ViewTransition default="page">
+        <ViewTransition default={navigated ? 'page' : 'none'}>
           <div>
             <RiverLevelBar />
             <Outlet />
