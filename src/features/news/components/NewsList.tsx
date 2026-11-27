@@ -15,7 +15,7 @@ type Props = {
 export function NewsList({ items, featured = false, priority = false }: Props) {
   return (
     <ul
-      className={`reveal-stagger grid gap-6 ${featured ? 'md:grid-cols-2' : 'md:grid-cols-2 lg:grid-cols-3'}`}
+      className={`reveal-stagger reveal-alternate grid gap-6 ${featured ? 'md:grid-cols-2' : 'md:grid-cols-2 lg:grid-cols-3'}`}
     >
       {items.map((item, index) => {
         const lead = featured && index === 0

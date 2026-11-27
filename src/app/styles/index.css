@@ -97,6 +97,14 @@ body {
     --reveal-from: var(--reveal-text-from);
     --reveal-scale: 1;
   }
+  /* Items that come in from alternating sides: the first from the left, the next
+     from the right (the home news cards). */
+  [data-reveal] .reveal-alternate > :nth-child(odd) {
+    --reveal-from: -2.5rem 0;
+  }
+  [data-reveal] .reveal-alternate > :nth-child(even) {
+    --reveal-from: 2.5rem 0;
+  }
   @media (prefers-reduced-motion: no-preference) {
     [data-reveal='pending']
       :is(
