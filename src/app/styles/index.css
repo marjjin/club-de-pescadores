@@ -114,37 +114,37 @@ body {
 
     [data-reveal='shown'] .reveal-band {
       transform-origin: left;
-      animation: reveal-draw 750ms var(--reveal-ease) both;
+      animation: reveal-draw 1000ms var(--reveal-ease) both;
     }
     [data-reveal='shown'] .reveal-text {
-      animation: reveal-rise 750ms var(--reveal-ease) both;
-      animation-delay: 80ms;
+      animation: reveal-rise 1000ms var(--reveal-ease) both;
+      animation-delay: 100ms;
     }
     [data-reveal='shown'] .reveal-text + .reveal-text {
-      animation-delay: 140ms;
+      animation-delay: 190ms;
     }
     [data-reveal='shown'] .reveal-stagger > * {
-      --reveal-step: 45ms;
-      animation: reveal-rise 700ms var(--reveal-ease) both;
-      animation-delay: calc(var(--reveal-offset, 0ms) + 185ms);
+      --reveal-step: 70ms;
+      animation: reveal-rise 950ms var(--reveal-ease) both;
+      animation-delay: calc(var(--reveal-offset, 0ms) + 210ms);
     }
     /* A single card (the pier report) rises after the heading; what it contains
        waits for it through --reveal-offset. */
     [data-reveal='shown'] .reveal-card {
-      --reveal-offset: 380ms;
-      animation: reveal-rise 850ms var(--reveal-ease) both;
-      animation-delay: 160ms;
+      --reveal-offset: 480ms;
+      animation: reveal-rise 1100ms var(--reveal-ease) both;
+      animation-delay: 200ms;
     }
     /* The one status that matters most (can people fish today) lands last. */
     [data-reveal='shown'] .reveal-pop {
-      animation: reveal-pop 450ms cubic-bezier(0.3, 1.4, 0.5, 1) both;
-      animation-delay: 480ms;
+      animation: reveal-pop 600ms cubic-bezier(0.3, 1.4, 0.5, 1) both;
+      animation-delay: 650ms;
     }
     /* The dotted leaders of the fee board draw toward each price. */
     [data-reveal='shown'] .reveal-leader {
       transform-origin: left;
-      animation: reveal-draw 750ms var(--reveal-ease) both;
-      animation-delay: 300ms;
+      animation: reveal-draw 1000ms var(--reveal-ease) both;
+      animation-delay: 400ms;
     }
 
     /* Capped at eight steps so long lists never keep the last items waiting. */
@@ -158,25 +158,25 @@ body {
     }
     @supports not (animation-delay: calc(sibling-index() * 0.1s)) {
       [data-reveal='shown'] .reveal-stagger > :nth-child(2) {
-        animation-delay: calc(var(--reveal-offset, 0ms) + 230ms);
+        animation-delay: calc(var(--reveal-offset, 0ms) + 280ms);
       }
       [data-reveal='shown'] .reveal-stagger > :nth-child(3) {
-        animation-delay: calc(var(--reveal-offset, 0ms) + 275ms);
+        animation-delay: calc(var(--reveal-offset, 0ms) + 350ms);
       }
       [data-reveal='shown'] .reveal-stagger > :nth-child(4) {
-        animation-delay: calc(var(--reveal-offset, 0ms) + 320ms);
+        animation-delay: calc(var(--reveal-offset, 0ms) + 420ms);
       }
       [data-reveal='shown'] .reveal-stagger > :nth-child(5) {
-        animation-delay: calc(var(--reveal-offset, 0ms) + 365ms);
+        animation-delay: calc(var(--reveal-offset, 0ms) + 490ms);
       }
       [data-reveal='shown'] .reveal-stagger > :nth-child(6) {
-        animation-delay: calc(var(--reveal-offset, 0ms) + 410ms);
+        animation-delay: calc(var(--reveal-offset, 0ms) + 560ms);
       }
       [data-reveal='shown'] .reveal-stagger > :nth-child(7) {
-        animation-delay: calc(var(--reveal-offset, 0ms) + 455ms);
+        animation-delay: calc(var(--reveal-offset, 0ms) + 630ms);
       }
       [data-reveal='shown'] .reveal-stagger > :nth-child(n + 8) {
-        animation-delay: calc(var(--reveal-offset, 0ms) + 500ms);
+        animation-delay: calc(var(--reveal-offset, 0ms) + 700ms);
       }
     }
   }
