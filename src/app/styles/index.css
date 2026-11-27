@@ -217,6 +217,47 @@ body {
 }
 
 /*
+ * River level bar (features/river). While the reading loads, the bars shimmer like
+ * light on water; when it arrives, each piece fades in. Without motion the bars
+ * stay as plain, still placeholders.
+ */
+@layer components {
+  .river-skeleton {
+    background-color: rgb(255 255 255 / 0.1);
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    .river-skeleton {
+      background-image: linear-gradient(
+        90deg,
+        transparent 0%,
+        rgb(255 255 255 / 0.18) 50%,
+        transparent 100%
+      );
+      background-size: 200% 100%;
+      background-repeat: no-repeat;
+      animation: river-shimmer 1.4s ease-in-out infinite;
+    }
+    .river-in {
+      animation: river-in 600ms cubic-bezier(0.22, 1, 0.36, 1) both;
+    }
+  }
+}
+@keyframes river-shimmer {
+  from {
+    background-position: 150% 0;
+  }
+  to {
+    background-position: -50% 0;
+  }
+}
+@keyframes river-in {
+  from {
+    opacity: 0;
+    translate: 0 0.25rem;
+  }
+}
+
+/*
  * Page changes, through React's <ViewTransition> (app/layout/PublicLayout) for
  * router links and @view-transition for plain links that reload the page.
  *

@@ -23,22 +23,42 @@ export function RiverLevelBar() {
             <Waves size={15} aria-hidden="true" className="text-sun-400" />
             Altura del río
           </h2>
+          {query.isPending && (
+            // Where the height will appear: the same box as the phone's value pill.
+            <span
+              aria-hidden="true"
+              className="river-skeleton h-6 w-16 rounded-md sm:h-3 sm:w-12 sm:rounded-full"
+            />
+          )}
           {reading && (
-            <p className="shrink-0 rounded-md bg-white/10 px-2 text-sm leading-6 font-extrabold whitespace-nowrap text-white tabular-nums sm:bg-transparent sm:px-0 sm:text-xs sm:leading-5">
+            <p className="river-in shrink-0 rounded-md bg-white/10 px-2 text-sm leading-6 font-extrabold whitespace-nowrap text-white tabular-nums sm:bg-transparent sm:px-0 sm:text-xs sm:leading-5">
               {formatRiverHeight(reading.height_cm)}
             </p>
           )}
         </div>
         {query.isPending ? (
-          <p role="status">Consultando última medición…</p>
+          // Shimmering bars where the reading will go, instead of a line of text that
+          // changes into a different line. Same height as the loaded bar: no jump.
+          // On phones the bars sit on the right, like the time and age notice.
+          <p role="status" className="flex items-center gap-3">
+            <span className="sr-only">Consultando última medición…</span>
+            <span
+              aria-hidden="true"
+              className="river-skeleton h-3 w-20 rounded-full sm:w-72"
+            />
+            <span
+              aria-hidden="true"
+              className="river-skeleton hidden h-3 w-44 rounded-full sm:block"
+            />
+          </p>
         ) : reading ? (
           <>
             {/* Phones: short time and a compact age notice, on the same line. */}
-            <p className="flex shrink-0 items-center gap-2 whitespace-nowrap tabular-nums sm:contents">
+            <p className="river-in flex shrink-0 items-center gap-2 whitespace-nowrap tabular-nums sm:contents">
               <span aria-hidden="true" className="sm:hidden">
                 {formatRiverShortDate(reading.measured_at)}
               </span>
-              <span className="sr-only sm:not-sr-only sm:min-w-0 sm:whitespace-normal sm:wrap-anywhere">
+              <span className="river-in sr-only sm:not-sr-only sm:min-w-0 sm:whitespace-normal sm:wrap-anywhere">
                 <span aria-hidden="true">· </span>
                 <span>{reading.station}</span>
                 <span aria-hidden="true"> · </span>
@@ -48,7 +68,7 @@ export function RiverLevelBar() {
                 (hora argentina)
               </span>
               {old && (
-                <span className="inline-flex items-center gap-1 rounded-full bg-sun-400/15 px-2 font-semibold text-sun-400 sm:bg-transparent sm:px-0">
+                <span className="river-in inline-flex items-center gap-1 rounded-full bg-sun-400/15 px-2 font-semibold text-sun-400 sm:bg-transparent sm:px-0">
                   <Clock3 size={13} aria-hidden="true" />
                   <span aria-hidden="true" className="sm:hidden">
                     +24 h
@@ -59,7 +79,7 @@ export function RiverLevelBar() {
                 </span>
               )}
             </p>
-            <p className="hidden min-w-0 wrap-anywhere sm:block">
+            <p className="river-in hidden min-w-0 wrap-anywhere sm:block">
               Fuente: {reading.source}
             </p>
             {query.isError && (
