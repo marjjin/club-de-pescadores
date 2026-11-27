@@ -48,23 +48,24 @@ export function HomePage() {
         </Suspense>
       </Reveal>
       {/* What is going on at the club first; then what a new member gets and pays,
-          right before the call to join. */}
-      <Reveal>
+          right before the call to join. Entrances alternate
+          (side, other side, zoom) so no two neighbours move alike. */}
+      <Reveal variant="left">
         <NewsSection />
       </Reveal>
-      <Reveal>
+      <Reveal variant="right">
         <EventsSection />
       </Reveal>
-      <Reveal>
+      <Reveal variant="zoom">
         <FacilitiesSection />
       </Reveal>
-      <Reveal>
+      <Reveal variant="left">
         <PoolSection />
       </Reveal>
-      <Reveal>
+      <Reveal variant="right">
         <FeesSection />
       </Reveal>
-      <Reveal>
+      <Reveal variant="zoom">
         <JoinSection />
       </Reveal>
     </>

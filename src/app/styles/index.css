@@ -70,6 +70,33 @@ body {
  * static: no hidden state exists outside this media query.
  */
 @layer components {
+  /* Fast start, long settle (ease-out quint): entrances glide instead of snapping.
+     Where items start from is per variant (Reveal's variant prop); headings travel
+     less than items so the title settles first and stays readable. */
+  [data-reveal] {
+    --reveal-ease: cubic-bezier(0.22, 1, 0.36, 1);
+    --reveal-from: 0 1.5rem;
+    --reveal-text-from: 0 1.5rem;
+    --reveal-scale: 1;
+    /* Items sliding in from a side must not widen the page on phones. */
+    overflow-x: clip;
+  }
+  [data-reveal-variant='left'] {
+    --reveal-from: -2.5rem 0;
+    --reveal-text-from: -1.25rem 0;
+  }
+  [data-reveal-variant='right'] {
+    --reveal-from: 2.5rem 0;
+    --reveal-text-from: 1.25rem 0;
+  }
+  [data-reveal-variant='zoom'] {
+    --reveal-from: 0 0.75rem;
+    --reveal-scale: 0.94;
+  }
+  [data-reveal] .reveal-text {
+    --reveal-from: var(--reveal-text-from);
+    --reveal-scale: 1;
+  }
   @media (prefers-reduced-motion: no-preference) {
     [data-reveal='pending']
       :is(
@@ -87,10 +114,10 @@ body {
 
     [data-reveal='shown'] .reveal-band {
       transform-origin: left;
-      animation: reveal-draw 600ms cubic-bezier(0.2, 0.7, 0.2, 1) both;
+      animation: reveal-draw 750ms var(--reveal-ease) both;
     }
     [data-reveal='shown'] .reveal-text {
-      animation: reveal-rise 550ms cubic-bezier(0.2, 0.7, 0.2, 1) both;
+      animation: reveal-rise 750ms var(--reveal-ease) both;
       animation-delay: 80ms;
     }
     [data-reveal='shown'] .reveal-text + .reveal-text {
@@ -98,14 +125,14 @@ body {
     }
     [data-reveal='shown'] .reveal-stagger > * {
       --reveal-step: 45ms;
-      animation: reveal-rise 500ms cubic-bezier(0.2, 0.7, 0.2, 1) both;
+      animation: reveal-rise 700ms var(--reveal-ease) both;
       animation-delay: calc(var(--reveal-offset, 0ms) + 185ms);
     }
     /* A single card (the pier report) rises after the heading; what it contains
        waits for it through --reveal-offset. */
     [data-reveal='shown'] .reveal-card {
       --reveal-offset: 380ms;
-      animation: reveal-rise 650ms cubic-bezier(0.2, 0.7, 0.2, 1) both;
+      animation: reveal-rise 850ms var(--reveal-ease) both;
       animation-delay: 160ms;
     }
     /* The one status that matters most (can people fish today) lands last. */
@@ -116,7 +143,7 @@ body {
     /* The dotted leaders of the fee board draw toward each price. */
     [data-reveal='shown'] .reveal-leader {
       transform-origin: left;
-      animation: reveal-draw 600ms cubic-bezier(0.2, 0.7, 0.2, 1) both;
+      animation: reveal-draw 750ms var(--reveal-ease) both;
       animation-delay: 300ms;
     }
 
@@ -155,14 +182,17 @@ body {
   }
 }
 
+/* Start offset and scale come from the variant variables above. */
 @keyframes reveal-rise {
   from {
     opacity: 0;
-    translate: 0 1rem;
+    translate: var(--reveal-from, 0 1.5rem);
+    scale: var(--reveal-scale, 1);
   }
   to {
     opacity: 1;
     translate: 0 0;
+    scale: 1;
   }
 }
 @keyframes reveal-pop {
