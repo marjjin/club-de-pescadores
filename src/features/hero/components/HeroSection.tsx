@@ -7,9 +7,12 @@ export function HeroSection() {
   return (
     // The logo links to /#inicio. A margin taller than everything above the hero makes
     // that jump clamp to the very top, so the river bar is never left under the header.
+    // The hero fills the rest of the first screen: 100svh minus the header and the
+    // river bar above it (117px on phones, 109px from lg, where the bar is one line).
+    // If the bar wraps, the hero runs slightly past the fold instead of leaving a gap.
     <section
       id="inicio"
-      className="relative isolate flex scroll-mt-[100vh] min-h-[560px] items-end overflow-hidden bg-navy-950 lg:h-[min(42vw,calc(100vh-5rem))]"
+      className="relative isolate flex min-h-[max(560px,calc(100svh-117px))] scroll-mt-[100vh] items-end overflow-hidden bg-navy-950 lg:min-h-[max(560px,calc(100svh-109px))]"
     >
       {/* Phones show a 560px-tall slice of the photo: they get that crop, a third of the
           weight. The build preloads the same files (scripts/production/prepare-public.mjs). */}
